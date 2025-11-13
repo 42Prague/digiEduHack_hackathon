@@ -45,7 +45,7 @@ services:
     ports:
       # match whatever your Uvicorn listens on inside the container
       # if you use `uvicorn app.main:app --port 8000`, then:
-      - "8000:8000"
+      - "8000:80"
     environment:
       # LLM config
       - OLLAMA_HOST=http://ollama:11434
