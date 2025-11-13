@@ -16,9 +16,9 @@ class LocalStorageBackend(StorageBackend):
     def get_target_path(self, file_id: str, file_name: str, region_id: str) -> str:
         """Generate local target path with region_id structure."""
         safe_name = self._sanitize_filename(file_name)
-        extension = safe_name.split('.')[-1] if '.' in safe_name else 'bin'
-        # Use uploads/{region_id}/{file_id}.{ext} pattern for MIME Decoder compatibility
-        target_path = self.base_path / region_id / f"{file_id}.{extension}"
+        # Use uploads/{region_id}/{file_id}_{filename} pattern
+        # This preserves original filename while allowing MIME Decoder to extract region_id from path
+        target_path = self.base_path / region_id / f"{file_id}_{safe_name}"
         return str(target_path)
 
     async def store_file(
@@ -26,9 +26,9 @@ class LocalStorageBackend(StorageBackend):
     ) -> str:
         """Write file to local filesystem with region_id in path structure."""
         safe_name = self._sanitize_filename(file_name)
-        extension = safe_name.split('.')[-1] if '.' in safe_name else 'bin'
-        # Use uploads/{region_id}/{file_id}.{ext} pattern for MIME Decoder compatibility
-        target_path = self.base_path / region_id / f"{file_id}.{extension}"
+        # Use uploads/{region_id}/{file_id}_{filename} pattern
+        # This preserves original filename while allowing MIME Decoder to extract region_id from path
+        target_path = self.base_path / region_id / f"{file_id}_{safe_name}"
 
         # Create directory if needed
         target_path.parent.mkdir(parents=True, exist_ok=True)

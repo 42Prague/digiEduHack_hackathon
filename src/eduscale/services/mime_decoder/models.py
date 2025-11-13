@@ -102,33 +102,36 @@ class ProcessingRequest(BaseModel):
         """
         object_path = event.data.name
         
-        # Parse path pattern: uploads/{region_id}/{file_id}.{ext}
-        # Example: uploads/region-cz-01/abc123.pdf
-        path_pattern = r"^uploads/([^/]+)/([^/]+?)(?:\.[^.]+)?$"
+        # Parse path pattern: uploads/{region_id}/{file_id}_{original_filename}
+        # Example: uploads/region-cz-01/abc123_report.pdf
+        path_pattern = r"^uploads/([^/]+)/([^_]+)_(.+)$"
         match = re.match(path_pattern, object_path)
         
         if match:
             region_id = match.group(1)
             file_id = match.group(2)
+            original_filename = match.group(3)
             logger.info(
                 f"Extracted metadata from path",
                 extra={
                     "object_path": object_path,
                     "region_id": region_id,
-                    "file_id": file_id
+                    "file_id": file_id,
+                    "original_filename": original_filename
                 }
             )
         else:
             # Fallback: use defaults if path doesn't match expected pattern
             logger.warning(
-                f"Object path does not match expected pattern 'uploads/{{region_id}}/{{file_id}}.{{ext}}'",
+                f"Object path does not match expected pattern 'uploads/{{region_id}}/{{file_id}}_{{filename}}'",
                 extra={
                     "object_path": object_path,
-                    "expected_pattern": "uploads/{region_id}/{file_id}.{ext}"
+                    "expected_pattern": "uploads/{region_id}/{file_id}_{filename}"
                 }
             )
-            # Extract file_id from filename (last part of path without extension)
-            file_id = object_path.split("/")[-1].split(".")[0]
+            # Extract file_id from filename (last part of path, first part before underscore)
+            filename = object_path.split("/")[-1]
+            file_id = filename.split("_")[0] if "_" in filename else filename.split(".")[0]
             region_id = "unknown"
 
         return cls(

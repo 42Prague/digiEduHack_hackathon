@@ -47,8 +47,10 @@ class TestLocalStorageBackend:
 
         assert file_id in path
         assert region_id in path
-        assert ".csv" in path
+        assert "report.csv" in path
         assert "data/uploads" in path
+        # Check format: {file_id}_{filename}
+        assert f"{file_id}_report.csv" in path
 
     @pytest.mark.asyncio
     async def test_store_file(self):
@@ -112,8 +114,10 @@ class TestGCSStorageBackend:
             assert "gs://test-bucket" in path
             assert file_id in path
             assert region_id in path
-            assert ".csv" in path
+            assert "report.csv" in path
             assert "uploads/" in path
+            # Check format: {file_id}_{filename}
+            assert f"{file_id}_report.csv" in path
 
     @pytest.mark.asyncio
     async def test_store_file(self):
