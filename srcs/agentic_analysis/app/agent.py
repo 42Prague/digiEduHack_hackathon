@@ -7,6 +7,7 @@ from .azure_client import client
 from .settings import settings
 from .schemas import AnalysisRequest, AnalysisResponse, Step, PlotSpec
 from . import tools as tool_impl
+from . import session_store
 
 
 SYSTEM_PROMPT = """
@@ -140,23 +141,87 @@ def _summarize_tool_output(name: str, result: Any) -> str:
         return f"{name} executed."
 
 
-def run_agent(request: AnalysisRequest) -> AnalysisResponse:
+def _history_to_inputs(messages: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
+    inputs: List[Dict[str, Any]] = []
+    for msg in messages:
+        role = msg.get("role")
+        content = msg.get("content")
+        if not content:
+            continue
+        if role == "user":
+            inputs.append(
+                {
+                    "role": "user",
+                    "content": [
+                        {"type": "input_text", "text": str(content)},
+                    ],
+                }
+            )
+        elif role == "assistant":
+            inputs.append(
+                {
+                    "role": "assistant",
+                    "content": [
+                        {"type": "output_text", "text": str(content)},
+                    ],
+                }
+            )
+    return inputs
+
+
+def _append_session_message(
+    session_id: str,
+    role: str,
+    content: str,
+    *,
+    message_type: Optional[str] = None,
+    tool_name: Optional[str] = None,
+) -> None:
+    session_store.append_message(
+        session_id,
+        {
+            "role": role,
+            "content": content,
+            "type": message_type,
+            "tool_name": tool_name,
+        },
+    )
+
+
+def _collect_response_messages(response: Any) -> List[str]:
+    texts: List[str] = []
+    for out in getattr(response, "output", []) or []:
+        if getattr(out, "type", None) == "message":
+            for piece in getattr(out, "content", []) or []:
+                text = getattr(piece, "text", None)
+                if text:
+                    texts.append(text)
+    return texts
+
+
+def run_agent(
+    request: AnalysisRequest,
+    *,
+    session_id: str,
+    existing_messages: Optional[List[Dict[str, Any]]] = None,
+) -> AnalysisResponse:
     """
     Orchestrate a multi-step Responses API interaction with tool calling.
     Returns a structured AnalysisResponse including a 'steps' execution trace.
     """
+    session_store.ensure_session(session_id)
+    history_messages = list(existing_messages or [])
+
     steps: List[Step] = []
 
     max_steps = request.max_steps or settings.agent_max_steps
 
-    # Initial user message
+    # Prepare conversation history for the first Responses API call.
+    history_inputs = _history_to_inputs(history_messages)
+
     user_content = f"Language: {request.language}\n\nUser question:\n{request.query}"
 
-    # For now we do NOT send actual file descriptors to the model (privacy-friendly).
-    # Later you can add a summarised view of `request.files` if needed.
-
-    # First call
-    inputs: List[Dict[str, Any]] = [
+    inputs: List[Dict[str, Any]] = history_inputs + [
         {
             "role": "user",
             "content": [
@@ -164,6 +229,13 @@ def run_agent(request: AnalysisRequest) -> AnalysisResponse:
             ],
         }
     ]
+
+    _append_session_message(
+        session_id,
+        "user",
+        request.query,
+        message_type="user_message",
+    )
     previous_response_id: Optional[str] = None
     model_name = settings.azure_openai_model
 
@@ -192,6 +264,14 @@ def run_agent(request: AnalysisRequest) -> AnalysisResponse:
         for output in response.output:
             if output.type == "function_call":
                 function_calls.append(output)
+
+        for text in _collect_response_messages(response):
+            _append_session_message(
+                session_id,
+                "assistant",
+                text,
+                message_type="assistant_message",
+            )
 
         # Record LLM call step (high-level, no chain-of-thought)
         steps.append(
@@ -242,6 +322,13 @@ def run_agent(request: AnalysisRequest) -> AnalysisResponse:
                 )
             )
 
+            _append_session_message(
+                session_id,
+                "assistant",
+                answer,
+                message_type="assistant_final",
+            )
+
             return AnalysisResponse(
                 answer=answer,
                 steps=steps,
@@ -252,44 +339,60 @@ def run_agent(request: AnalysisRequest) -> AnalysisResponse:
                     "output_tokens": total_output_tokens,
                     "total_tokens": total_input_tokens + total_output_tokens,
                 },
+                session_id=session_id,
             )
+        else:
+            next_inputs: List[Dict[str, Any]] = []
+            for fc in function_calls:
+                name = fc.name
+                executor = TOOL_EXECUTORS.get(name)
+                if executor is None:
+                    raise ValueError(f"Unknown tool requested by model: {name}")
 
-        # If there ARE tool calls, execute them and prepare inputs for the next round
-        next_inputs: List[Dict[str, Any]] = []
-        for fc in function_calls:
-            name = fc.name
-            executor = TOOL_EXECUTORS.get(name)
-            if executor is None:
-                raise ValueError(f"Unknown tool requested by model: {name}")
+                # Arguments come as JSON string in fc.arguments
+                raw_args = fc.arguments or "{}"
+                try:
+                    args = json.loads(raw_args)
+                except json.JSONDecodeError:
+                    args = {}
+                result = executor(**args)
 
-            # Arguments come as JSON string in fc.arguments
-            raw_args = fc.arguments or "{}"
-            try:
-                args = json.loads(raw_args)
-            except json.JSONDecodeError:
-                args = {}
-            result = executor(**args)
-
-            steps.append(
-                Step(
-                    type="tool_call",
-                    label=f"Tool call: {name}",
-                    detail=_summarize_tool_output(name, result),
+                _append_session_message(
+                    session_id,
+                    "assistant",
+                    f"[Tool call] {name} args: {json.dumps(args)}",
+                    message_type="tool_call",
                     tool_name=name,
-                    tool_args=args,
                 )
-            )
 
-            next_inputs.append(
-                {
-                    "type": "function_call_output",
-                    "call_id": fc.call_id,
-                    "output": json.dumps(result),
-                }
-            )
+                steps.append(
+                    Step(
+                        type="tool_call",
+                        label=f"Tool call: {name}",
+                        detail=_summarize_tool_output(name, result),
+                        tool_name=name,
+                        tool_args=args,
+                    )
+                )
 
-        # Prepare for next loop iteration
-        inputs = next_inputs
+                _append_session_message(
+                    session_id,
+                    "tool",
+                    json.dumps(result),
+                    message_type="tool_result",
+                    tool_name=name,
+                )
+
+                next_inputs.append(
+                    {
+                        "type": "function_call_output",
+                        "call_id": fc.call_id,
+                        "output": json.dumps(result),
+                    }
+                )
+
+            # Prepare for next loop iteration
+            inputs = next_inputs
 
     # If we exit the loop without a final answer, return a graceful fallback
     steps.append(
@@ -303,8 +406,16 @@ def run_agent(request: AnalysisRequest) -> AnalysisResponse:
         )
     )
 
+    fallback_text = "Sorry, I could not produce a confident answer within the configured step limit."
+    _append_session_message(
+        session_id,
+        "assistant",
+        fallback_text,
+        message_type="assistant_final",
+    )
+
     return AnalysisResponse(
-        answer="Sorry, I could not produce a confident answer within the configured step limit.",
+        answer=fallback_text,
         steps=steps,
         plot=None,
         model=model_name,
@@ -313,4 +424,5 @@ def run_agent(request: AnalysisRequest) -> AnalysisResponse:
             "output_tokens": total_output_tokens,
             "total_tokens": total_input_tokens + total_output_tokens,
         },
+        session_id=session_id,
     )

@@ -86,3 +86,13 @@ AZURE_OPENAI_API_VERSION=2024-09-01-preview
 - No other code changes are required—switching the endpoint toggles the correct authentication/URL wiring internally.
 
 You can also override the agent's reasoning depth on a per-request basis by adding a `max_steps` field to the JSON payload sent to `/analyze`. It accepts integers between 1 and 20 and falls back to the server default defined in `.env` if omitted.
+
+### Session-based workflow
+
+The `/analyze` endpoint now orchestrates long-running conversations. Each request returns a `session_id` and streams progress into a lightweight JSON store located at `app/tmp_db.json`:
+
+1. Send a POST to `/analyze` with a `query`. Omit `session_id` to start a fresh session; the response will include the generated identifier.
+2. Poll `GET /session/{session_id}` from the frontend (for example, every second) to retrieve the growing message history while the agent reasons and calls tools.
+3. For follow-up questions, include the previously issued `session_id` in the next `/analyze` request so the agent retrieves the full conversation context.
+
+The on-disk storage is intentionally simple. Swap out `app/session_store.py` with your production database integration when ready.
