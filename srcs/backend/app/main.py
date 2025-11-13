@@ -2,8 +2,10 @@ from typing import Union
 
 from fastapi import FastAPI
 
-app = FastAPI()
+from api import chat
 
+app = FastAPI()
+app.include_router(chat.router)
 
 @app.get("/")
 def read_root():

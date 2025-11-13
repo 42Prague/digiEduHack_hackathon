@@ -11,6 +11,8 @@ services:
       - ollama_data:/root/.ollama
       - ./chat/docker-entrypoint.sh:/entrypoint.sh:ro
     entrypoint: ["/bin/sh", "/entrypoint.sh"]
+    networks:
+      - internal
     # Uncomment to request all GPUs on Linux with the NVIDIA Container Toolkit installed.
     # deploy:
     #   resources:
@@ -24,6 +26,7 @@ services:
       context: ./backend
     depends_on:
       - ollama
+      - chromadb
     ports:
       - "8000:80"
     volumes:
@@ -33,7 +36,25 @@ services:
       - OLLAMA_HOST=http://ollama:11434
       - OLLAMA_MODEL=${OLLAMA_MODEL:-deepseek-r1:1.5b}
       - BACKEND_TEST_PROMPT=${BACKEND_TEST_PROMPT:-Say hi from the backend container}
+    networks:
+      - internal
+
+  chromadb: # Vector database
+    image: chromadb/chroma:latest
+    container_name: chromadb
+    ports:
+      - "9000:8000"
+    volumes:
+      - chromadb_data:/data
+    networks:
+      - internal
 
 volumes:
   ollama_data:
     driver: local
+  chromadb_data:
+
+
+networks:
+  internal:
+    driver: bridge
