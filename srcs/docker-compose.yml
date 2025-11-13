@@ -62,7 +62,7 @@ services:
 
   frontend:
     build:
-      context: ./eduzmena-frontend/file-upload
+      context: ./eduzmena-frontend/components/file-upload
     depends_on:
       - backend
       - tusd
