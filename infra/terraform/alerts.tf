@@ -15,7 +15,7 @@ resource "google_monitoring_notification_channel" "eventarc_email" {
 
 # Alert Policy 1: High Failure Rate (>10% failures over 5 minutes)
 resource "google_monitoring_alert_policy" "eventarc_high_failure_rate" {
-  count        = var.enable_monitoring_alerts ? 1 : 0
+  count        = var.enable_eventarc && var.enable_monitoring_alerts ? 1 : 0
   display_name = "Eventarc High Failure Rate"
   combiner     = "OR"
   project      = var.project_id
@@ -27,7 +27,7 @@ resource "google_monitoring_alert_policy" "eventarc_high_failure_rate" {
       filter = <<-EOT
         metric.type="eventarc.googleapis.com/trigger/delivery_failure_count"
         resource.type="eventarc.googleapis.com/trigger"
-        resource.labels.trigger_name="${google_eventarc_trigger.storage_trigger.name}"
+        resource.labels.trigger_name="${google_eventarc_trigger.storage_trigger[0].name}"
       EOT
 
       comparison      = "COMPARISON_GT"
@@ -76,12 +76,12 @@ resource "google_monitoring_alert_policy" "eventarc_high_failure_rate" {
     EOT
   }
 
-  depends_on = [google_eventarc_trigger.storage_trigger]
+  depends_on = [google_eventarc_trigger.storage_trigger[0]]
 }
 
 # Alert Policy 2: High Latency (p95 > 30 seconds)
 resource "google_monitoring_alert_policy" "eventarc_high_latency" {
-  count        = var.enable_monitoring_alerts ? 1 : 0
+  count        = var.enable_eventarc && var.enable_monitoring_alerts ? 1 : 0
   display_name = "Eventarc High Delivery Latency"
   combiner     = "OR"
   project      = var.project_id
@@ -93,7 +93,7 @@ resource "google_monitoring_alert_policy" "eventarc_high_latency" {
       filter = <<-EOT
         metric.type="eventarc.googleapis.com/trigger/delivery_latency"
         resource.type="eventarc.googleapis.com/trigger"
-        resource.labels.trigger_name="${google_eventarc_trigger.storage_trigger.name}"
+        resource.labels.trigger_name="${google_eventarc_trigger.storage_trigger[0].name}"
       EOT
 
       comparison      = "COMPARISON_GT"
@@ -141,12 +141,12 @@ resource "google_monitoring_alert_policy" "eventarc_high_latency" {
     EOT
   }
 
-  depends_on = [google_eventarc_trigger.storage_trigger]
+  depends_on = [google_eventarc_trigger.storage_trigger[0]]
 }
 
 # Alert Policy 3: No Events (0 events for >1 hour)
 resource "google_monitoring_alert_policy" "eventarc_no_events" {
-  count        = var.enable_monitoring_alerts ? 1 : 0
+  count        = var.enable_eventarc && var.enable_monitoring_alerts ? 1 : 0
   display_name = "Eventarc No Events Received"
   combiner     = "OR"
   project      = var.project_id
@@ -158,7 +158,7 @@ resource "google_monitoring_alert_policy" "eventarc_no_events" {
       filter = <<-EOT
         metric.type="eventarc.googleapis.com/trigger/event_count"
         resource.type="eventarc.googleapis.com/trigger"
-        resource.labels.trigger_name="${google_eventarc_trigger.storage_trigger.name}"
+        resource.labels.trigger_name="${google_eventarc_trigger.storage_trigger[0].name}"
       EOT
 
       duration = "3600s" # 1 hour
@@ -191,7 +191,7 @@ resource "google_monitoring_alert_policy" "eventarc_no_events" {
       ### Remediation Steps:
       1. Check if Eventarc trigger is active:
          ```
-         gcloud eventarc triggers describe ${google_eventarc_trigger.storage_trigger.name} --location=${var.region}
+         gcloud eventarc triggers describe ${google_eventarc_trigger.storage_trigger[0].name} --location=${var.region}
          ```
 
       2. Verify Cloud Storage bucket has files:
@@ -213,5 +213,5 @@ resource "google_monitoring_alert_policy" "eventarc_no_events" {
     EOT
   }
 
-  depends_on = [google_eventarc_trigger.storage_trigger]
+  depends_on = [google_eventarc_trigger.storage_trigger[0]]
 }

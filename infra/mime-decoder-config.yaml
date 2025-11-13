@@ -1,0 +1,37 @@
+apiVersion: serving.knative.dev/v1
+kind: Service
+metadata:
+  name: mime-decoder
+spec:
+  template:
+    metadata:
+      annotations:
+        autoscaling.knative.dev/minScale: '0'
+        autoscaling.knative.dev/maxScale: '10'
+    spec:
+      containerConcurrency: 80
+      timeoutSeconds: 300
+      containers:
+      - image: IMAGE_URL_PLACEHOLDER
+        ports:
+        - name: http1
+          containerPort: 8080
+        env:
+        - name: ENV
+          value: prod
+        - name: SERVICE_NAME
+          value: mime-decoder
+        - name: SERVICE_VERSION
+          value: '0.1.0'
+        - name: GCP_PROJECT_ID
+          value: PROJECT_ID_PLACEHOLDER
+        - name: GCP_REGION
+          value: europe-west1
+        - name: UPLOADS_BUCKET
+          value: BUCKET_NAME_PLACEHOLDER
+        - name: ENVIRONMENT
+          value: prod
+        resources:
+          limits:
+            cpu: '1'
+            memory: 512Mi

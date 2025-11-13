@@ -2,7 +2,7 @@
 # Provides visibility into event delivery metrics and MIME Decoder performance
 
 resource "google_monitoring_dashboard" "eventarc_dashboard" {
-  count          = var.enable_monitoring_dashboard ? 1 : 0
+  count          = var.enable_eventarc && var.enable_monitoring_dashboard ? 1 : 0
   dashboard_json = jsonencode({
     displayName = "Eventarc Integration Dashboard"
     mosaicLayout = {
@@ -18,7 +18,7 @@ resource "google_monitoring_dashboard" "eventarc_dashboard" {
               dataSets = [{
                 timeSeriesQuery = {
                   timeSeriesFilter = {
-                    filter = "metric.type=\"eventarc.googleapis.com/trigger/event_count\" resource.type=\"eventarc.googleapis.com/trigger\" resource.label.trigger_name=\"${google_eventarc_trigger.storage_trigger.name}\""
+                    filter = "metric.type=\"eventarc.googleapis.com/trigger/event_count\" resource.type=\"eventarc.googleapis.com/trigger\" resource.label.trigger_name=\"${google_eventarc_trigger.storage_trigger[0].name}\""
                     aggregation = {
                       alignmentPeriod    = "60s"
                       perSeriesAligner   = "ALIGN_RATE"
@@ -49,7 +49,7 @@ resource "google_monitoring_dashboard" "eventarc_dashboard" {
               dataSets = [{
                 timeSeriesQuery = {
                   timeSeriesFilter = {
-                    filter = "metric.type=\"eventarc.googleapis.com/trigger/match_count\" resource.type=\"eventarc.googleapis.com/trigger\" resource.label.trigger_name=\"${google_eventarc_trigger.storage_trigger.name}\""
+                    filter = "metric.type=\"eventarc.googleapis.com/trigger/match_count\" resource.type=\"eventarc.googleapis.com/trigger\" resource.label.trigger_name=\"${google_eventarc_trigger.storage_trigger[0].name}\""
                     aggregation = {
                       alignmentPeriod    = "60s"
                       perSeriesAligner   = "ALIGN_RATE"
@@ -79,7 +79,7 @@ resource "google_monitoring_dashboard" "eventarc_dashboard" {
               dataSets = [{
                 timeSeriesQuery = {
                   timeSeriesFilter = {
-                    filter = "metric.type=\"eventarc.googleapis.com/trigger/delivery_success_count\" resource.type=\"eventarc.googleapis.com/trigger\" resource.label.trigger_name=\"${google_eventarc_trigger.storage_trigger.name}\""
+                    filter = "metric.type=\"eventarc.googleapis.com/trigger/delivery_success_count\" resource.type=\"eventarc.googleapis.com/trigger\" resource.label.trigger_name=\"${google_eventarc_trigger.storage_trigger[0].name}\""
                     aggregation = {
                       alignmentPeriod    = "60s"
                       perSeriesAligner   = "ALIGN_RATE"
@@ -113,7 +113,7 @@ resource "google_monitoring_dashboard" "eventarc_dashboard" {
               dataSets = [{
                 timeSeriesQuery = {
                   timeSeriesFilter = {
-                    filter = "metric.type=\"eventarc.googleapis.com/trigger/delivery_failure_count\" resource.type=\"eventarc.googleapis.com/trigger\" resource.label.trigger_name=\"${google_eventarc_trigger.storage_trigger.name}\""
+                    filter = "metric.type=\"eventarc.googleapis.com/trigger/delivery_failure_count\" resource.type=\"eventarc.googleapis.com/trigger\" resource.label.trigger_name=\"${google_eventarc_trigger.storage_trigger[0].name}\""
                     aggregation = {
                       alignmentPeriod    = "60s"
                       perSeriesAligner   = "ALIGN_RATE"
@@ -155,7 +155,7 @@ resource "google_monitoring_dashboard" "eventarc_dashboard" {
                 {
                   timeSeriesQuery = {
                     timeSeriesFilter = {
-                      filter = "metric.type=\"eventarc.googleapis.com/trigger/delivery_latency\" resource.type=\"eventarc.googleapis.com/trigger\" resource.label.trigger_name=\"${google_eventarc_trigger.storage_trigger.name}\""
+                      filter = "metric.type=\"eventarc.googleapis.com/trigger/delivery_latency\" resource.type=\"eventarc.googleapis.com/trigger\" resource.label.trigger_name=\"${google_eventarc_trigger.storage_trigger[0].name}\""
                       aggregation = {
                         alignmentPeriod     = "60s"
                         perSeriesAligner    = "ALIGN_DELTA"
@@ -170,7 +170,7 @@ resource "google_monitoring_dashboard" "eventarc_dashboard" {
                 {
                   timeSeriesQuery = {
                     timeSeriesFilter = {
-                      filter = "metric.type=\"eventarc.googleapis.com/trigger/delivery_latency\" resource.type=\"eventarc.googleapis.com/trigger\" resource.label.trigger_name=\"${google_eventarc_trigger.storage_trigger.name}\""
+                      filter = "metric.type=\"eventarc.googleapis.com/trigger/delivery_latency\" resource.type=\"eventarc.googleapis.com/trigger\" resource.label.trigger_name=\"${google_eventarc_trigger.storage_trigger[0].name}\""
                       aggregation = {
                         alignmentPeriod     = "60s"
                         perSeriesAligner    = "ALIGN_DELTA"
@@ -185,7 +185,7 @@ resource "google_monitoring_dashboard" "eventarc_dashboard" {
                 {
                   timeSeriesQuery = {
                     timeSeriesFilter = {
-                      filter = "metric.type=\"eventarc.googleapis.com/trigger/delivery_latency\" resource.type=\"eventarc.googleapis.com/trigger\" resource.label.trigger_name=\"${google_eventarc_trigger.storage_trigger.name}\""
+                      filter = "metric.type=\"eventarc.googleapis.com/trigger/delivery_latency\" resource.type=\"eventarc.googleapis.com/trigger\" resource.label.trigger_name=\"${google_eventarc_trigger.storage_trigger[0].name}\""
                       aggregation = {
                         alignmentPeriod     = "60s"
                         perSeriesAligner    = "ALIGN_DELTA"
@@ -227,7 +227,7 @@ resource "google_monitoring_dashboard" "eventarc_dashboard" {
               dataSets = [{
                 timeSeriesQuery = {
                   timeSeriesFilter = {
-                    filter = "metric.type=\"run.googleapis.com/request_count\" resource.type=\"cloud_run_revision\" resource.label.service_name=\"${google_cloud_run_service.mime_decoder.name}\""
+                    filter = "metric.type=\"run.googleapis.com/request_count\" resource.type=\"cloud_run_revision\" resource.label.service_name=\"${var.mime_decoder_service_name}\""
                     aggregation = {
                       alignmentPeriod    = "60s"
                       perSeriesAligner   = "ALIGN_RATE"
@@ -256,7 +256,7 @@ resource "google_monitoring_dashboard" "eventarc_dashboard" {
               dataSets = [{
                 timeSeriesQuery = {
                   timeSeriesFilter = {
-                    filter = "metric.type=\"run.googleapis.com/request_latencies\" resource.type=\"cloud_run_revision\" resource.label.service_name=\"${google_cloud_run_service.mime_decoder.name}\""
+                    filter = "metric.type=\"run.googleapis.com/request_latencies\" resource.type=\"cloud_run_revision\" resource.label.service_name=\"${var.mime_decoder_service_name}\""
                     aggregation = {
                       alignmentPeriod     = "60s"
                       perSeriesAligner    = "ALIGN_DELTA"
@@ -286,7 +286,7 @@ resource "google_monitoring_dashboard" "eventarc_dashboard" {
               dataSets = [{
                 timeSeriesQuery = {
                   timeSeriesFilter = {
-                    filter = "metric.type=\"run.googleapis.com/container/cpu/utilizations\" resource.type=\"cloud_run_revision\" resource.label.service_name=\"${google_cloud_run_service.mime_decoder.name}\""
+                    filter = "metric.type=\"run.googleapis.com/container/cpu/utilizations\" resource.type=\"cloud_run_revision\" resource.label.service_name=\"${var.mime_decoder_service_name}\""
                     aggregation = {
                       alignmentPeriod    = "60s"
                       perSeriesAligner   = "ALIGN_MEAN"
@@ -321,7 +321,7 @@ resource "google_monitoring_dashboard" "eventarc_dashboard" {
               dataSets = [{
                 timeSeriesQuery = {
                   timeSeriesFilter = {
-                    filter = "metric.type=\"run.googleapis.com/container/memory/utilizations\" resource.type=\"cloud_run_revision\" resource.label.service_name=\"${google_cloud_run_service.mime_decoder.name}\""
+                    filter = "metric.type=\"run.googleapis.com/container/memory/utilizations\" resource.type=\"cloud_run_revision\" resource.label.service_name=\"${var.mime_decoder_service_name}\""
                     aggregation = {
                       alignmentPeriod    = "60s"
                       perSeriesAligner   = "ALIGN_MEAN"
@@ -357,7 +357,7 @@ resource "google_monitoring_dashboard" "eventarc_dashboard" {
               dataSets = [{
                 timeSeriesQuery = {
                   timeSeriesFilter = {
-                    filter = "metric.type=\"run.googleapis.com/container/instance_count\" resource.type=\"cloud_run_revision\" resource.label.service_name=\"${google_cloud_run_service.mime_decoder.name}\""
+                    filter = "metric.type=\"run.googleapis.com/container/instance_count\" resource.type=\"cloud_run_revision\" resource.label.service_name=\"${var.mime_decoder_service_name}\""
                     aggregation = {
                       alignmentPeriod    = "60s"
                       perSeriesAligner   = "ALIGN_MEAN"
@@ -380,7 +380,6 @@ resource "google_monitoring_dashboard" "eventarc_dashboard" {
   })
 
   depends_on = [
-    google_eventarc_trigger.storage_trigger,
-    google_cloud_run_service.mime_decoder
+    google_eventarc_trigger.storage_trigger[0]
   ]
 }

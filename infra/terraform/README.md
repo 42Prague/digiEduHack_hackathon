@@ -3,11 +3,36 @@
 This folder contains Terraform configuration to provision core GCP infrastructure for the EduScale Engine service, including:
 
 - **Google Artifact Registry**: Docker repository for container images
-- **Google Cloud Run**: Managed container platform for FastAPI applications
 - **Cloud Storage**: Bucket for file uploads with lifecycle management
 - **Eventarc**: Event-driven automation for file processing
-- **MIME Decoder Service**: Cloud Run service for file type detection and routing
-- **Cloud Monitoring**: Alert policies and metrics for event delivery
+- **IAM Permissions**: Service accounts and access policies
+- **Cloud Monitoring**: Dashboard for event delivery metrics
+
+**Note**: Cloud Run services (jedouscale-engine, mime-decoder) are deployed via GitHub Actions, not Terraform. See `.github/workflows/` for deployment workflows.
+
+## Deployment Order
+
+**IMPORTANT**: Follow this two-step process:
+
+### Step 1: Base Infrastructure
+Run Terraform with `enable_eventarc=false` to create base infrastructure:
+```bash
+terraform apply -var="enable_eventarc=false"
+```
+This creates: Artifact Registry, Storage Bucket, Service Accounts, APIs
+
+### Step 2: Deploy Cloud Run Services
+Deploy services via GitHub Actions:
+- Push to master branch or manually trigger workflows
+- `.github/workflows/deploy.yml` - deploys jedouscale-engine
+- `.github/workflows/deploy-mime-decoder.yml` - deploys mime-decoder
+
+### Step 3: Enable Eventarc
+Run Terraform with `enable_eventarc=true` to create IAM and Eventarc:
+```bash
+terraform apply -var="enable_eventarc=true"
+```
+This creates: IAM permissions, Eventarc trigger, Monitoring dashboard
 
 ## Prerequisites
 
