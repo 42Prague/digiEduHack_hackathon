@@ -1,0 +1,78 @@
+        /* Landing page specific styles */
+        .landing-hero {
+            text-align: center;
+            padding: var(--spacing-xl) 0;
+            margin-bottom: var(--spacing-xl);
+        }
+
+        .landing-hero h1 {
+            font-size: 2.5rem;
+            margin-bottom: var(--spacing-md);
+            color: var(--color-text);
+        }
+
+        .landing-hero p {
+            font-size: var(--font-size-lg);
+            color: var(--color-muted);
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        .landing-cards {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: var(--spacing-xl);
+            margin-top: var(--spacing-xl);
+        }
+
+        .landing-card {
+            border: var(--border-width) solid var(--color-border);
+            padding: var(--spacing-xl);
+            text-decoration: none;
+            color: var(--color-text);
+            display: flex;
+            flex-direction: column;
+            transition: all var(--transition-base);
+            background: var(--color-bg);
+        }
+
+        .landing-card:hover {
+            background: var(--color-hover-bg);
+            color: var(--color-hover-text);
+            transform: translateY(-4px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        }
+
+        .landing-card-icon {
+            font-size: 3rem;
+            margin-bottom: var(--spacing-md);
+        }
+
+        .landing-card h2 {
+            font-size: var(--font-size-xl);
+            margin-bottom: var(--spacing-sm);
+            color: inherit;
+        }
+
+        .landing-card p {
+            font-size: var(--font-size-sm);
+            color: inherit;
+            opacity: 0.9;
+            line-height: 1.6;
+        }
+
+        .landing-card-arrow {
+            margin-top: var(--spacing-md);
+            font-size: var(--font-size-lg);
+            opacity: 0.7;
+        }
+
+        @media (max-width: 768px) {
+            .landing-hero h1 {
+                font-size: 2rem;
+            }
+
+            .landing-cards {
+                grid-template-columns: 1fr;
+            }
+        }
