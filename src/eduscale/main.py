@@ -3,6 +3,7 @@
 from fastapi import FastAPI
 
 from eduscale.api.v1 import routes_health
+from eduscale.api.v1.routes_upload import router as upload_router, ui_router
 from eduscale.core.config import settings
 from eduscale.core.logging import setup_logging
 
@@ -24,6 +25,8 @@ def create_app() -> FastAPI:
 
     # Register routers
     app.include_router(routes_health.router, tags=["health"])
+    app.include_router(upload_router)
+    app.include_router(ui_router)
 
     return app
 

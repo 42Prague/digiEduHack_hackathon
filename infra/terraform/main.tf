@@ -13,6 +13,13 @@ resource "google_project_service" "cloud_run" {
   disable_on_destroy = false
 }
 
+resource "google_project_service" "storage" {
+  project = var.project_id
+  service = "storage.googleapis.com"
+
+  disable_on_destroy = false
+}
+
 # Artifact Registry Repository for Docker Images
 resource "google_artifact_registry_repository" "eduscale_repo" {
   location      = var.region
@@ -22,6 +29,37 @@ resource "google_artifact_registry_repository" "eduscale_repo" {
 
   # Ensure API is enabled before creating repository
   depends_on = [google_project_service.artifact_registry]
+}
+
+# GCS Bucket for File Uploads
+resource "google_storage_bucket" "uploads" {
+  name          = "${var.project_id}-eduscale-uploads"
+  location      = var.region
+  force_destroy = false
+
+  uniform_bucket_level_access = true
+
+  lifecycle_rule {
+    condition {
+      age = var.uploads_bucket_lifecycle_days
+    }
+    action {
+      type = "Delete"
+    }
+  }
+
+  versioning {
+    enabled = false
+  }
+
+  depends_on = [google_project_service.storage]
+}
+
+# Grant Cloud Run service account access to bucket
+resource "google_storage_bucket_iam_member" "cloud_run_object_admin" {
+  bucket = google_storage_bucket.uploads.name
+  role   = "roles/storage.objectAdmin"
+  member = "serviceAccount:${google_cloud_run_v2_service.eduscale_engine.template[0].service_account}"
 }
 
 # Cloud Run Service (v2)
@@ -84,6 +122,27 @@ resource "google_cloud_run_v2_service" "eduscale_engine" {
       env {
         name  = "GCP_RUN_SERVICE"
         value = var.service_name
+      }
+
+      # Storage configuration
+      env {
+        name  = "STORAGE_BACKEND"
+        value = "gcs"
+      }
+
+      env {
+        name  = "GCS_BUCKET_NAME"
+        value = google_storage_bucket.uploads.name
+      }
+
+      env {
+        name  = "MAX_UPLOAD_MB"
+        value = "50"
+      }
+
+      env {
+        name  = "ALLOWED_UPLOAD_MIME_TYPES"
+        value = "text/csv,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,application/json,audio/mpeg,audio/wav"
       }
     }
   }

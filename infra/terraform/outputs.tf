@@ -46,3 +46,9 @@ output "github_actions_service_account_key" {
   value       = google_service_account_key.github_actions_key.private_key
   sensitive   = true
 }
+
+# Uploads Bucket Name
+output "uploads_bucket_name" {
+  description = "Name of the GCS bucket for file uploads"
+  value       = google_storage_bucket.uploads.name
+}

@@ -78,3 +78,10 @@ variable "allow_unauthenticated" {
   type        = bool
   default     = true
 }
+
+# Storage Configuration
+variable "uploads_bucket_lifecycle_days" {
+  description = "Number of days before uploaded files are deleted"
+  type        = number
+  default     = 90
+}
