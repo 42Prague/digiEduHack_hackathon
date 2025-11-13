@@ -26,6 +26,8 @@ services:
       - ollama
     ports:
       - "8000:80"
+    volumes:
+      - ./backend/app:/app/src
     restart: unless-stopped
     environment:
       - OLLAMA_HOST=http://ollama:11434
