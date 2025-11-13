@@ -1,0 +1,39 @@
+# Git and OS specific files
+.git
+.DS_Store
+.vscode/
+
+# Node dependencies
+node_modules
+**/node_modules
+
+# Turborepo cache and build outputs
+.turbo
+dist
+**/dist
+.next
+**/.next
+
+# Log files
+pnpm-debug.log*
+
+# Local environment files
+.env
+.env.*
+!.env.example
+
+# Project files
+.github
+.husky
+.idea
+
+# ORM - Prisma
+**/generated
+
+# AWS Infra
+**/infrastructure
+
+# TypeScript cache
+**/tsconfig.tsbuildinfo
+
+**/README.MD

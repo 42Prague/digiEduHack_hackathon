@@ -1,0 +1,39 @@
+{
+  "name": "reg-form",
+  "version": "1.0.0",
+  "type": "module",
+  "description": "",
+  "main": "app.js",
+  "scripts": {
+    "build": "tsc",
+    "start": "node dist/app.js",
+    "dev": "tsx watch src/app.ts",
+    "lint": "eslint . --max-warnings 0",
+    "check-types": "tsc --noEmit",
+    "db:generate": "npx prisma generate",
+    "db:migrate:dev": "npx prisma migrate dev",
+    "db:migrate:prod": "npx prisma migrate deploy",
+    "db:migrate:push": "npx prisma db push",
+    "docker:build": "docker build --target=prod -t lazylab/reg-form:latest -f ./Dockerfile --build-arg APP_NAME=reg-form ../../",
+    "docker:push": "docker buildx build --platform linux/amd64,linux/arm64 --target prod -t aldokezer/lazyform-reg-form:latest --build-arg APP_NAME=reg-form -f ./Dockerfile --push ../../"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "packageManager": "pnpm@10.13.1",
+  "dependencies": {
+    "@prisma/client": "6.14.0",
+    "@repo/env-loader": "workspace:*",
+    "fastify": "^5.4.0",
+    "fastify-plugin": "^5.0.1"
+  },
+  "devDependencies": {
+    "@repo/eslint-config": "workspace:*",
+    "@repo/typescript-config": "workspace:*",
+    "@types/node": "^24.2.1",
+    "eslint": "^9.31.0",
+    "prisma": "^6.14.0",
+    "tsx": "^4.20.3",
+    "typescript": "^5.8.3"
+  }
+}

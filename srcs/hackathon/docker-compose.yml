@@ -1,0 +1,102 @@
+
+#postgresql://USER:PASSWORD@HOST:PORT/DBNAME
+
+services:
+  db:
+    image: postgres
+    restart: always
+    # set shared memory limit when using docker compose
+    shm_size: 128mb
+    volumes:
+      - db_data:/var/lib/postgresql/data
+    ports:
+      - 5432:5432
+    environment:
+      POSTGRES_PASSWORD: dbpass
+    networks:
+      - app-network
+
+  adminer:
+    image: adminer
+    restart: always
+    ports:
+      - 8080:8080
+    networks:
+      - app-network
+#  api:
+#    build:
+#      context: .
+#      dockerfile: ./apps/api/Dockerfile
+#      target: dev
+#      args:
+#        - APP_NAME=api
+##    note: - for starting up and running container
+##    command: tail -f /dev/null
+##    note: - no node reload on code change
+##    command: pnpm --filter api run
+##    note: - for running dev to see live changes
+#    command: pnpm --filter api run dev
+#    ports:
+#      - "3001:3001"
+#    environment:
+#      - NODE_ENV=development
+#    volumes:
+#      - ./apps/api:/app/apps/api
+#      - /app/node_modules
+#      - /app/apps/api/node_modules
+#    networks:
+#      - app-network
+
+  reg-form:
+    build:
+      context: .
+      dockerfile: ./apps/reg-form/Dockerfile
+      target: dev
+      args:
+        - APP_NAME=reg-form
+    #    note: - for starting up and running container
+    #    command: tail -f /dev/null
+    #    note: - no node reload on code change
+    #    command: pnpm --filter api run
+    #    note: - for running dev to see live changes
+    command: pnpm --filter reg-form run dev
+    ports:
+      - "3600:3100"
+    environment:
+      - NODE_ENV=development
+      - PORT=3100
+      - DATABASE_URL=postgresql://postgres:dbpass@lazy-forms-db-1:5432/postgres?schema=public
+    volumes:
+      - ./apps/reg-form:/app/apps/reg-form
+      - /app/node_modules
+      - /app/apps/reg-form/node_modules
+      - /app/apps/reg-form/src/generated
+    networks:
+      - app-network
+
+  reg-form-ui:
+    build:
+      context: .
+      dockerfile: ./apps/reg-form-ui/Dockerfile
+      target: prod
+      args:
+        - APP_NAME=reg-form-ui
+    command: node server.js
+    ports:
+      - "3000:3000"
+    environment:
+      - PORT=3000
+      - DATABASE_URL=""
+      - API_URL="http://reg-form:3200/v1/:path*"
+#    volumes:
+#      - ./apps/reg-form:/app/apps/reg-form
+#      - /app/node_modules
+#      - /app/apps/reg-form/node_modules
+    networks:
+      - app-network
+  # Docker shared network definition
+networks:
+  app-network:
+    driver: bridge
+volumes:
+  db_data:

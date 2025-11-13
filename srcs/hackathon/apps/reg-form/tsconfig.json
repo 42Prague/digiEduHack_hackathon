@@ -1,0 +1,11 @@
+{
+  "extends": "@repo/typescript-config/node-lib.json",
+  "compilerOptions": {
+    "outDir": "dist",
+    "rootDir": "src",
+    "types": ["node"],
+    "verbatimModuleSyntax": true,
+  },
+  "include": ["src"],
+  "exclude": ["node_modules", "dist", "test", "**/*.test.ts"]
+}

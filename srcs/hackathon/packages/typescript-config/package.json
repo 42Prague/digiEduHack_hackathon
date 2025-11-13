@@ -1,0 +1,16 @@
+{
+  "name": "@repo/typescript-config",
+  "private": true,
+  "files": [
+    "base.json",
+    "nextjs.json",
+    "node-lib.json",
+    "react-library.json"
+  ],
+  "exports": {
+    "./base.json": "./base.json",
+    "./nextjs.json": "./nextjs.json",
+    "./node-lib.json": "./node-lib.json",
+    "./react-library.json": "./react-library.json"
+  }
+}
