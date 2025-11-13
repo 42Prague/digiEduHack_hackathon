@@ -1,1 +1,21 @@
-﻿FROM drogonframework/drogon:latest
+﻿FROM ubuntu:22.04
+
+ARG DEBIAN_FRONTEND=noninteractive
+
+RUN apt-get update
+RUN apt-get install -y git gcc g++ cmake
+RUN apt-get install -y libjsoncpp-dev
+RUN apt-get install -y uuid-dev
+RUN apt-get install -y zlib1g-dev
+RUN apt-get install -y openssl libssl-dev
+RUN apt-get install -y postgresql-all
+
+COPY . ./digiedu-backend
+WORKDIR digiedu-backend
+
+RUN mkdir build
+WORKDIR build
+RUN cmake ..
+RUN make
+
+ENTRYPOINT ["src/server"]

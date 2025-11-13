@@ -14,20 +14,24 @@ services:
       POSTGRES_DB: develop
       POSTGRES_USER: testuser
       POSTGRES_PASSWORD: pleaseletmein
-  # seneca-backend:
-  #   container_name: seneca-backend
-  #   build:
-  #     context: .
-  #     dockerfile: Dockerfile-backend
-  #   image: seneca-backend:latest
-  #   ports:
-  #     - "4444:8080"
-  #   networks:
-  #     - seneca_backend_network
-  #   depends_on:
-  #     - seneca-db
-  #   environment:
-  #     SPRING_DATASOURCE_URL: jdbc:postgresql://seneca-db/develop
+  digiedu-backend:
+    container_name: digiedu-backend
+    build:
+      context: .
+      dockerfile: Dockerfile-backend
+    image: digiedu-backend:latest
+    ports:
+      - "4444:8080"
+    networks:
+      - digiedu_backend_network
+    depends_on:
+      - digiedu-db
+    environment:
+      SERVER_HOST: digiedu-db
+      SERVER_DB: develop
+      SERVER_PORT: 5432
+      SERVER_USER: testuser
+      SERVER_PASSWORD: pleaseletmein
 
 networks:
   digiedu_backend_network:

@@ -5,4 +5,6 @@ set(BUILD_POSTGRESQL_CONNECTOR ON)
 # set(BUILD_SQLITE3_CONNECTOR ON)
 # set(BUILD_SQLCIPHER_CONNECTOR ON)
 
-FetchContent_MakeAvailable(sqlpp23)
+# set(USE_SYSTEM_DATE ON)
+
+FetchContent_MakeAvailable(sqlpp11)
