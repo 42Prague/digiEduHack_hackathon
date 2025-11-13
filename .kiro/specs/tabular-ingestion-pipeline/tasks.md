@@ -10,9 +10,19 @@
 - [ ] 2. Create concepts catalog configuration
   - Create config/concepts.yaml with 5 table types (ATTENDANCE, ASSESSMENT, FEEDBACK, INTERVENTION, MIXED)
   - Define anchor phrases for each table type in English and Czech
-  - Define 8 canonical concepts (student_id, region_id, school_name, date, test_score, subject, intervention_type, participants_count)
-  - Include synonyms, descriptions, and expected_type for each concept
-  - _Requirements: 11.1, 11.2, 11.3, 11.4_
+  - Define 40+ canonical concepts organized by category:
+    - Core entity IDs: student_id, teacher_id, parent_id, region_id, subject_id
+    - Entity names: student_name, teacher_name, parent_name, school_name, region_name
+    - Temporal fields: date, from_date, to_date
+    - Assessment fields: test_score, subject, subject_id
+    - Intervention fields: intervention_id, intervention_type, participants_count
+    - Experiment fields: experiment_id, experiment_name, experiment_status
+    - Criteria fields: criteria_id, criteria_name, target_value, baseline_value
+    - Rule fields: rule_id, rule_title, rule_type
+    - Feedback fields: feedback_id, feedback_text, sentiment_score, feedback_category, author_id, author_type
+    - Generic fields: description
+  - Include multilingual synonyms (English and Czech), descriptions, and expected_type for each concept
+  - _Requirements: 11.1, 11.2, 11.3, 11.4, 11.5, 11.6, 11.7, 11.8, 11.9, 11.10, 11.11, 11.12, 11.13_
 
 - [ ] 3. Implement embedding model singleton
   - Create src/eduscale/models/embeddings.py

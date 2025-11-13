@@ -69,7 +69,7 @@ class TransformRequest(BaseModel):
     bucket: str = Field(..., description="GCS bucket name")
     object_name: str = Field(..., description="GCS object path")
     content_type: str = Field(..., description="MIME type")
-    file_category: Literal["text", "image", "audio", "archive", "other"]
+    file_category: Literal["text", "audio", "archive", "other"]
     size: int = Field(..., description="File size in bytes")
 
 class TransformResponse(BaseModel):

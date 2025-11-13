@@ -53,11 +53,11 @@ The MIME Decoder operates as part of the pipeline: Cloud Storage â†’ Eventarc â†
 #### Acceptance Criteria
 
 1. WHEN a file has MIME type text/*, THE MIME Decoder SHALL classify it as "text"
-2. WHEN a file has MIME type image/*, THE MIME Decoder SHALL classify it as "image"
-3. WHEN a file has MIME type audio/*, THE MIME Decoder SHALL classify it as "audio"
-4. WHEN a file has MIME type application/zip or application/x-tar, THE MIME Decoder SHALL classify it as "archive"
-5. WHEN a file has MIME type application/pdf, THE MIME Decoder SHALL classify it as "text"
-6. WHEN a file has MIME type application/vnd.openxmlformats-officedocument.*, THE MIME Decoder SHALL classify it as "text"
+2. WHEN a file has MIME type audio/*, THE MIME Decoder SHALL classify it as "audio"
+3. WHEN a file has MIME type application/zip or application/x-tar, THE MIME Decoder SHALL classify it as "archive"
+4. WHEN a file has MIME type application/pdf, THE MIME Decoder SHALL classify it as "text"
+5. WHEN a file has MIME type application/vnd.openxmlformats-officedocument.*, THE MIME Decoder SHALL classify it as "text"
+6. WHEN a file has MIME type image/*, THE MIME Decoder SHALL classify it as "other"
 7. WHEN a file has an unrecognized MIME type, THE MIME Decoder SHALL classify it as "other"
 8. THE MIME Decoder SHALL log the classification decision with MIME type and category
 

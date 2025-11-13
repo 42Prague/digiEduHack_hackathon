@@ -270,6 +270,7 @@ table_types:
       - "unstructured information"
 
 concepts:
+  # Core Entity Identifiers
   - key: student_id
     description: "Unique student identifier"
     expected_type: string
@@ -280,6 +281,25 @@ concepts:
       - "Student Number"
       - "Pupil ID"
   
+  - key: teacher_id
+    description: "Unique teacher identifier"
+    expected_type: string
+    synonyms:
+      - "Teacher ID"
+      - "TeacherID"
+      - "ID učitele"
+      - "Instructor ID"
+      - "Educator ID"
+  
+  - key: parent_id
+    description: "Unique parent/guardian identifier"
+    expected_type: string
+    synonyms:
+      - "Parent ID"
+      - "ParentID"
+      - "ID rodiče"
+      - "Guardian ID"
+  
   - key: region_id
     description: "Geographic region identifier"
     expected_type: string
@@ -288,6 +308,37 @@ concepts:
       - "Region ID"
       - "Oblast"
       - "District"
+      - "District ID"
+  
+  # Entity Names
+  - key: student_name
+    description: "Student full name"
+    expected_type: string
+    synonyms:
+      - "Student Name"
+      - "Student"
+      - "Jméno žáka"
+      - "Pupil Name"
+      - "Name"
+  
+  - key: teacher_name
+    description: "Teacher full name"
+    expected_type: string
+    synonyms:
+      - "Teacher Name"
+      - "Teacher"
+      - "Jméno učitele"
+      - "Instructor Name"
+      - "Educator"
+  
+  - key: parent_name
+    description: "Parent/guardian full name"
+    expected_type: string
+    synonyms:
+      - "Parent Name"
+      - "Parent"
+      - "Jméno rodiče"
+      - "Guardian Name"
   
   - key: school_name
     description: "Name of the school"
@@ -298,6 +349,16 @@ concepts:
       - "Škola"
       - "Institution"
   
+  - key: region_name
+    description: "Name of the region"
+    expected_type: string
+    synonyms:
+      - "Region Name"
+      - "Region"
+      - "Název oblasti"
+      - "District Name"
+  
+  # Temporal Fields
   - key: date
     description: "Date of the event or record"
     expected_type: date
@@ -306,7 +367,29 @@ concepts:
       - "Datum"
       - "Event Date"
       - "Record Date"
+      - "Timestamp"
   
+  - key: from_date
+    description: "Start date of a period or relationship"
+    expected_type: date
+    synonyms:
+      - "From"
+      - "From Date"
+      - "Start Date"
+      - "Od"
+      - "Začátek"
+  
+  - key: to_date
+    description: "End date of a period or relationship"
+    expected_type: date
+    synonyms:
+      - "To"
+      - "To Date"
+      - "End Date"
+      - "Do"
+      - "Konec"
+  
+  # Assessment Fields
   - key: test_score
     description: "Numeric test or assessment score"
     expected_type: number
@@ -317,6 +400,7 @@ concepts:
       - "Hodnocení"
       - "Známka"
       - "Points"
+      - "Mark"
   
   - key: subject
     description: "Academic subject"
@@ -326,7 +410,18 @@ concepts:
       - "Předmět"
       - "Course"
       - "Class"
+      - "Subject Name"
   
+  - key: subject_id
+    description: "Unique subject identifier"
+    expected_type: string
+    synonyms:
+      - "Subject ID"
+      - "SubjectID"
+      - "ID předmětu"
+      - "Course ID"
+  
+  # Intervention Fields
   - key: intervention_type
     description: "Type of intervention or support"
     expected_type: categorical
@@ -336,6 +431,16 @@ concepts:
       - "Typ intervence"
       - "Support Type"
       - "Program"
+      - "Program Type"
+  
+  - key: intervention_id
+    description: "Unique intervention identifier"
+    expected_type: string
+    synonyms:
+      - "Intervention ID"
+      - "InterventionID"
+      - "ID intervence"
+      - "Program ID"
   
   - key: participants_count
     description: "Number of participants"
@@ -346,6 +451,177 @@ concepts:
       - "Počet účastníků"
       - "Number of Students"
       - "Attendance Count"
+      - "Participant Count"
+  
+  # Experiment Fields
+  - key: experiment_id
+    description: "Unique experiment identifier"
+    expected_type: string
+    synonyms:
+      - "Experiment ID"
+      - "ExperimentID"
+      - "ID experimentu"
+      - "Trial ID"
+  
+  - key: experiment_name
+    description: "Name of the experiment"
+    expected_type: string
+    synonyms:
+      - "Experiment"
+      - "Experiment Name"
+      - "Název experimentu"
+      - "Trial Name"
+  
+  - key: experiment_status
+    description: "Status of the experiment"
+    expected_type: categorical
+    synonyms:
+      - "Status"
+      - "Experiment Status"
+      - "Stav experimentu"
+      - "State"
+  
+  # Criteria Fields
+  - key: criteria_id
+    description: "Unique criteria identifier"
+    expected_type: string
+    synonyms:
+      - "Criteria ID"
+      - "CriteriaID"
+      - "ID kritéria"
+      - "Metric ID"
+  
+  - key: criteria_name
+    description: "Name of the criteria"
+    expected_type: string
+    synonyms:
+      - "Criteria"
+      - "Criteria Name"
+      - "Název kritéria"
+      - "Metric Name"
+      - "KPI"
+  
+  - key: target_value
+    description: "Target value for a criteria"
+    expected_type: number
+    synonyms:
+      - "Target"
+      - "Target Value"
+      - "Cílová hodnota"
+      - "Goal"
+      - "Objective"
+  
+  - key: baseline_value
+    description: "Baseline value for a criteria"
+    expected_type: number
+    synonyms:
+      - "Baseline"
+      - "Baseline Value"
+      - "Výchozí hodnota"
+      - "Starting Value"
+  
+  # Rule Fields
+  - key: rule_id
+    description: "Unique rule identifier"
+    expected_type: string
+    synonyms:
+      - "Rule ID"
+      - "RuleID"
+      - "ID pravidla"
+      - "Policy ID"
+  
+  - key: rule_title
+    description: "Title of the rule"
+    expected_type: string
+    synonyms:
+      - "Rule"
+      - "Rule Title"
+      - "Název pravidla"
+      - "Policy Name"
+      - "Regulation"
+  
+  - key: rule_type
+    description: "Type of rule"
+    expected_type: categorical
+    synonyms:
+      - "Rule Type"
+      - "Type"
+      - "Typ pravidla"
+      - "Policy Type"
+      - "Category"
+  
+  # Feedback Fields
+  - key: feedback_id
+    description: "Unique feedback identifier"
+    expected_type: string
+    synonyms:
+      - "Feedback ID"
+      - "FeedbackID"
+      - "ID zpětné vazby"
+      - "Comment ID"
+  
+  - key: feedback_text
+    description: "Text content of feedback"
+    expected_type: string
+    synonyms:
+      - "Feedback"
+      - "Feedback Text"
+      - "Text zpětné vazby"
+      - "Comment"
+      - "Comments"
+      - "Notes"
+  
+  - key: sentiment_score
+    description: "Sentiment score of feedback"
+    expected_type: number
+    synonyms:
+      - "Sentiment"
+      - "Sentiment Score"
+      - "Skóre sentimentu"
+      - "Rating"
+      - "Mood Score"
+  
+  - key: feedback_category
+    description: "Category of feedback"
+    expected_type: categorical
+    synonyms:
+      - "Category"
+      - "Feedback Category"
+      - "Kategorie zpětné vazby"
+      - "Type"
+      - "Classification"
+  
+  - key: author_id
+    description: "ID of feedback author"
+    expected_type: string
+    synonyms:
+      - "Author ID"
+      - "AuthorID"
+      - "ID autora"
+      - "Submitted By"
+      - "User ID"
+  
+  - key: author_type
+    description: "Type of feedback author (student/teacher/parent)"
+    expected_type: categorical
+    synonyms:
+      - "Author Type"
+      - "Typ autora"
+      - "Role"
+      - "User Type"
+      - "Submitter Type"
+  
+  # Generic Description Field
+  - key: description
+    description: "General description or notes"
+    expected_type: string
+    synonyms:
+      - "Description"
+      - "Popis"
+      - "Notes"
+      - "Details"
+      - "Information"
+      - "Poznámky"
 ```
 
 

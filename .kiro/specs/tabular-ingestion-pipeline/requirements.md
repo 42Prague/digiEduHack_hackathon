@@ -180,7 +180,16 @@ The Tabular service operates as part of a larger pipeline: User → Backend → 
 1. THE Concepts Catalog SHALL define table types: ATTENDANCE, ASSESSMENT, FEEDBACK, INTERVENTION, MIXED
 2. THE Concepts Catalog SHALL include anchor phrases for each table type in English and Czech
 3. THE Concepts Catalog SHALL define canonical concept keys with descriptions, expected data types, and synonyms
-4. THE Concepts Catalog SHALL include concepts: student_id, region_id, school_name, date, test_score, subject, intervention_type, participants_count
+4. THE Concepts Catalog SHALL include core entity concepts: student_id, teacher_id, parent_id, region_id, subject_id
+5. THE Concepts Catalog SHALL include entity name concepts: student_name, teacher_name, parent_name, school_name, region_name
+6. THE Concepts Catalog SHALL include temporal concepts: date, from_date, to_date
+7. THE Concepts Catalog SHALL include assessment concepts: test_score, subject
+8. THE Concepts Catalog SHALL include intervention concepts: intervention_id, intervention_type, participants_count
+9. THE Concepts Catalog SHALL include experiment concepts: experiment_id, experiment_name, experiment_status
+10. THE Concepts Catalog SHALL include criteria concepts: criteria_id, criteria_name, target_value, baseline_value
+11. THE Concepts Catalog SHALL include rule concepts: rule_id, rule_title, rule_type
+12. THE Concepts Catalog SHALL include feedback concepts: feedback_id, feedback_text, sentiment_score, feedback_category, author_id, author_type
+13. THE Concepts Catalog SHALL include generic concepts: description
 5. WHEN the application starts, THE Concepts Loader SHALL load the catalog from CONCEPT_CATALOG_PATH
 6. WHEN the catalog is loaded, THE Concepts Loader SHALL precompute embeddings for table type anchors and concept synonyms
 7. THE Concepts Loader SHALL provide functions to retrieve table type anchors, concepts, and concept embeddings

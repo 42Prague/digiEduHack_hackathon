@@ -33,30 +33,26 @@ Return 200 to Eventarc
 ### Module Structure
 
 ```
-src/eduscale/
-├── mime_decoder/
-│   ├── __init__.py
-│   ├── classifier.py          # MIME type classification logic
-│   ├── metadata.py            # File metadata extraction
-│   └── orchestrator.py        # Main orchestration logic
-├── api/
-│   └── v1/
-│       └── routes_mime.py     # FastAPI endpoints
-└── core/
-    └── config.py              # Configuration (extended)
+src/eduscale/services/mime_decoder/
+├── __init__.py
+├── main.py                    # FastAPI app and endpoints
+├── service.py                 # Main orchestration logic
+├── classifier.py              # MIME type classification logic
+├── models.py                  # Data models (CloudEvent, ProcessingRequest)
+└── clients.py                 # HTTP clients for Transformer and Backend
 ```
 
 
 ## Components and Interfaces
 
-### 1. CloudEvents Handler (routes_mime.py)
+### 1. CloudEvents Handler (main.py)
 
 **Purpose**: Receive and parse CloudEvents from Eventarc
 
 **Interface**:
 ```python
-@router.post("/api/v1/mime/decode")
-async def decode_file(request: Request) -> JSONResponse:
+@app.post("/")
+async def handle_cloud_event(request: Request) -> JSONResponse:
     """Receive CloudEvents from Eventarc and orchestrate processing."""
 ```
 
@@ -85,23 +81,27 @@ async def decode_file(request: Request) -> JSONResponse:
 
 
 
-### 2. Metadata Extractor (metadata.py)
+### 2. Metadata Extraction (models.py)
 
 **Purpose**: Extract file_id and region_id from object path
 
 **Interface**:
 ```python
 @dataclass
-class FileMetadata:
+class ProcessingRequest:
     file_id: str
     region_id: str
     bucket: str
     object_name: str
     content_type: str
-    size: int
+    file_category: str
+    size_bytes: int
+    event_id: str
+    timestamp: datetime
 
-def extract_metadata(event_data: dict) -> FileMetadata:
-    """Extract metadata from CloudEvents data."""
+    @classmethod
+    def from_cloud_event(cls, event: CloudEvent, file_category: str) -> "ProcessingRequest":
+        """Create ProcessingRequest from CloudEvent with region_id extraction."""
 ```
 
 **Path Parsing**:
@@ -129,7 +129,6 @@ MIME_CATEGORIES = {
         "application/json",
         "application/xml"
     ],
-    "image": ["image/*"],
     "audio": ["audio/*", "video/*"],
     "archive": [
         "application/zip",
@@ -137,53 +136,56 @@ MIME_CATEGORIES = {
         "application/gzip",
         "application/x-rar"
     ]
+    # Note: image/* files are classified as "other" since OCR is not implemented
 }
 ```
 
 
 
-### 4. Orchestrator (orchestrator.py)
+### 4. Service Orchestrator (service.py)
 
 **Purpose**: Coordinate the processing flow
 
 **Interface**:
 ```python
-@dataclass
-class ProcessingRequest:
-    file_id: str
-    region_id: str
-    bucket: str
-    object_name: str
-    content_type: str
-    file_category: str
-    size: int
-
-@dataclass
-class ProcessingResult:
-    status: Literal["INGESTED", "FAILED"]
-    message: str
-    processing_time_ms: int
-
-async def process_file(metadata: FileMetadata) -> ProcessingResult:
-    """Orchestrate file processing."""
+async def process_cloud_event(event_data: dict) -> dict:
+    """
+    Process CloudEvent and orchestrate file routing.
+    
+    Flow:
+    1. Parse CloudEvent
+    2. Classify MIME type
+    3. Extract metadata (file_id, region_id)
+    4. Call Transformer service
+    5. Fire-and-forget status update to Backend
+    6. Return result
+    """
 ```
 
-**Flow**:
-1. Classify MIME type
-2. Build ProcessingRequest
-3. Call Transformer service (async with timeout)
-4. Fire-and-forget status update to Backend
-5. Return result
+**Response**:
+```python
+{
+    "status": "success",
+    "event_id": "event-123",
+    "file_id": "abc123",
+    "file_category": "text",
+    "message": "Event processed successfully"
+}
+```
 
 
 
-### 5. Transformer Client
+### 5. Transformer Client (clients.py)
 
 **Purpose**: Call Transformer service
 
 **Interface**:
 ```python
-async def call_transformer(request: ProcessingRequest) -> dict:
+async def call_transformer(
+    transformer_url: str,
+    request: ProcessingRequest,
+    timeout: int = 300
+) -> dict:
     """Call Transformer service to process file."""
 ```
 
@@ -209,13 +211,19 @@ async def call_transformer(request: ProcessingRequest) -> dict:
 }
 ```
 
-### 6. Backend Client
+### 6. Backend Client (clients.py)
 
 **Purpose**: Update Backend with processing status (fire-and-forget)
 
 **Interface**:
 ```python
-async def update_backend_status(file_id: str, status: str, details: dict) -> None:
+async def update_backend_status(
+    backend_url: str,
+    file_id: str,
+    status: str,
+    details: dict,
+    timeout: int = 5
+) -> None:
     """Update Backend with processing status (non-blocking)."""
 ```
 
@@ -329,28 +337,13 @@ spec:
 ### Health Check
 
 ```python
-@router.get("/health")
+@app.get("/health")
 async def health_check():
     """Health check endpoint for Cloud Run."""
-    # Check Transformer connectivity
-    try:
-        async with httpx.AsyncClient() as client:
-            response = await client.get(
-                f"{settings.TRANSFORMER_SERVICE_URL}/health",
-                timeout=5
-            )
-            transformer_healthy = response.status_code == 200
-    except:
-        transformer_healthy = False
-    
-    if transformer_healthy:
-        return {"status": "healthy", "transformer": "ok"}
-    else:
-        return JSONResponse(
-            status_code=503,
-            content={"status": "unhealthy", "transformer": "unavailable"}
-        )
+    return {"status": "healthy", "service": "mime-decoder"}
 ```
+
+Note: Transformer connectivity check is optional and can be added if needed, but keeping it simple avoids cascading health check failures.
 
 
 
@@ -359,13 +352,13 @@ async def health_check():
 ### Unit Tests
 
 1. **test_classifier.py**: Test MIME type classification logic
-2. **test_metadata.py**: Test path parsing and metadata extraction
-3. **test_orchestrator.py**: Test orchestration flow with mocked Transformer
+2. **test_models.py**: Test path parsing and metadata extraction in ProcessingRequest.from_cloud_event()
+3. **test_service.py**: Test service orchestration flow with mocked clients
 
 ### Integration Tests
 
-1. **test_cloudevents.py**: Test CloudEvents parsing
-2. **test_transformer_integration.py**: Test Transformer service calls
+1. **test_cloudevents.py**: Test CloudEvents parsing and end-to-end flow
+2. **test_clients.py**: Test Transformer and Backend client calls with mocked responses
 3. **test_error_handling.py**: Test error scenarios and retries
 
 ### Test Fixtures
