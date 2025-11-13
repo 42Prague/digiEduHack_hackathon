@@ -1,46 +1,46 @@
-<a routerLink="/schools">← Back to Schools</a>
+<a routerLink="/schools">← {{ 'school.back' | translate }}</a>
 <div class="card" style="max-width:640px;margin:20px 0">
-	<h2 style="margin-top:0">Create School</h2>
+	<h2 style="margin-top:0">{{ 'school.create' | translate }}</h2>
 	<div *ngIf="error" style="color:var(--danger)">{{ error }}</div>
 	<div class="grid">
 		<label>
-			<div>Name</div>
-			<input class="input" [(ngModel)]="name" placeholder="School name" />
+			<div>{{ 'common.name' | translate }}</div>
+			<input class="input" [(ngModel)]="name" [placeholder]="'school.namePlaceholder' | translate" />
 		</label>
 		<label>
-			<div>Address</div>
-			<input class="input" [(ngModel)]="address" placeholder="Street, City" />
+			<div>{{ 'common.address' | translate }}</div>
+			<input class="input" [(ngModel)]="address" [placeholder]="'common.streetCity' | translate" />
 		</label>
 		<div class="grid cols-2">
 			<label>
-				<div>Headmaster (optional)</div>
-				<input class="input" [(ngModel)]="headmasterName" placeholder="Full name" />
+				<div>{{ 'school.headmasterOptional' | translate }}</div>
+				<input class="input" [(ngModel)]="headmasterName" [placeholder]="'school.headmasterPlaceholder' | translate" />
 			</label>
 			<label>
-				<div>Contact Email (optional)</div>
-				<input class="input" [(ngModel)]="contactEmail" placeholder="email@example.com" />
+				<div>{{ 'common.contactEmailOptional' | translate }}</div>
+				<input class="input" [(ngModel)]="contactEmail" [placeholder]="'login.emailPlaceholder' | translate" />
 			</label>
 		</div>
 		<div class="grid cols-2">
 			<label>
-				<div>Contact Phone (optional)</div>
+				<div>{{ 'common.contactPhoneOptional' | translate }}</div>
 				<input class="input" [(ngModel)]="contactPhone" placeholder="+1 555 0100" />
 			</label>
 			<label *ngIf="allowRegionSelect">
-				<div>Region</div>
+				<div>{{ 'region.label' | translate }}</div>
 				<select class="input" [(ngModel)]="regionId" [disabled]="isLoadingRegions">
-					<option [ngValue]="undefined" disabled>Select a region</option>
+					<option [ngValue]="undefined" disabled>{{ 'region.select' | translate }}</option>
 					<option *ngFor="let r of regions" [ngValue]="r.id">{{ r.name }}</option>
 				</select>
 			</label>
 			<label *ngIf="!allowRegionSelect">
-				<div>Region</div>
+				<div>{{ 'region.label' | translate }}</div>
 				<input class="input" [value]="regionId" disabled />
-				<div class="note">Assigned automatically from your region context</div>
+				<div class="note">{{ 'region.assignedFromContext' | translate }}</div>
 			</label>
 		</div>
 		<button class="btn" [disabled]="isSaving || !name || !address || !regionId" (click)="create()">
-			{{ isSaving ? 'Creating…' : 'Create School' }}
+			{{ isSaving ? ('common.creating' | translate) : ('school.create' | translate) }}
 		</button>
 	</div>
 </div>

@@ -1,8 +1,8 @@
 <div class="card">
 	<div class="card-header">
 		<div>
-			<div class="card-title">AI BI Agent</div>
-			<div class="card-subtitle">Conversational analysis</div>
+			<div class="card-title">{{ 'ai.title' | translate }}</div>
+			<div class="card-subtitle">{{ 'ai.subtitle' | translate }}</div>
 		</div>
 	</div>
 	<div class="chat-window">
@@ -11,13 +11,13 @@
 		</div>
 		<div *ngIf="isThinking" class="msg">
 			<div class="bubble typing">
-				<img src="/assets/Talking-robot-chatbot.gif" alt="AI is typing" class="typing-gif" />
+				<img src="/assets/Talking-robot-chatbot.gif" [attr.alt]="'ai.typing' | translate" class="typing-gif" />
 			</div>
 		</div>
 	</div>
 	<div class="chat-input">
-		<input class="input" type="text" placeholder="Ask about trends, KPIs, comparisons…" [(ngModel)]="draft" (keyup.enter)="send()" />
-		<button class="btn" (click)="send()">Send</button>
+		<input class="input" type="text" [placeholder]="'ai.placeholder' | translate" [(ngModel)]="draft" (keyup.enter)="send()" />
+		<button class="btn" (click)="send()">{{ 'common.send' | translate }}</button>
 	</div>
 </div>
 

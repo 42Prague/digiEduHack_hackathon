@@ -8,11 +8,12 @@ import { School } from '../../models/school';
 import { Region } from '../../models/region';
 import { AuthService } from '../../core/auth.service';
 import { AccessLevel } from '../../models/access-level';
+import { TranslateModule } from '@ngx-translate/core';
 
 @Component({
 	selector: 'app-school-create',
 	standalone: true,
-	imports: [CommonModule, FormsModule, RouterLink],
+	imports: [CommonModule, FormsModule, RouterLink, TranslateModule],
 	templateUrl: './school-create.component.html',
 	styleUrls: ['./school-create.component.css'],
 	changeDetection: ChangeDetectionStrategy.OnPush

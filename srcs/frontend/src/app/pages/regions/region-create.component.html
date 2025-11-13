@@ -1,28 +1,28 @@
-<a routerLink="/regions">← Back to Regions</a>
+<a routerLink="/regions">← {{ 'region.back' | translate }}</a>
 <div class="card" style="max-width:640px;margin:20px 0">
-	<h2 style="margin-top:0">Create Region</h2>
+	<h2 style="margin-top:0">{{ 'region.create' | translate }}</h2>
 	<div *ngIf="error" style="color:var(--danger)">{{ error }}</div>
 	<div class="grid">
 		<label>
-			<div>Name</div>
-			<input class="input" [(ngModel)]="name" placeholder="Region name" />
+			<div>{{ 'common.name' | translate }}</div>
+			<input class="input" [(ngModel)]="name" [placeholder]="'region.namePlaceholder' | translate" />
 		</label>
 		<label>
-			<div>Address</div>
-			<input class="input" [(ngModel)]="address" placeholder="Street, City" />
+			<div>{{ 'common.address' | translate }}</div>
+			<input class="input" [(ngModel)]="address" [placeholder]="'common.streetCity' | translate" />
 		</label>
 		<div class="grid cols-2">
 			<label>
-				<div>Contact Email (optional)</div>
-				<input class="input" [(ngModel)]="contactEmail" placeholder="email@example.com" />
+				<div>{{ 'common.contactEmailOptional' | translate }}</div>
+				<input class="input" [(ngModel)]="contactEmail" [placeholder]="'login.emailPlaceholder' | translate" />
 			</label>
 			<label>
-				<div>Contact Phone (optional)</div>
+				<div>{{ 'common.contactPhoneOptional' | translate }}</div>
 				<input class="input" [(ngModel)]="contactPhone" placeholder="+1 555 0100" />
 			</label>
 		</div>
 		<button class="btn" [disabled]="isSaving || !name || !address" (click)="create()">
-			{{ isSaving ? 'Creating…' : 'Create Region' }}
+			{{ isSaving ? ('common.creating' | translate) : ('region.create' | translate) }}
 		</button>
 	</div>
 </div>

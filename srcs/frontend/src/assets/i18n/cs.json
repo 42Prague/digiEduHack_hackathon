@@ -1,0 +1,134 @@
+{
+  "app": {
+    "title": "DigiEdu Administrace"
+  },
+  "lang": {
+    "english": "Angličtina",
+    "czech": "Čeština"
+  },
+  "nav": {
+    "regions": "Kraje",
+    "schools": "Školy",
+    "users": "Uživatelé",
+    "globalOverview": "Globální přehled",
+    "regionalOverview": "Krajský přehled",
+    "regionalUpload": "Nahrání pro kraj",
+    "schoolOverview": "Školní přehled",
+    "schoolUpload": "Nahrání pro školu",
+    "login": "Přihlášení",
+    "exitViewAs": "Ukončit režim zobrazení",
+    "logout": "Odhlásit se",
+    "viewingAs": "Zobrazeno jako"
+  },
+  "common": {
+    "send": "Odeslat",
+    "errorTryAgain": "Něco se nepovedlo. Zkuste to prosím znovu.",
+    "searchByNameOrAddress": "Hledat podle názvu nebo adresy",
+    "nameAZ": "Název A–Z",
+    "nameZA": "Název Z–A",
+    "loading": "Načítání…",
+    "viewAs": "Zobrazit jako",
+    "viewAsRegion": "Zobrazit jako kraj",
+    "viewAsSchool": "Zobrazit jako škola",
+    "mode": "Režim",
+    "editing": "Úpravy",
+    "view": "Zobrazení",
+    "basicInfo": "Základní údaje",
+    "contacts": "Kontakty",
+    "name": "Název",
+    "address": "Adresa",
+    "streetCity": "Ulice, Město",
+    "email": "Email",
+    "phone": "Telefon",
+    "saveChanges": "Uložit změny",
+    "saving": "Ukládání…",
+    "cancel": "Zrušit",
+    "edit": "Upravit",
+    "creating": "Vytváření…",
+    "reset": "Resetovat",
+    "success": "Hotovo",
+    "tips": "Tipy:",
+    "redirecting": "Přesměrování…"
+  },
+  "login": {
+    "title": "Přihlášení",
+    "subtitle": "Ukázkové přihlášení. Vyberte demo uživatele nebo zadejte email/heslo.",
+    "demoUsers": "Demo uživatelé",
+    "email": "Email",
+    "emailPlaceholder": "email@priklad.cz",
+    "password": "Heslo",
+    "passwordPlaceholder": "Heslo",
+    "continue": "Pokračovat"
+  },
+  "region": {
+    "label": "Kraj",
+    "id": "ID kraje",
+    "idExample": "např. r-1",
+    "details": "Detaily kraje",
+    "back": "Zpět na kraje",
+    "create": "Vytvořit kraj",
+    "edit": "Upravit kraj",
+    "namePlaceholder": "Název kraje",
+    "none": "Žádné kraje",
+    "select": "Vyberte kraj",
+    "assignedFromContext": "Přiřazeno automaticky podle kontextu kraje"
+  },
+  "school": {
+    "label": "Škola",
+    "id": "ID školy",
+    "idExample": "např. s-1",
+    "details": "Detaily školy",
+    "back": "Zpět na školy",
+    "create": "Vytvořit školu",
+    "namePlaceholder": "Název školy",
+    "headmaster": "Ředitel",
+    "headmasterOptional": "Ředitel (volitelné)",
+    "headmasterPlaceholder": "Celé jméno",
+    "none": "Žádné školy"
+  },
+  "user": {
+    "details": "Detaily uživatele",
+    "back": "Zpět na uživatele",
+    "id": "ID uživatele",
+    "accessLevel": "Úroveň přístupu",
+    "role": "Role",
+    "firstName": "Jméno",
+    "lastName": "Příjmení",
+    "accessAndScope": "Přístup a rozsah"
+  },
+  "access": {
+    "global": "Globální",
+    "region": "Kraj",
+    "school": "Škola"
+  },
+  "ai": {
+    "title": "AI BI Agent",
+    "subtitle": "Konverzační analýza",
+    "placeholder": "Ptejte se na trendy, KPI, porovnání…",
+    "typing": "AI píše",
+    "greeting": "Ahoj! Jsem váš AI BI Agent. Ptejte se na trendy, KPI nebo porovnání."
+  },
+  "charts": {
+    "enrollmentTrend": "Trendy zápisu",
+    "avgTestScores": "Průměrné výsledky testů",
+    "attendanceRate": "Docházka",
+    "area": "Plocha",
+    "bars": "Sloupce",
+    "donut": "Kruh",
+    "last7d": "Posledních 7 dní",
+    "last30d": "Posledních 30 dní",
+    "last12mo": "Posledních 12 měsíců"
+  },
+  "upload": {
+    "csvFile": "CSV soubor",
+    "dragHere": "Přetáhněte CSV sem nebo klikněte pro výběr",
+    "upload": "Nahrát",
+    "blocked": "Nahrávání zablokováno",
+    "tips": "Používejte CSV v UTF-8, přidejte hlavičku a vyhněte se prázdným sloupcům.",
+    "provideIdAndFile": "Zadejte prosím ID a zvolte CSV soubor.",
+    "fileMustBeCsv": "Soubor musí být s příponou .csv",
+    "fileTooLarge": "Velikost souboru musí být menší než 5 MB",
+    "successMessage": "Nahrán dataset {{id}} pro {{scopeId}}"
+  }
+}
+

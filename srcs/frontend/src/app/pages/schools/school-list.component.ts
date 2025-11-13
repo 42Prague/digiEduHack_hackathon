@@ -6,11 +6,12 @@ import { SchoolService } from '../../services/school.service';
 import { School } from '../../models/school';
 import { AuthService } from '../../core/auth.service';
 import { AccessLevel } from '../../models/access-level';
+import { TranslateModule } from '@ngx-translate/core';
 
 @Component({
 	selector: 'app-school-list',
 	standalone: true,
-	imports: [CommonModule, FormsModule, RouterLink],
+	imports: [CommonModule, FormsModule, RouterLink, TranslateModule],
 	templateUrl: './school-list.component.html',
 	styleUrls: ['./school-list.component.css'],
 	changeDetection: ChangeDetectionStrategy.OnPush

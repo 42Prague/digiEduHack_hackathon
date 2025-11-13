@@ -5,11 +5,12 @@ import { ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angula
 import { UserService } from '../../services/user.service';
 import { User } from '../../models/user';
 import { AccessLevel } from '../../models/access-level';
+import { TranslateModule } from '@ngx-translate/core';
 
 @Component({
 	selector: 'app-user-detail',
 	standalone: true,
-	imports: [CommonModule, RouterLink, ReactiveFormsModule],
+	imports: [CommonModule, RouterLink, ReactiveFormsModule, TranslateModule],
 	templateUrl: './user-detail.component.html',
 	styleUrls: ['./user-detail.component.css'],
 	changeDetection: ChangeDetectionStrategy.OnPush
