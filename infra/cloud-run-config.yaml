@@ -34,7 +34,7 @@ spec:
         - name: GCS_BUCKET_NAME
           value: BUCKET_NAME_PLACEHOLDER
         - name: MAX_UPLOAD_MB
-          value: '50'
+          value: '500'
         - name: ALLOWED_UPLOAD_MIME_TYPES
           value: >-
             text/plain,
@@ -56,5 +56,5 @@ spec:
             audio/flac
         resources:
           limits:
-            cpu: '1'
-            memory: 512Mi
+            cpu: '2'
+            memory: 2Gi
