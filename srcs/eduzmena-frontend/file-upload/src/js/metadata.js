@@ -17,6 +17,7 @@ export async function recordUploadMetadata({ fileId, fileName, schoolId }) {
             filename: fileName,
             school_id: schoolId ? Number(schoolId) : null
         }
+        console.log(body)
         const data = await filesApi.create(body)
         return { success: true, data }
     } catch (error) {

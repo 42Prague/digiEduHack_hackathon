@@ -20,8 +20,7 @@ class School(SQLModel, table=True):
 
 
 class FileMeta(SQLModel, table=True):
-    id: Optional[int] = Field(default=None, primary_key=True)
-    tus_id: str
+    tus_id: str = Field(default=None, primary_key=True)
     filename: str
 
     school_id: Optional[int] = Field(default=None, foreign_key="school.id")
