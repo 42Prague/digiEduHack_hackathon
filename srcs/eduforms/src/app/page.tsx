@@ -1,103 +1,152 @@
-import { headers } from "next/headers";
-import Link from "next/link";
-import { redirect } from "next/navigation";
+"use client";
+import { useState } from 'react';
+import { useRouter } from 'next/navigation';
+import {
+  Anchor,
+  Badge,
+  Button,
+  Divider,
+  Paper,
+  PasswordInput,
+  Stack,
+  Text,
+  TextInput,
+  Title,
+  Alert,
+} from '@mantine/core';
+import { IconAlertCircle } from '@tabler/icons-react';
+import classes from './AuthenticationImage.module.css';
+import { authClient } from '~/server/better-auth/client';
 
-import { LatestPost } from "~/app/_components/post";
-import { auth } from "~/server/better-auth";
-import { getSession } from "~/server/better-auth/server";
-import { api, HydrateClient } from "~/trpc/server";
+export default function Home() {
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const router = useRouter();
 
-export default async function Home() {
-  const hello = await api.post.hello({ text: "from tRPC" });
-  const session = await getSession();
+  const handleLogin = async () => {
+    // Reset error state
+    setError(null);
+    
+    // Validation
+    if (!email || !password) {
+      setError('Prosím vyplňte e-mail a heslo.');
+      return;
+    }
 
-  if (session) {
-    void api.post.getLatest.prefetch();
-  }
+    setIsLoading(true);
+
+    try {
+      const { data, error } = await authClient.signIn.email({
+        email,
+        password,
+        callbackURL: "/dashboard",
+        rememberMe: false
+      });
+
+      if (error) {
+        setError('Neplatný e-mail nebo heslo. Zkontrolujte své přihlašovací údaje.');
+        setIsLoading(false);
+        return;
+      }
+
+      // Successfully logged in
+      if (data) {
+        router.push('/dashboard');
+      }
+    } catch (err) {
+      setError('Došlo k chybě při přihlašování. Zkuste to prosím znovu.');
+      setIsLoading(false);
+    }
+  };
+
+  const handleKeyPress = (e: React.KeyboardEvent) => {
+    if (e.key === 'Enter' && !isLoading) {
+      handleLogin();
+    }
+  }; 
 
   return (
-    <HydrateClient>
-      <main className="flex min-h-screen flex-col items-center justify-center bg-gradient-to-b from-[#2e026d] to-[#15162c] text-white">
-        <div className="container flex flex-col items-center justify-center gap-12 px-4 py-16">
-          <h1 className="text-5xl font-extrabold tracking-tight sm:text-[5rem]">
-            Create <span className="text-[hsl(280,100%,70%)]">T3</span> App
-          </h1>
-          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 md:gap-8">
-            <Link
-              className="flex max-w-xs flex-col gap-4 rounded-xl bg-white/10 p-4 hover:bg-white/20"
-              href="https://create.t3.gg/en/usage/first-steps"
-              target="_blank"
-            >
-              <h3 className="text-2xl font-bold">First Steps →</h3>
-              <div className="text-lg">
-                Just the basics - Everything you need to know to set up your
-                database and authentication.
-              </div>
-            </Link>
-            <Link
-              className="flex max-w-xs flex-col gap-4 rounded-xl bg-white/10 p-4 hover:bg-white/20"
-              href="https://create.t3.gg/en/introduction"
-              target="_blank"
-            >
-              <h3 className="text-2xl font-bold">Documentation →</h3>
-              <div className="text-lg">
-                Learn more about Create T3 App, the libraries it uses, and how
-                to deploy it.
-              </div>
-            </Link>
-          </div>
-          <div className="flex flex-col items-center gap-2">
-            <p className="text-2xl text-white">
-              {hello ? hello.greeting : "Loading tRPC query..."}
-            </p>
+    <div className={classes.wrapper}>
+      <Paper className={classes.form} radius="lg">
+        <Stack gap="lg">
+          <Stack gap="xs" align="center">
+            <Badge size="lg" radius="sm" variant="light" color="blue">
+              Přístup pro pedagogy EduForms
+            </Badge>
+            <Title order={2} className={classes.title}>
+              Vítejte zpět, učitelé
+            </Title>
+            <Text ta="center" c="dimmed">
+              Přihlaste se pomocí institucionální e-mailové adresy a hesla, které jste obdrželi v
+              uvítacím e-mailu. Po přihlášení si je můžete upravit přímo v portálu.
+            </Text>
+          </Stack>
 
-            <div className="flex flex-col items-center justify-center gap-4">
-              <p className="text-center text-2xl text-white">
-                {session && <span>Logged in as {session.user?.name}</span>}
-              </p>
-              {!session ? (
-                <form>
-                  <button
-                    className="rounded-full bg-white/10 px-10 py-3 font-semibold no-underline transition hover:bg-white/20"
-                    formAction={async () => {
-                      "use server";
-                      const res = await auth.api.signInSocial({
-                        body: {
-                          provider: "github",
-                          callbackURL: "/",
-                        },
-                      });
-                      if (!res.url) {
-                        throw new Error("No URL returned from signInSocial");
-                      }
-                      redirect(res.url);
-                    }}
-                  >
-                    Sign in with Github
-                  </button>
-                </form>
-              ) : (
-                <form>
-                  <button
-                    className="rounded-full bg-white/10 px-10 py-3 font-semibold no-underline transition hover:bg-white/20"
-                    formAction={async () => {
-                      "use server";
-                      await auth.api.signOut({
-                        headers: await headers(),
-                      });
-                      redirect("/");
-                    }}
-                  >
-                    Sign out
-                  </button>
-                </form>
-              )}
-            </div>
-          </div>
+          {error && (
+            <Alert 
+              icon={<IconAlertCircle size={16} />} 
+              title="Chyba přihlášení" 
+              color="red"
+              radius="md"
+            >
+              {error}
+            </Alert>
+          )}
 
-          {session?.user && <LatestPost />}
-        </div>
-      </main>
-    </HydrateClient>
+          <Stack gap="sm">
+            <TextInput
+              label="Institucionální e-mail"
+              placeholder="jmeno.prijmeni@skola.cz"
+              size="md"
+              radius="md"
+              required
+              value={email}
+              onChange={(e) => setEmail(e.currentTarget.value)}
+              onKeyPress={handleKeyPress}
+              disabled={isLoading}
+              description="Použijte školní e-mail, který vám sdělil váš koordinátor."
+            />
+            <PasswordInput
+              label="Přidělené heslo"
+              placeholder="Zadejte dočasné heslo"
+              size="md"
+              radius="md"
+              required
+              value={password}
+              onChange={(e) => setPassword(e.currentTarget.value)}
+              onKeyPress={handleKeyPress}
+              disabled={isLoading}
+              description="Opíšete přístupový kód z uvítacího e-mailu přesně tak, jak vám přišel."
+            />
+          </Stack>
+
+          <Text size="sm" c="dimmed">
+            Tip: Pokud nemůžete své přihlašovací údaje najít, vyhledejte e-mail s předmětem
+            &quot;EDUZměna Přístupové údaje&quot; nebo požádejte koordinátora o nové zaslání.
+          </Text>
+
+          <Button
+            fullWidth
+            size="md"
+            radius="md"
+            variant="gradient"
+            gradient={{ from: 'blue', to: 'cyan' }}
+            onClick={handleLogin}
+            loading={isLoading}
+          >
+            Bezpečně přihlásit
+          </Button>
+
+          <Divider label="Potřebujete pomoc?" labelPosition="center" />
+
+          <Text size="sm" c="dimmed" ta="center">
+            Stále vám chybí e-mail nebo heslo? Obraťte se na svého koordinátora nebo napište na{' '}
+            <Anchor href="mailto:help@eduforms.org">help@eduforms.org</Anchor> a my vás připojíme.
+          </Text>
+        </Stack>
+      </Paper>
+    </div>
   );
 }
