@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>EduScale File Upload</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 600px;
+            margin: 50px auto;
+            padding: 20px;
+        }
+        h1 {
+            color: #333;
+        }
+        .form-group {
+            margin-bottom: 15px;
+        }
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+        input, select {
+            width: 100%;
+            padding: 8px;
+            box-sizing: border-box;
+        }
+        button {
+            padding: 10px 20px;
+            background: #007bff;
+            color: white;
+            border: none;
+            cursor: pointer;
+            font-size: 16px;
+        }
+        button:hover {
+            background: #0056b3;
+        }
+        button:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+        }
+        #status {
+            margin-top: 20px;
+            padding: 10px;
+            border: 1px solid #ddd;
+            min-height: 100px;
+            background: #f9f9f9;
+        }
+        .success {
+            color: green;
+        }
+        .error {
+            color: red;
+        }
+        .info {
+            color: blue;
+        }
+    </style>
+</head>
+<body>
+    <h1>Upload File</h1>
+    <form id="uploadForm">
+        <div class="form-group">
+            <label for="regionId">Region:</label>
+            <select id="regionId" required>
+                <option value="">-- Select Region --</option>
+                <option value="eu-west">EU West</option>
+                <option value="us-east">US East</option>
+                <option value="asia-pacific">Asia Pacific</option>
+            </select>
+        </div>
+        <div class="form-group">
+            <label for="fileInput">File:</label>
+            <input type="file" id="fileInput" required />
+        </div>
+        <button type="submit" id="submitBtn">Upload</button>
+    </form>
+    <div id="status"></div>
+
+    <script>
+        const form = document.getElementById('uploadForm');
+        const statusDiv = document.getElementById('status');
+        const submitBtn = document.getElementById('submitBtn');
+
+        form.addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            const regionId = document.getElementById('regionId').value;
+            const fileInput = document.getElementById('fileInput');
+            const file = fileInput.files[0];
+
+            if (!file) {
+                statusDiv.innerHTML = '<p class="error">Please select a file</p>';
+                return;
+            }
+
+            if (!regionId) {
+                statusDiv.innerHTML = '<p class="error">Please select a region</p>';
+                return;
+            }
+
+            // Disable submit button
+            submitBtn.disabled = true;
+            statusDiv.innerHTML = '<p class="info">Uploading...</p>';
+
+            try {
+                const formData = new FormData();
+                formData.append('file', file);
+                formData.append('region_id', regionId);
+
+                const response = await fetch('/api/v1/upload', {
+                    method: 'POST',
+                    body: formData
+                });
+
+                const data = await response.json();
+
+                if (response.ok) {
+                    statusDiv.innerHTML = `
+                        <p class="success">Upload complete!</p>
+                        <p><strong>File ID:</strong> ${data.file_id}</p>
+                        <p><strong>File Name:</strong> ${data.file_name}</p>
+                        <p><strong>Storage Backend:</strong> ${data.storage_backend}</p>
+                        <p><strong>Storage Path:</strong> ${data.storage_path}</p>
+                        <p><strong>Region:</strong> ${data.region_id}</p>
+                        <p><strong>Size:</strong> ${data.size_bytes} bytes</p>
+                    `;
+                    form.reset();
+                } else {
+                    statusDiv.innerHTML = `<p class="error">Error: ${data.detail || 'Upload failed'}</p>`;
+                }
+            } catch (error) {
+                statusDiv.innerHTML = `<p class="error">Error: ${error.message}</p>`;
+            } finally {
+                submitBtn.disabled = false;
+            }
+        });
+    </script>
+</body>
+</html>

@@ -53,10 +53,19 @@ jobs:
           docker push ${{ env.REGION }}-docker.pkg.dev/${{ env.PROJECT_ID }}/${{ env.REPOSITORY }}/${{ env.SERVICE_NAME }}:${{ github.sha }}
           docker push ${{ env.REGION }}-docker.pkg.dev/${{ env.PROJECT_ID }}/${{ env.REPOSITORY }}/${{ env.SERVICE_NAME }}:latest
       
+      - name: Prepare Cloud Run configuration
+        run: |
+          sed -i "s|IMAGE_URL_PLACEHOLDER|${{ env.REGION }}-docker.pkg.dev/${{ env.PROJECT_ID }}/${{ env.REPOSITORY }}/${{ env.SERVICE_NAME }}:${{ github.sha }}|g" infra/cloud-run-config.yaml
+          sed -i "s|PROJECT_ID_PLACEHOLDER|${{ env.PROJECT_ID }}|g" infra/cloud-run-config.yaml
+          sed -i "s|BUCKET_NAME_PLACEHOLDER|${{ env.PROJECT_ID }}-eduscale-uploads|g" infra/cloud-run-config.yaml
+      
       - name: Deploy to Cloud Run
         run: |
-          gcloud run deploy ${{ env.SERVICE_NAME }} \
-            --image ${{ env.REGION }}-docker.pkg.dev/${{ env.PROJECT_ID }}/${{ env.REPOSITORY }}/${{ env.SERVICE_NAME }}:${{ github.sha }} \
+          gcloud run services replace infra/cloud-run-config.yaml \
             --region ${{ env.REGION }} \
-            --platform managed \
-            --allow-unauthenticated
+            --platform managed
+          
+          gcloud run services add-iam-policy-binding ${{ env.SERVICE_NAME }} \
+            --region ${{ env.REGION }} \
+            --member="allUsers" \
+            --role="roles/run.invoker"

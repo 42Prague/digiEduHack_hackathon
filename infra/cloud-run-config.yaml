@@ -1,0 +1,43 @@
+apiVersion: serving.knative.dev/v1
+kind: Service
+metadata:
+  name: jedouscale-engine
+spec:
+  template:
+    metadata:
+      annotations:
+        autoscaling.knative.dev/minScale: '0'
+        autoscaling.knative.dev/maxScale: '10'
+    spec:
+      containerConcurrency: 80
+      timeoutSeconds: 300
+      containers:
+      - image: IMAGE_URL_PLACEHOLDER
+        ports:
+        - name: http1
+          containerPort: 8080
+        env:
+        - name: ENV
+          value: prod
+        - name: SERVICE_NAME
+          value: jedouscale-engine
+        - name: SERVICE_VERSION
+          value: '0.1.0'
+        - name: GCP_PROJECT_ID
+          value: PROJECT_ID_PLACEHOLDER
+        - name: GCP_REGION
+          value: europe-west1
+        - name: GCP_RUN_SERVICE
+          value: jedouscale-engine
+        - name: STORAGE_BACKEND
+          value: gcs
+        - name: GCS_BUCKET_NAME
+          value: BUCKET_NAME_PLACEHOLDER
+        - name: MAX_UPLOAD_MB
+          value: '50'
+        - name: ALLOWED_UPLOAD_MIME_TYPES
+          value: text/csv,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,application/json,audio/mpeg,audio/wav
+        resources:
+          limits:
+            cpu: '1'
+            memory: 512Mi
