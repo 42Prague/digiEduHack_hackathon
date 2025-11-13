@@ -6,7 +6,7 @@ import { FormBuilder } from "./_components/FormBuilder";
 export default async function FormBuilderPage({
   params,
 }: {
-  params: { form_id: string };
+  params: Promise<{ form_id: string }>;
 }) {
   const session = await auth.api.getSession({
     headers: await headers(),
@@ -16,6 +16,8 @@ export default async function FormBuilderPage({
     redirect("/");
   }
 
-  return <FormBuilder formId={params.form_id} />;
+  const { form_id } = await params;
+
+  return <FormBuilder formId={form_id} />;
 }
 

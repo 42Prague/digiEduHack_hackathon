@@ -50,6 +50,13 @@
       "when": 1763075100663,
       "tag": "0006_melted_black_crow",
       "breakpoints": true
+    },
+    {
+      "idx": 7,
+      "version": "7",
+      "when": 1763077312038,
+      "tag": "0007_past_bastion",
+      "breakpoints": true
     }
   ]
 }

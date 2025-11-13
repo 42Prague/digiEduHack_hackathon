@@ -230,7 +230,7 @@ export const form_field_data = pgTable("form_field_data", {
   state: formState(), 
 })
 
-export const form_field = pgTable("form_field_data", {
+export const form_field = pgTable("form_field", {
   form_id: uuid().references(()=>form.id).notNull(),
   field_id: uuid().references(()=>field.id).notNull(),
   order: integer()
