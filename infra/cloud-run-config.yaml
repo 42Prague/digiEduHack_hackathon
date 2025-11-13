@@ -54,7 +54,15 @@ spec:
             audio/wav,
             audio/ogg,
             audio/webm,
-            audio/flac
+            audio/flac,
+            application/zip,
+            application/x-zip-compressed,
+            application/x-tar,
+            application/gzip,
+            application/x-gzip,
+            application/x-bzip2,
+            application/x-7z-compressed,
+            application/x-rar-compressed
         resources:
           limits:
             cpu: '2'

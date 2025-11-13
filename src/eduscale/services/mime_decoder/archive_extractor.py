@@ -123,7 +123,7 @@ class ArchiveExtractor:
                     if info.file_size > self.max_file_size_bytes:
                         logger.warning(
                             f"Skipping large file: {info.filename} ({info.file_size} bytes)",
-                            extra={"filename": info.filename, "size": info.file_size}
+                            extra={"file_name": info.filename, "size": info.file_size}
                         )
                         continue
 
@@ -131,7 +131,7 @@ class ArchiveExtractor:
                     if not self._is_safe_path(extract_dir, info.filename):
                         logger.warning(
                             f"Skipping unsafe path: {info.filename}",
-                            extra={"filename": info.filename}
+                            extra={"file_name": info.filename}
                         )
                         continue
 
@@ -178,7 +178,7 @@ class ArchiveExtractor:
                     if member.size > self.max_file_size_bytes:
                         logger.warning(
                             f"Skipping large file: {member.name} ({member.size} bytes)",
-                            extra={"filename": member.name, "size": member.size}
+                            extra={"file_name": member.name, "size": member.size}
                         )
                         continue
 
@@ -186,7 +186,7 @@ class ArchiveExtractor:
                     if not self._is_safe_path(extract_dir, member.name):
                         logger.warning(
                             f"Skipping unsafe path: {member.name}",
-                            extra={"filename": member.name}
+                            extra={"file_name": member.name}
                         )
                         continue
 
