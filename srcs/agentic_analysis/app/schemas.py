@@ -71,3 +71,21 @@ class SessionMessage(BaseModel):
 class SessionHistory(BaseModel):
     session_id: str
     messages: List[SessionMessage] = Field(default_factory=list)
+
+
+class SummaryRequest(BaseModel):
+    text: str = Field(
+        ...,
+        min_length=1,
+        description="Raw text to summarize. Should be shorter than ~1000 tokens.",
+    )
+    language: Optional[str] = Field(
+        default="en",
+        description="Optional hint for the desired summary language (default: English).",
+    )
+
+
+class SummaryResponse(BaseModel):
+    summary: str
+    model: str
+    token_usage: Optional[Dict] = None

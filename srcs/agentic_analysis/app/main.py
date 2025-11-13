@@ -3,10 +3,17 @@ from uuid import uuid4
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 
-from .schemas import AnalysisRequest, AnalysisResponse, SessionHistory
+from .schemas import (
+    AnalysisRequest,
+    AnalysisResponse,
+    SessionHistory,
+    SummaryRequest,
+    SummaryResponse,
+)
 from .agent import run_agent
 from .settings import settings
 from . import session_store
+from .azure_client import client
 
 app = FastAPI(
     title="EduScale LLM Analysis Service",
@@ -65,3 +72,59 @@ def get_session(session_id: str) -> SessionHistory:
         raise HTTPException(status_code=404, detail="Session not found")
     session = sessions[session_id]
     return SessionHistory(session_id=session_id, messages=session.get("messages", []))
+
+
+@app.post("/summarize", response_model=SummaryResponse)
+def summarize(request: SummaryRequest) -> SummaryResponse:
+    text = request.text.strip()
+    if not text:
+        raise HTTPException(status_code=400, detail="Text must not be empty.")
+    if len(text) > 8000:
+        raise HTTPException(status_code=400, detail="Text is too long to summarize in one call.")
+
+    language = request.language or "en"
+
+    response = client.responses.create(
+        model=settings.azure_openai_model,
+        instructions=(
+            "You are a helpful assistant that writes a single concise paragraph summarizing the provided text. "
+            "The output must be under 20 words, and be in the requested language."
+        ),
+        input=[
+            {
+                "role": "user",
+                "content": [
+                    {
+                        "type": "input_text",
+                        "text": f"Target language: {language}\n\nSource text:\n{text}",
+                    }
+                ],
+            }
+        ],
+    )
+
+    summary = getattr(response, "output_text", None)
+    if not summary:
+        pieces = []
+        for output in getattr(response, "output", []) or []:
+            if getattr(output, "type", None) == "message":
+                for item in getattr(output, "content", []) or []:
+                    text_piece = getattr(item, "text", None)
+                    if text_piece:
+                        pieces.append(text_piece)
+        summary = "\n".join(pieces)
+
+    summary = summary.strip()
+    if not summary:
+        raise HTTPException(status_code=502, detail="Model did not return a summary.")
+
+    usage = getattr(response, "usage", None)
+    token_usage = None
+    if usage is not None:
+        token_usage = {
+            "input_tokens": getattr(usage, "input_tokens", 0) or 0,
+            "output_tokens": getattr(usage, "output_tokens", 0) or 0,
+            "total_tokens": getattr(usage, "total_tokens", 0) or 0,
+        }
+
+    return SummaryResponse(summary=summary, model=settings.azure_openai_model, token_usage=token_usage)
