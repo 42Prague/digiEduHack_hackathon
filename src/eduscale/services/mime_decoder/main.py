@@ -6,6 +6,7 @@ FastAPI application that receives CloudEvents from Eventarc.
 
 import logging
 import os
+import sys
 from typing import Dict, Any
 
 from fastapi import FastAPI, Request, HTTPException, status
@@ -13,11 +14,26 @@ from fastapi.responses import JSONResponse
 
 from eduscale.services.mime_decoder.service import process_cloud_event
 
-# Configure logging
-logging.basicConfig(
-    level=logging.INFO,
-    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
-)
+# Configure JSON logging for Cloud Run
+# Import CloudLoggingFormatter from core.logging
+from eduscale.core.logging import CloudLoggingFormatter
+
+# Setup logging with JSON formatter
+log_level = logging.INFO
+env = os.getenv("ENVIRONMENT", "cloud")
+
+handler = logging.StreamHandler(sys.stdout)
+if env == "local":
+    formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+else:
+    formatter = CloudLoggingFormatter()
+handler.setFormatter(formatter)
+
+root_logger = logging.getLogger()
+root_logger.setLevel(log_level)
+root_logger.handlers.clear()
+root_logger.addHandler(handler)
+
 logger = logging.getLogger(__name__)
 
 # Create FastAPI app
@@ -72,7 +88,14 @@ async def handle_cloud_event(request: Request):
     except ValueError as e:
         # Client error - invalid event data (4xx)
         # Eventarc will NOT retry 4xx errors
-        logger.warning(f"Invalid CloudEvent data: {e}")
+        logger.warning(
+            "Invalid CloudEvent data",
+            extra={
+                "error": str(e),
+                "error_type": "validation_error",
+            },
+            exc_info=True,
+        )
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail=f"Invalid CloudEvent data: {str(e)}",
@@ -81,7 +104,14 @@ async def handle_cloud_event(request: Request):
     except Exception as e:
         # Server error - unexpected processing error (5xx)
         # Eventarc WILL retry 5xx errors with exponential backoff
-        logger.error(f"Failed to process CloudEvent: {e}", exc_info=True)
+        logger.error(
+            "Failed to process CloudEvent",
+            extra={
+                "error": str(e),
+                "error_type": type(e).__name__,
+            },
+            exc_info=True,
+        )
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"Failed to process event: {str(e)}",
