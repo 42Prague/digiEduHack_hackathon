@@ -27,6 +27,14 @@ resource "google_project_service" "eventarc" {
   disable_on_destroy = false
 }
 
+# Enable IAM Service Account Credentials API (for IAM signBlob via iamcredentials.googleapis.com)
+resource "google_project_service" "iam_credentials" {
+  project = var.project_id
+  service = "iamcredentials.googleapis.com"
+
+  disable_on_destroy = false
+}
+
 # Artifact Registry Repository for Docker Images
 resource "google_artifact_registry_repository" "jedouscale_repo" {
   location      = var.region
@@ -45,6 +53,15 @@ resource "google_storage_bucket" "uploads" {
   force_destroy = false
 
   uniform_bucket_level_access = true
+
+  # Allow browser-based uploads via signed URLs from the Cloud Run frontend.
+  # This CORS config must match the origin and headers used in upload.html.
+  cors {
+    origin          = ["https://${var.service_name}-${data.google_project.project.number}.${var.region}.run.app"]
+    method          = ["GET", "PUT", "HEAD", "OPTIONS"]
+    response_header = ["Content-Type"]
+    max_age_seconds = 3600
+  }
 
   lifecycle_rule {
     condition {

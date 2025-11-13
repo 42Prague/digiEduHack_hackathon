@@ -72,6 +72,7 @@ async def upload_file(
                 file_name=file.filename or "unnamed",
                 content_type=file.content_type or "application/octet-stream",
                 file_data=file.file,
+                region_id=region_id.strip(),
             )
         except Exception as e:
             logger.error(f"Failed to store file: {e}", exc_info=True)
@@ -151,7 +152,7 @@ async def create_upload_session(
         if request.file_size_bytes <= settings.direct_upload_threshold_bytes:
             # Return direct upload method
             backend = get_storage_backend()
-            target_path = backend.get_target_path(file_id, request.file_name)
+            target_path = backend.get_target_path(file_id, request.file_name, request.region_id.strip())
             return CreateSessionResponse(
                 file_id=file_id,
                 upload_method="direct",
@@ -172,6 +173,7 @@ async def create_upload_session(
                 file_name=request.file_name,
                 content_type=request.content_type,
                 size_bytes=request.file_size_bytes,
+                region_id=request.region_id.strip(),
                 expiration_minutes=15,
             )
         except Exception as e:
@@ -234,7 +236,7 @@ async def complete_upload(
 
         # Verify file exists in GCS
         try:
-            file_exists = gcs_backend.check_file_exists(record.file_id, record.file_name)
+            file_exists = gcs_backend.check_file_exists(record.file_id, record.file_name, record.region_id)
         except Exception as e:
             logger.error(f"Failed to check file existence: {e}", exc_info=True)
             raise HTTPException(status_code=500, detail="Failed to verify file")

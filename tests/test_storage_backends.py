@@ -41,12 +41,14 @@ class TestLocalStorageBackend:
         backend = LocalStorageBackend()
         file_id = "test-uuid-123"
         file_name = "report.csv"
+        region_id = "region-test-01"
 
-        path = backend.get_target_path(file_id, file_name)
+        path = backend.get_target_path(file_id, file_name, region_id)
 
         assert file_id in path
-        assert "report.csv" in path
-        assert "data/uploads/raw" in path
+        assert region_id in path
+        assert ".csv" in path
+        assert "data/uploads" in path
 
     @pytest.mark.asyncio
     async def test_store_file(self):
@@ -57,11 +59,12 @@ class TestLocalStorageBackend:
 
             file_id = "test-uuid-456"
             file_name = "test.csv"
+            region_id = "region-test-02"
             content = b"name,age\nJohn,30"
             file_data = io.BytesIO(content)
 
             storage_path = await backend.store_file(
-                file_id, file_name, "text/csv", file_data
+                file_id, file_name, "text/csv", file_data, region_id
             )
 
             # Verify file was created
@@ -102,13 +105,15 @@ class TestGCSStorageBackend:
             backend = GCSStorageBackend()
             file_id = "test-uuid-789"
             file_name = "report.csv"
+            region_id = "region-test-03"
 
-            path = backend.get_target_path(file_id, file_name)
+            path = backend.get_target_path(file_id, file_name, region_id)
 
             assert "gs://test-bucket" in path
             assert file_id in path
-            assert "report.csv" in path
-            assert "raw/" in path
+            assert region_id in path
+            assert ".csv" in path
+            assert "uploads/" in path
 
     @pytest.mark.asyncio
     async def test_store_file(self):
@@ -130,11 +135,12 @@ class TestGCSStorageBackend:
                 backend = GCSStorageBackend()
                 file_id = "test-uuid-999"
                 file_name = "test.csv"
+                region_id = "region-test-04"
                 content = b"name,age\nJohn,30"
                 file_data = io.BytesIO(content)
 
                 storage_path = await backend.store_file(
-                    file_id, file_name, "text/csv", file_data
+                    file_id, file_name, "text/csv", file_data, region_id
                 )
 
                 # Verify blob upload was called

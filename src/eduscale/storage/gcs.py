@@ -29,10 +29,11 @@ class GCSStorageBackend(StorageBackend):
 
         return self._bucket
 
-    def get_target_path(self, file_id: str, file_name: str) -> str:
-        """Generate GCS target path."""
+    def get_target_path(self, file_id: str, file_name: str, region_id: str) -> str:
+        """Generate GCS target path with region_id in path structure."""
         safe_name = self._sanitize_filename(file_name)
-        blob_path = f"raw/{file_id}/{safe_name}"
+        # Use uploads/{region_id}/{file_id}.{ext} pattern for MIME Decoder compatibility
+        blob_path = f"uploads/{region_id}/{file_id}.{safe_name.split('.')[-1] if '.' in safe_name else 'bin'}"
         return f"gs://{settings.GCS_BUCKET_NAME}/{blob_path}"
 
     def generate_signed_upload_url(
@@ -41,6 +42,7 @@ class GCSStorageBackend(StorageBackend):
         file_name: str,
         content_type: str,
         size_bytes: int,
+        region_id: str,
         expiration_minutes: int = 15,
     ) -> tuple[str, str]:
         """Generate V4 signed URL for direct upload using IAM signBlob API.
@@ -55,7 +57,9 @@ class GCSStorageBackend(StorageBackend):
         bucket = self._get_bucket()
 
         safe_name = self._sanitize_filename(file_name)
-        blob_path = f"raw/{file_id}/{safe_name}"
+        # Use uploads/{region_id}/{file_id}.{ext} pattern for MIME Decoder compatibility
+        extension = safe_name.split('.')[-1] if '.' in safe_name else 'bin'
+        blob_path = f"uploads/{region_id}/{file_id}.{extension}"
         blob = bucket.blob(blob_path)
 
         # Use compute engine credentials (works in Cloud Run / GCE / GKE)
@@ -101,22 +105,25 @@ class GCSStorageBackend(StorageBackend):
 
         return signed_url, blob_path
 
-    def check_file_exists(self, file_id: str, file_name: str) -> bool:
+    def check_file_exists(self, file_id: str, file_name: str, region_id: str) -> bool:
         """Check if file exists in GCS."""
         bucket = self._get_bucket()
         safe_name = self._sanitize_filename(file_name)
-        blob_path = f"raw/{file_id}/{safe_name}"
+        extension = safe_name.split('.')[-1] if '.' in safe_name else 'bin'
+        blob_path = f"uploads/{region_id}/{file_id}.{extension}"
         blob = bucket.blob(blob_path)
         return blob.exists()
 
     async def store_file(
-        self, file_id: str, file_name: str, content_type: str, file_data: BinaryIO
+        self, file_id: str, file_name: str, content_type: str, file_data: BinaryIO, region_id: str
     ) -> str:
-        """Upload file to GCS."""
+        """Upload file to GCS with region_id in path structure."""
         bucket = self._get_bucket()
 
         safe_name = self._sanitize_filename(file_name)
-        blob_path = f"raw/{file_id}/{safe_name}"
+        # Use uploads/{region_id}/{file_id}.{ext} pattern for MIME Decoder compatibility
+        extension = safe_name.split('.')[-1] if '.' in safe_name else 'bin'
+        blob_path = f"uploads/{region_id}/{file_id}.{extension}"
         blob = bucket.blob(blob_path)
 
         # Stream upload in chunks
