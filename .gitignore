@@ -1,2 +1,10 @@
 *.env
 .DS_Store
+
+data/**
+data
+
+
+.gitignore
+
+.idea
