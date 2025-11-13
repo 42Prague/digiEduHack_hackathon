@@ -162,10 +162,11 @@ async def create_upload_session(
         if settings.STORAGE_BACKEND != "gcs":
             raise HTTPException(
                 status_code=400,
-                detail="Large file uploads only supported with GCS backend",
+                detail=f"Large file uploads (>{settings.DIRECT_UPLOAD_SIZE_THRESHOLD_MB}MB) require GCS backend. Current backend: {settings.STORAGE_BACKEND}",
             )
 
         try:
+            logger.info(f"Attempting to generate signed URL for file_id={file_id}, bucket={settings.GCS_BUCKET_NAME}")
             signed_url, blob_path = gcs_backend.generate_signed_upload_url(
                 file_id=file_id,
                 file_name=request.file_name,
@@ -175,7 +176,7 @@ async def create_upload_session(
             )
         except Exception as e:
             logger.error(f"Failed to generate signed URL: {e}", exc_info=True)
-            raise HTTPException(status_code=500, detail="Failed to generate signed URL")
+            raise HTTPException(status_code=500, detail=f"Failed to generate signed URL: {str(e)}")
 
         # Create pending upload record
         created_at = datetime.utcnow()
