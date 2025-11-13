@@ -1,6 +1,8 @@
 import { ChangeDetectionStrategy, Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { HttpClientModule } from '@angular/common/http';
+import { AgentService, AnalysisResponse } from '../../services/agent.service';
 
 interface ChatMessage {
 	role: 'user' | 'assistant';
@@ -11,7 +13,7 @@ interface ChatMessage {
 @Component({
 	selector: 'app-ai-chat',
 	standalone: true,
-	imports: [CommonModule, FormsModule],
+	imports: [CommonModule, FormsModule, HttpClientModule],
 	templateUrl: './ai-chat.component.html',
 	styleUrls: ['./ai-chat.component.css'],
 	changeDetection: ChangeDetectionStrategy.OnPush
@@ -25,6 +27,12 @@ export class AiChatComponent {
 	public isThinking: boolean = false;
 	// #endregion
 
+	// #region Private Properties
+	private sessionId: string | null = null;
+	// #endregion
+
+	constructor(private readonly agent: AgentService) {}
+
 	// #region Public Methods
 	public send(): void {
 		const text = this.draft.trim();
@@ -32,28 +40,26 @@ export class AiChatComponent {
 		this.messages = [...this.messages, { role: 'user', text, timestamp: new Date() }];
 		this.draft = '';
 		this.isThinking = true;
-		setTimeout(() => {
-			const reply = this.generateReply(text);
-			this.messages = [...this.messages, { role: 'assistant', text: reply, timestamp: new Date() }];
-			this.isThinking = false;
-		}, 600);
+		this.agent.analyze({
+			query: text,
+			language: 'en',
+			session_id: this.sessionId
+		}).subscribe({
+			next: (res: AnalysisResponse) => {
+				this.sessionId = res.session_id;
+				this.messages = [...this.messages, { role: 'assistant', text: res.answer, timestamp: new Date() }];
+				this.isThinking = false;
+			},
+			error: () => {
+				this.messages = [...this.messages, { role: 'assistant', text: 'Sorry, something went wrong. Please try again.', timestamp: new Date() }];
+				this.isThinking = false;
+			}
+		});
 	}
 	// #endregion
 
 	// #region Private Methods
-	private generateReply(prompt: string): string {
-		const lower = prompt.toLowerCase();
-		if (lower.includes('trend') || lower.includes('increase') || lower.includes('decrease')) {
-			return 'Over the selected period, enrollment shows a modest upward trend with occasional volatility. Attendance remains stable.';
-		}
-		if (lower.includes('kpi') || lower.includes('score') || lower.includes('attendance')) {
-			return 'Key KPIs: Attendance ~92%, Avg Test Score ~78, Graduation Rate ~84%. These are mock values for demo purposes.';
-		}
-		if (lower.includes('compare') || lower.includes('vs')) {
-			return 'Comparison indicates Region A outperforms Region B by ~6 pts in test scores, with similar attendance.';
-		}
-		return 'Here is a brief insight: indicators remain within normal ranges. Try asking: "Show enrollment trend last 12 months" or "Compare regions by test scores".';
-	}
+	// (no private methods currently)
 	// #endregion
 }
 

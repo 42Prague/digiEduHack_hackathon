@@ -2,7 +2,7 @@ services:
   digiedu-db:
     container_name: digiedu-db
     build:
-      context: ./server
+      context: ../server
       dockerfile: Dockerfile-postgres
     image: digiedu-postgres:latest
     command: ["postgres", "-c", "log_statement=all"]
@@ -17,7 +17,7 @@ services:
   digiedu-backend:
     container_name: digiedu-backend
     build:
-      context: ./server
+      context: ../server
       dockerfile: Dockerfile-backend
     image: digiedu-backend:latest
     ports:
@@ -35,21 +35,19 @@ services:
   digiedu-agent:
     container_name: digiedu-agent
     build:
-      context: /Users/egorulanov/Work/Custom/EduHackaton-11-2025/digiEduHack_hackathon/srcs/agentic_analysis
+      context: ../agentic_analysis
       dockerfile: Dockerfile
     image: digiedu-agent:latest
+    env_file:
+      - ../agentic_analysis/.env
     ports:
       - "8001:8000"
     networks:
       - digiedu_backend_network
-    environment:
-      AZURE_OPENAI_API_KEY: "${AZURE_OPENAI_API_KEY:-changeme}"
-      AZURE_OPENAI_ENDPOINT: "${AZURE_OPENAI_ENDPOINT:-https://example.openai.azure.com/}"
-      AZURE_OPENAI_MODEL: "${AZURE_OPENAI_MODEL:-gpt-4.1-mini}"
   digiedu-frontend:
     container_name: digiedu-frontend
     build:
-      context: /Users/egorulanov/Work/Custom/EduHackaton-11-2025/digiEduHack_hackathon/srcs/frontend
+      context: ../frontend
       dockerfile: Dockerfile
     image: digiedu-frontend:latest
     ports:
@@ -62,7 +60,7 @@ services:
   digiedu-proxy:
     container_name: digiedu-proxy
     build:
-      context: /Users/egorulanov/Work/Custom/EduHackaton-11-2025/digiEduHack_hackathon/srcs/reverseproxy
+      context: ../reverseproxy
       dockerfile: Dockerfile
     image: digiedu-proxy:latest
     ports:
