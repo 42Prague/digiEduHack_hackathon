@@ -29,6 +29,10 @@ class AnalysisRequest(BaseModel):
         le=20,
         description="Optional override for maximum reasoning steps (default from server settings).",
     )
+    session_id: Optional[str] = Field(
+        default=None,
+        description="Existing session identifier to continue an analysis conversation.",
+    )
 
 
 class PlotSpec(BaseModel):
@@ -53,3 +57,17 @@ class AnalysisResponse(BaseModel):
     plot: Optional[PlotSpec] = None
     model: str
     token_usage: Optional[Dict] = None
+    session_id: str
+
+
+class SessionMessage(BaseModel):
+    role: Literal["user", "assistant", "tool", "system", "internal"] = "user"
+    content: str
+    type: Optional[str] = None
+    tool_name: Optional[str] = None
+    timestamp: Optional[str] = None
+
+
+class SessionHistory(BaseModel):
+    session_id: str
+    messages: List[SessionMessage] = Field(default_factory=list)
