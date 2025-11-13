@@ -2,13 +2,13 @@
 MIME type classifier for file categorization.
 
 Classifies files into categories based on their MIME type:
-- text: Plain text, markdown, HTML, PDF, Word documents, PowerPoint
-- csv: Plain text tabular data (CSV, TSV)
+- text: Plain text, markdown, HTML, JSON, CSV, TSV
+- pdf: PDF documents
+- docx: Word documents, PowerPoint presentations (Office formats)
 - excel: Binary spreadsheet formats (Excel .xls/.xlsx, ODS)
-- image: Images (JPEG, PNG, GIF, etc.)
 - audio: Audio files and voice recordings
 - archive: ZIP, TAR, GZIP archives
-- other: Unknown or unsupported file types
+- other: Unknown or unsupported file types (including images)
 """
 
 from enum import Enum
@@ -19,9 +19,9 @@ class FileCategory(str, Enum):
     """File categories for processing routing."""
 
     TEXT = "text"
-    CSV = "csv"
+    PDF = "pdf"
+    DOCX = "docx"
     EXCEL = "excel"
-    IMAGE = "image"
     AUDIO = "audio"
     ARCHIVE = "archive"
     OTHER = "other"
@@ -34,31 +34,26 @@ MIME_CATEGORY_MAP: Dict[str, FileCategory] = {
     "text/markdown": FileCategory.TEXT,
     "text/html": FileCategory.TEXT,
     "application/json": FileCategory.TEXT,  # .json
-    "application/pdf": FileCategory.TEXT,
     "application/rtf": FileCategory.TEXT,
-    # Microsoft Office formats
-    "application/msword": FileCategory.TEXT,  # .doc
-    "application/vnd.openxmlformats-officedocument.wordprocessingml.document": FileCategory.TEXT,  # .docx
-    "application/vnd.ms-powerpoint": FileCategory.TEXT,  # .ppt
-    "application/vnd.openxmlformats-officedocument.presentationml.presentation": FileCategory.TEXT,  # .pptx
+    "application/octet-stream": FileCategory.TEXT,  # Generic binary (often used for .md files)
+    # PDF formats (separate category)
+    "application/pdf": FileCategory.PDF,
+    # Microsoft Office Word/PowerPoint formats (separate category)
+    "application/msword": FileCategory.DOCX,  # .doc
+    "application/vnd.openxmlformats-officedocument.wordprocessingml.document": FileCategory.DOCX,  # .docx
+    "application/vnd.ms-powerpoint": FileCategory.DOCX,  # .ppt
+    "application/vnd.openxmlformats-officedocument.presentationml.presentation": FileCategory.DOCX,  # .pptx
     # OpenDocument formats
-    "application/vnd.oasis.opendocument.text": FileCategory.TEXT,  # .odt
-    "application/vnd.oasis.opendocument.presentation": FileCategory.TEXT,  # .odp
+    "application/vnd.oasis.opendocument.text": FileCategory.DOCX,  # .odt
+    "application/vnd.oasis.opendocument.presentation": FileCategory.DOCX,  # .odp
     # CSV/TSV formats (plain text tabular data)
-    "text/csv": FileCategory.CSV,  # .csv
-    "text/tab-separated-values": FileCategory.CSV,  # .tsv
+    "text/csv": FileCategory.TEXT,  # .csv
+    "text/tab-separated-values": FileCategory.TEXT,  # .tsv
     # Excel/Spreadsheet formats (binary/complex formats)
     "application/vnd.ms-excel": FileCategory.EXCEL,  # .xls
     "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet": FileCategory.EXCEL,  # .xlsx
     "application/vnd.oasis.opendocument.spreadsheet": FileCategory.EXCEL,  # .ods
-    # Image formats
-    "image/jpeg": FileCategory.IMAGE,
-    "image/png": FileCategory.IMAGE,
-    "image/gif": FileCategory.IMAGE,
-    "image/bmp": FileCategory.IMAGE,
-    "image/webp": FileCategory.IMAGE,
-    "image/svg+xml": FileCategory.IMAGE,
-    "image/tiff": FileCategory.IMAGE,
+
     # Audio formats
     "audio/mpeg": FileCategory.AUDIO,  # .mp3
     "audio/wav": FileCategory.AUDIO,
@@ -66,8 +61,9 @@ MIME_CATEGORY_MAP: Dict[str, FileCategory] = {
     "audio/webm": FileCategory.AUDIO,
     "audio/flac": FileCategory.AUDIO,
     "audio/aac": FileCategory.AUDIO,
-    "audio/x-m4a": FileCategory.AUDIO,
-    "audio/mp4": FileCategory.AUDIO,
+    "audio/x-m4a": FileCategory.AUDIO,  # .m4a
+    "audio/mp4": FileCategory.AUDIO,  # .m4a alternative
+    "audio/m4a": FileCategory.AUDIO,  # .m4a alternative
     # Archive formats
     "application/zip": FileCategory.ARCHIVE,
     "application/x-zip-compressed": FileCategory.ARCHIVE,
@@ -82,7 +78,6 @@ MIME_CATEGORY_MAP: Dict[str, FileCategory] = {
 # Prefix-based classification for partial matches
 MIME_PREFIX_MAP: Dict[str, FileCategory] = {
     "text/": FileCategory.TEXT,
-    "image/": FileCategory.IMAGE,
     "audio/": FileCategory.AUDIO,
 }
 
@@ -99,15 +94,15 @@ def classify_mime_type(mime_type: str) -> FileCategory:
 
     Examples:
         >>> classify_mime_type("application/pdf")
-        FileCategory.TEXT
+        FileCategory.PDF
         >>> classify_mime_type("image/png")
-        FileCategory.IMAGE
+        FileCategory.OTHER
         >>> classify_mime_type("audio/mp3")
         FileCategory.AUDIO
         >>> classify_mime_type("application/zip")
         FileCategory.ARCHIVE
         >>> classify_mime_type("application/octet-stream")
-        FileCategory.OTHER
+        FileCategory.TEXT
     """
     # Normalize MIME type (lowercase, remove parameters)
     normalized_mime = mime_type.lower().split(";")[0].strip()
