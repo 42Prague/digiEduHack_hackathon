@@ -1,0 +1,155 @@
+// lib/data.ts
+
+export const mockJobData = {
+  _id: "e3e35990-4966-4a8a-aad4-e1048d2eefd7",
+  originalAdData: {
+    _id: "e3e35990-4966-4a8a-aad4-e1048d2eefd7",
+    jobTitle: "PHP Laravel Developer",
+    companyName: "Orka Group Services a.s.",
+    adUrl:
+      "https://www.jobs.cz/rpd/2000779433/?searchId=911cb0b3-de76-4a8a-8170-725f2934a50c&rps=233",
+    source: "jobscz",
+    sourceId: "2000779433",
+    date: null,
+    adValidity: null,
+    searchVector: null,
+    salaryMin: null,
+    salaryMax: null,
+    jobDescription:
+      "Pracovní nabídka PHP/ Laravel Developer - Fintech projekty Přidej se k našemu malému fintech týmu, který vyvíjí a provozuje vlastní projekty v České republice, na Islandu a ve Španělsku. Hledáme talentovaného vývojáře, který nám pomůže s rychle rostoucími projekty v oblasti financí a stane se důležitou součástí našeho týmu. Koho hledáme? Do našeho 8členného týmu hledáme PHP/Laravel vývojáře, který: nám pomůže s rychle rostoucím projektem, se nezalekne finančního světa, má chuť dlouhodobě růst společně s námi. Co tě čeká? Vývoj produktů na frameworku Laravel – od konceptu po nasazení Interní projekty (žádný zákaznický vývoj) Spolupráce s produktovým týmem na návrhu a implementaci nových funkcí Dlouhodobý rozvoj a údržba stávajících projektů Integrace s bankami (PSD2), procesy ověřování klientů (KYC) Možnost zapojit se do vývoje machine learning modelů pro scoring a predikce Co uvítáme Zkušenosti s PHP a frameworkem Laravel Praxi s SQL databázemi (MariaDB, PostgreSQL) Znalost HTTP komunikace (REST API, SOAP, cURL) Chuť psát čistý, přehledný a zdokumentovaný kód Týmového hráče, který se rád učí nové věci Zájem o analýzu dat a reporting (Python, dbt) Znalost HTML/CSS/JS/SASS výhodou Znalost verzovacích systémů (Git) výhodou Znalost Composer, npm výhodou Přehled v bezpečnosti a kryptografii výhodou Co nabízíme Mzdu 70 000 – 120 000 Kč měsíčně dle zkušeností Dlouhodobou spolupráci a stabilitu Účast na mezinárodních projektech (ČR, Island, Španělsko, UK) Hybridní režim práce 25 dní dovolené + sick days Notebook dle výběru, vlastní pracovní stůl Multisport kartu a nápoje na pracovišti 👉 Pokud tě naše nabídka zaujala, dej nám vědět – rádi si s tebou popovídáme!",
+    benefits:
+      "• Dovolená více než 5 týdnů • Firemní akce • Zdravotní volno/sickdays • Občerstvení na pracovišti",
+    companyIntro: null,
+    jobDetails:
+      "Společnost: Orka Group Services a.s. Požadované vzdělání: Středoškolské nebo odborné vyučení s maturitou Požadované jazyky: Angličtina (Mírně pokročilá) Zařazeno: IS/IT: Vývoj aplikací a systémů Typ pracovního poměru: Práce na plný úvazek Délka pracovního poměru: Na dobu neurčitou Typ smluvního vztahu: pracovní smlouva, práce na živnostenský list (IČO) Zadavatel: Zaměstnavatel",
+  },
+  analyticalInsights: {
+    benefitsAndPerks: {
+      paidVacationDays: 30,
+      sickDays: true,
+      mealAllowance: false,
+      healthInsurance: false,
+      wellnessBenefits: ["Multisport Card", "Refreshments on workplace"],
+      companyCar: false,
+      hardwareProvided: ["Notebook"],
+      trainingBudget: false,
+    },
+    careerDevelopmentAndRecruitment: {
+      roleGenesis: "New Position (Growth/Strategy)",
+      onboardingStructure: "Self-Directed/Minimal Support",
+      careerTrajectoryType: "Technical Leadership/Specialization",
+      requirementFlexibility: "Standard (Some flexibility)",
+      hiringProcessDetails: [],
+    },
+    corePositionDetails: {
+      jobTitle: "PHP Laravel Developer",
+      seniorityLevel: "Mid-Level (Medior)",
+      jobFunction: "Software Engineering - Backend",
+      industryVertical: "Fintech/Payments",
+      applicationDomain: "Web - Backend (Server-side logic, APIs)",
+      managementResponsibility: false,
+      suitableForGraduates: false,
+    },
+    technicalSkillsAndMethodologies: {
+      coreTechStack: [
+        "PHP",
+        "Laravel",
+        "SQL",
+        "MariaDB",
+        "PostgreSQL",
+        "HTTP",
+        "REST API",
+        "SOAP",
+        "cURL",
+        "Composer",
+        "npm",
+        "Git",
+      ],
+      preferredTechStack: [
+        "Python",
+        "dbt",
+        "HTML",
+        "CSS",
+        "JavaScript",
+        "SASS",
+        "Security",
+        "Cryptography",
+      ],
+      coreMethodologies: [
+        "KYC",
+        "PSD2",
+        "Machine Learning",
+        "Scoring",
+        "Prediction",
+      ],
+    },
+    WorkloadAndEnvironmentContext: {
+      workLifeBalanceSignal: "Standard/Varies by Role",
+      projectFocusType: "Mixed",
+      technologyMaturity: "Stable/Established Platform",
+      regulatoryEnvironment: "Highly Regulated (Finance, Defense, Government)",
+    },
+    locationAndWorkModel: {
+      locationCity: "Prague",
+      locationCountry: "Czech Republic",
+      workModel: "Hybrid-office-first",
+      remoteWorkPolicy: "CountryRestricted",
+      travelRequirement: "None",
+      onCallDuty: false,
+      flexibleWorkingHours: true,
+      officeEnvironment: ["Multisport card", "Refreshments available"],
+    },
+    companyAndTeamContext: {
+      companyType: "Product Company (B2B)",
+      companySize: "SME (51-250)",
+      teamSize: "Small (1-10)",
+      isAgencyPosting: false,
+    },
+    compensationAndFinancials: {
+      salaryMin: 70000,
+      salaryMax: 120000,
+      salaryCurrency: "CZK",
+      salaryPeriod: "Monthly",
+      bonusAvailability: false,
+      bonusType: [],
+      stockOptions: false,
+      pensionContribution: false,
+    },
+    contractulDetails: {
+      employmentType: "Full-time",
+      contractType: "HPP (Employee Contract)",
+      contractDuration: "Permanent (Indefinite)",
+      startDateEarliest: "2025-10-21T00:00:00Z",
+      startDateFlexible: false,
+      hiringUrgency: "Standard",
+    },
+    culturalAndPsychologicalIndicators: {
+      companyCultureArchetype: "Startup/Dynamic",
+      communicationFormalityAndTone: "Professional/Friendly",
+      autonomyLevel: "Medium (Operational Independence)",
+      managementStyleAndHierarchy: "Flat/Informal/Agile",
+    },
+    qualificationAndExperience: {
+      requiredYearsOfExperience: null,
+      educationLevelRequired: "High School/Secondary",
+      securityClearanceRequired: false,
+      certificationsRequired: [],
+      requiredSoftSkills: ["Teamwork", "Willingness to learn"],
+      requiredLanguages: [
+        {
+          language: "English",
+          proficiency: "Intermediate/B1",
+        },
+      ],
+    },
+  },
+};
+
+// Mock data for the aggregate view (example for a chart)
+export const mockAggregateData = [
+  { name: "PHP", count: 120 },
+  { name: "JavaScript", count: 95 },
+  { name: "Python", count: 80 },
+  { name: "Go", count: 45 },
+  { name: "Rust", count: 20 },
+];
