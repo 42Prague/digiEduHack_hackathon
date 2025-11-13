@@ -1,0 +1,180 @@
+# Requirements Document
+
+## Introduction
+
+This specification defines the Terraform infrastructure-as-code configuration for provisioning Google Cloud Platform (GCP) resources for the EduScale Engine service. The Terraform configuration automates the creation of Artifact Registry for Docker image storage and Cloud Run for serverless container deployment. This infrastructure enables developers to deploy the FastAPI-based EduScale Engine application to GCP with a single command, following modern cloud-native best practices.
+
+## Glossary
+
+- **Terraform Configuration**: Infrastructure-as-code files written in HashiCorp Configuration Language (HCL) that define GCP resources
+- **Artifact Registry**: Google Cloud's managed Docker container registry service for storing and managing container images
+- **Cloud Run Service**: Google Cloud's fully managed serverless platform for running containerized applications
+- **Terraform Provider**: A plugin that enables Terraform to interact with cloud platform APIs (Google Cloud in this case)
+- **Terraform Variables**: Configurable parameters that allow customization of infrastructure without modifying code
+- **Terraform Outputs**: Values exported after infrastructure creation for use in other tools or documentation
+- **Terraform State**: A file tracking the current state of managed infrastructure resources
+- **IAM Policy**: Identity and Access Management rules controlling who can access GCP resources
+- **API Enablement**: The process of activating Google Cloud service APIs before using them
+
+## Requirements
+
+### Requirement 1
+
+**User Story:** As a DevOps engineer, I want Terraform version constraints and provider configuration, so that I can ensure consistent infrastructure deployments across different environments
+
+#### Acceptance Criteria
+
+1. THE Terraform Configuration SHALL specify a required Terraform version constraint of ">= 1.5, < 2.0"
+2. THE Terraform Configuration SHALL declare the Google Cloud provider with source "hashicorp/google" and version constraint "~> 7.0"
+3. THE Terraform Configuration SHALL define a google provider block that uses variables for project_id and region
+4. THE Terraform Configuration SHALL include a versions.tf file containing all version constraints and provider declarations
+5. THE Terraform Configuration SHALL NOT hardcode project_id or region values in the provider configuration
+
+### Requirement 2
+
+**User Story:** As a developer, I want configurable Terraform variables with sensible defaults, so that I can easily customize infrastructure without modifying code
+
+#### Acceptance Criteria
+
+1. THE Terraform Configuration SHALL define a project_id variable of type string with no default value
+2. THE Terraform Configuration SHALL define a region variable with default value "europe-west1"
+3. THE Terraform Configuration SHALL define a service_name variable with default value "eduscale-engine"
+4. THE Terraform Configuration SHALL define a repository_id variable with default value "eduscale-engine-repo"
+5. THE Terraform Configuration SHALL define an image_tag variable with default value "latest"
+6. THE Terraform Configuration SHALL define variables for service_version, environment, min_instance_count, max_instance_count, cpu, memory, container_port, and allow_unauthenticated
+7. THE Terraform Configuration SHALL provide descriptive documentation for each variable
+8. THE Terraform Configuration SHALL include a variables.tf file containing all variable definitions
+
+### Requirement 3
+
+**User Story:** As a DevOps engineer, I want Terraform to enable required GCP APIs automatically, so that I don't have to manually enable services before deployment
+
+#### Acceptance Criteria
+
+1. THE Terraform Configuration SHALL create a google_project_service resource for "artifactregistry.googleapis.com"
+2. THE Terraform Configuration SHALL create a google_project_service resource for "run.googleapis.com"
+3. THE Terraform Configuration SHALL set disable_on_destroy to false for API enablement resources
+4. THE Terraform Configuration SHALL use the project_id variable for API enablement resources
+5. WHEN Terraform applies the configuration, THE Terraform Configuration SHALL enable APIs before creating dependent resources
+
+### Requirement 4
+
+**User Story:** As a DevOps engineer, I want an Artifact Registry repository provisioned via Terraform, so that I can store Docker images for the EduScale Engine service
+
+#### Acceptance Criteria
+
+1. THE Terraform Configuration SHALL create a google_artifact_registry_repository resource
+2. THE Terraform Configuration SHALL set the repository location to the value of the region variable
+3. THE Terraform Configuration SHALL set the repository_id to the value of the repository_id variable
+4. THE Terraform Configuration SHALL set the format to "DOCKER"
+5. THE Terraform Configuration SHALL include a description "Docker repository for EduScale Engine container images"
+6. THE Terraform Configuration SHALL declare a dependency on the Artifact Registry API enablement resource
+
+### Requirement 5
+
+**User Story:** As a DevOps engineer, I want a Cloud Run service provisioned via Terraform, so that I can deploy the containerized FastAPI application
+
+#### Acceptance Criteria
+
+1. THE Terraform Configuration SHALL create a google_cloud_run_v2_service resource
+2. THE Terraform Configuration SHALL set the service name to the value of the service_name variable
+3. THE Terraform Configuration SHALL set the location to the value of the region variable
+4. THE Terraform Configuration SHALL set ingress to "INGRESS_TRAFFIC_ALL"
+5. THE Terraform Configuration SHALL configure the container image as "{region}-docker.pkg.dev/{project_id}/{repository_id}/{service_name}:{image_tag}"
+6. THE Terraform Configuration SHALL declare dependencies on both the Cloud Run API and Artifact Registry repository resources
+
+### Requirement 6
+
+**User Story:** As a DevOps engineer, I want Cloud Run scaling configuration managed by Terraform, so that I can control cost and performance
+
+#### Acceptance Criteria
+
+1. THE Terraform Configuration SHALL configure min_instance_count using the min_instance_count variable with default value 0
+2. THE Terraform Configuration SHALL configure max_instance_count using the max_instance_count variable with default value 10
+3. THE Terraform Configuration SHALL configure CPU allocation using the cpu variable with default value "1"
+4. THE Terraform Configuration SHALL configure memory allocation using the memory variable with default value "512Mi"
+5. THE Terraform Configuration SHALL configure the container port using the container_port variable with default value 8080
+
+### Requirement 7
+
+**User Story:** As a developer, I want Cloud Run environment variables configured via Terraform, so that the FastAPI application receives correct configuration
+
+#### Acceptance Criteria
+
+1. THE Terraform Configuration SHALL set an ENV environment variable to the value of the environment variable
+2. THE Terraform Configuration SHALL set a SERVICE_NAME environment variable to the value of the service_name variable
+3. THE Terraform Configuration SHALL set a SERVICE_VERSION environment variable to the value of the service_version variable
+4. THE Terraform Configuration SHALL set a GCP_PROJECT_ID environment variable to the value of the project_id variable
+5. THE Terraform Configuration SHALL set a GCP_REGION environment variable to the value of the region variable
+6. THE Terraform Configuration SHALL set a GCP_RUN_SERVICE environment variable to the value of the service_name variable
+
+### Requirement 8
+
+**User Story:** As a developer, I want public access to the Cloud Run service configured via Terraform, so that the health endpoint is accessible without authentication
+
+#### Acceptance Criteria
+
+1. THE Terraform Configuration SHALL create a google_cloud_run_v2_service_iam_member resource
+2. WHEN the allow_unauthenticated variable is true, THE Terraform Configuration SHALL grant the "roles/run.invoker" role to "allUsers"
+3. THE Terraform Configuration SHALL use conditional creation based on the allow_unauthenticated variable value
+4. THE Terraform Configuration SHALL reference the Cloud Run service location and name from the service resource
+5. WHEN the allow_unauthenticated variable is false, THE Terraform Configuration SHALL NOT create the IAM member resource
+
+### Requirement 9
+
+**User Story:** As a developer, I want Terraform outputs for key infrastructure values, so that I can easily access service URLs and repository paths
+
+#### Acceptance Criteria
+
+1. THE Terraform Configuration SHALL output cloud_run_url containing the Cloud Run service URI
+2. THE Terraform Configuration SHALL output artifact_registry_repository containing the full repository URL
+3. THE Terraform Configuration SHALL output full_image_path containing the complete image path used by Cloud Run
+4. THE Terraform Configuration SHALL output project_id for confirmation
+5. THE Terraform Configuration SHALL output region for confirmation
+6. THE Terraform Configuration SHALL output service_name for confirmation
+7. THE Terraform Configuration SHALL include descriptions for all outputs
+8. THE Terraform Configuration SHALL include an outputs.tf file containing all output definitions
+
+### Requirement 10
+
+**User Story:** As a developer, I want an example variables file, so that I can quickly configure Terraform for my GCP project
+
+#### Acceptance Criteria
+
+1. THE Terraform Configuration SHALL provide a terraform.tfvars.example file
+2. THE Terraform Configuration SHALL include a placeholder value for project_id in the example file
+3. THE Terraform Configuration SHALL include example values for all configurable variables
+4. THE Terraform Configuration SHALL include comments explaining each variable in the example file
+5. WHEN a developer copies terraform.tfvars.example to terraform.tfvars, THE Terraform Configuration SHALL be ready to use after updating project_id
+
+### Requirement 11
+
+**User Story:** As a new developer, I want comprehensive README documentation for the Terraform configuration, so that I can understand and use the infrastructure code
+
+#### Acceptance Criteria
+
+1. THE Terraform Configuration SHALL provide a README.md file in the infra/terraform directory
+2. THE Terraform Configuration SHALL document the purpose of the Terraform configuration
+3. THE Terraform Configuration SHALL list prerequisites including Terraform version, gcloud CLI, GCP project, and IAM permissions
+4. THE Terraform Configuration SHALL provide step-by-step quick start instructions
+5. THE Terraform Configuration SHALL explain how to build and push Docker images separately from Terraform
+6. THE Terraform Configuration SHALL document all configuration variables in a table format
+7. THE Terraform Configuration SHALL explain how to test the deployment using the health endpoint
+8. THE Terraform Configuration SHALL document how to update infrastructure and deploy new image tags
+9. THE Terraform Configuration SHALL include troubleshooting guidance for common errors
+10. THE Terraform Configuration SHALL explain the connection to the FastAPI application
+
+### Requirement 12
+
+**User Story:** As a DevOps engineer, I want the Terraform configuration to follow best practices, so that the infrastructure is maintainable and secure
+
+#### Acceptance Criteria
+
+1. THE Terraform Configuration SHALL use separate files for versions, variables, main resources, and outputs
+2. THE Terraform Configuration SHALL NOT include hardcoded credentials or secrets
+3. THE Terraform Configuration SHALL use variable references instead of hardcoded values for all configurable parameters
+4. THE Terraform Configuration SHALL include resource dependencies using depends_on where necessary
+5. THE Terraform Configuration SHALL use descriptive resource names following a consistent naming convention
+6. THE Terraform Configuration SHALL include comments explaining complex configurations
+7. THE Terraform Configuration SHALL use the local backend by default with optional GCS backend configuration
+8. THE Terraform Configuration SHALL be formatted according to Terraform style conventions
