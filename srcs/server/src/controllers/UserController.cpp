@@ -1,4 +1,4 @@
-#include "TestCtrl.hpp"
+#include "UserController.hpp"
 
 void digiedu::controllers::Users::getAll(
     const drogon::HttpRequestPtr& /*request*/, std::function<void(const drogon::HttpResponsePtr&)> &&callback

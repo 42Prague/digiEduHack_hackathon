@@ -33,6 +33,7 @@ services:
       SERVER_DB_USER: testuser
       SERVER_DB_PASSWORD: pleaseletmein
       SERVER_IP: 0.0.0.0
+      SERVER_PORT: 8080
   digiedu-agent:
     container_name: digiedu-agent
     build:

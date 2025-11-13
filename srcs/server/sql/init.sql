@@ -9,6 +9,8 @@ CREATE TABLE user_account (
     access_level user_access_level,
     CONSTRAINT pk_user_account PRIMARY KEY (id)
 );
+ALTER TABLE user_account
+    ADD CONSTRAINT uc_user_account_email UNIQUE (email);
 
 CREATE TABLE fancy_session (
     id UUID NOT NULL,
