@@ -1,3 +1,5 @@
+version: "3.9"
+
 services:
   ollama:
     image: ollama/ollama:0.3.12
@@ -19,18 +21,43 @@ services:
     #         - driver: nvidia
     #           count: all
     #           capabilities: [gpu]
+
+  tusd:
+    image: tusproject/tusd:v2
+    container_name: tusd
+    restart: unless-stopped
+    command:
+      - "-upload-dir=/data/uploads"
+      - "-behind-proxy"
+    volumes:
+      - ./data:/data          # uploads will end up in ./data/uploads on host
+    ports:
+      - "1080:1080"           # tusd HTTP API
+
   backend:
     build:
       context: ./backend
     depends_on:
       - ollama
-    ports:
-      - "8000:80"
+      - tusd
     restart: unless-stopped
+    ports:
+      # match whatever your Uvicorn listens on inside the container
+      # if you use `uvicorn app.main:app --port 8000`, then:
+      - "8000:8000"
     environment:
+      # LLM config
       - OLLAMA_HOST=http://ollama:11434
       - OLLAMA_MODEL=${OLLAMA_MODEL:-deepseek-r1:1.5b}
       - BACKEND_TEST_PROMPT=${BACKEND_TEST_PROMPT:-Say hi from the backend container}
+
+      # DB lives in shared /data volume
+      - DATABASE_URL=sqlite:////data/app.db
+
+      # for building tus URLs in the backend, if you want
+      - TUSD_URL=http://tusd:1080
+    volumes:
+      - ./data:/data          # SQLite DB + any extra app data
 
 volumes:
   ollama_data:

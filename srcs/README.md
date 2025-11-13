@@ -1,90 +1,196 @@
-# Ollama + Backend Stack (`digiEduHack_hackathon/srcs`)
+# This directory contains the full local stack used for:
 
-This directory is the control center for the local LLM playground:
-- `chat/` holds the Ollama container entrypoint script.
-- `backend/` contains a tiny Python client that calls the Ollama HTTP API and prints the reply.
-- `docker-compose.yml` wires both pieces together so you can spin up everything with a single command.
+* Running a **local LLM** (via Ollama)
+* Serving a **Python FastAPI backend** with CRUD endpoints for:
 
-## Prerequisites
-- Docker Engine 24+ or Docker Desktop 4.27+ with Compose v2.
-- (Optional) NVIDIA GPU + NVIDIA Container Toolkit if you need GPU acceleration on Linux.
+  * `regions`
+  * `schools` (FK → region)
+  * `files` (tus upload metadata)
+* Handling **file uploads** using a separate `tusd` container
+* Persisting **all data** (SQLite DB + uploaded files) in a shared `./data` folder on your host
 
-## Start the stack
+Everything runs through **Docker Compose**, so you can start/stop the whole environment with a single command.
+
+---
+
+# Prerequisites
+
+* Docker Engine 24+ or Docker Desktop 4.27+
+* (Optional) NVIDIA GPU + NVIDIA Container Toolkit if you want GPU-accelerated LLM inference on Linux
+
+---
+
+# 🏁 Start the full stack
+
 ```bash
 cd digiEduHack_hackathon/srcs
 docker compose up -d
 ```
-- Port `11434` from the `ollama` container is exposed by default; override it via `OLLAMA_PORT=<hostPort>` if needed.
-- Downloaded models/configs live in the named volume `ollama_data`. Remove it with `docker compose down -v` to reclaim space.
-- Both services start, but the Python backend simply idles (it runs `sleep infinity`) until you exec into it to send a request.
-- Export env vars before running (or pass them inline) to tweak behavior:
-  - `OLLAMA_MODEL` (default `deepseek-r1:1.5b`)
-  - `BACKEND_TEST_PROMPT` (default “Say hi from the backend container”)
-- Tail container output when debugging:
-  ```bash
-  docker compose logs -f
-  docker compose logs -f backend   # backend only
-  docker compose logs -f ollama    # ollama only
-  ```
 
-## Trigger backend prompts on demand
-With both containers running you can exec into the backend whenever you want to send a request.
-1. **Run with the default prompt**
-   ```bash
-   docker compose exec backend python app.py
-   ```
+This boots three services:
 
-2. **Inline custom prompt**
-   ```bash
-   docker compose exec \
-     -e BACKEND_TEST_PROMPT="List three study tips" \
-     backend python app.py
-   ```
+### **1. ollama (local LLM server)**
 
-3. **Switch models for a single run**
-   ```bash
-   docker compose exec \
-     -e OLLAMA_MODEL="llama3.1:8b" \
-     backend python app.py
-   ```
+* Exposes port **11434** → override via `OLLAMA_PORT=<port>`.
+* Stores downloaded models in the named docker volume `ollama_data`.
+* Auto-pulls `deepseek-r1:1.5b` on startup via `chat/docker-entrypoint.sh`.
 
-4. **Combine multiple overrides**
-   ```bash
-   docker compose exec \
-     -e BACKEND_TEST_PROMPT="Summarize the benefits of pair programming" \
-     -e OLLAMA_MODEL="deepseek-r1:1.5b" \
-     backend python app.py
-   ```
+### **2. backend (FastAPI + SQLite)**
 
-## Direct API prompting (no backend helper)
-1. **`generate` endpoint**
-   ```bash
-   curl http://localhost:11434/api/generate -d '{
-     "model": "deepseek-r1:1.5b",
-     "prompt": "Write a haiku about hackathons."
-   }'
-   ```
+* Exposes REST API on **[http://localhost:8000](http://localhost:8000)**
+* Uses SQLite database stored in `./data/app.db`
+* Provides endpoints:
 
-2. **`chat` endpoint with multi-turn messages**
-   ```bash
-   curl http://localhost:11434/api/chat -d '{
-     "model": "deepseek-r1:1.5b",
-     "messages": [
-       {"role": "user", "content": "You are a mentor. Help me debug a Python bug."},
-       {"role": "user", "content": "Why is my list comprehension slower than a loop?"}
-     ]
-   }'
-   ```
+  * `POST/GET/PUT/DELETE /regions`
+  * `POST/GET/PUT/DELETE /schools`
+  * `POST/GET /files`
 
-## Auto-installed model
-The entrypoint (`chat/docker-entrypoint.sh`) ensures `deepseek-r1:1.5b` is available before the server starts. Update the script or run `docker compose exec ollama ollama pull <model>` if you want something else cached up front.
+### 🔄 Auto-reload during development
 
-## GPU usage
-Uncomment the `deploy.resources` block in `docker-compose.yml` to reserve all available NVIDIA GPUs on Linux (requires the NVIDIA Container Toolkit). On Docker Desktop for macOS/Windows, enable GPU access through the UI if your hardware supports it—no compose change needed.
+The Docker image now launches Uvicorn with `--reload`, so `docker compose up backend` will automatically restart the API when files under `app/` change. If you ever need a production-like run, override the command (e.g., `docker compose run backend uvicorn app.main:app --host 0.0.0.0 --port 8000`) to drop the reload flag.
 
-## Stop / clean up
+### **3. tusd (file upload server)**
+
+* Exposes port **1080**
+* Stores uploaded file chunks & metadata in `./data/uploads/`
+
+Both `backend` and `tusd` access `/data` through a **shared bind mount**.
+
+---
+
+# 🌍 File persistence
+
+Everything you upload or store survives container restarts because all data lives on your host:
+
+```
+./data/
+ ├── app.db            ← SQLite database (regions, schools, file metadata)
+ └── uploads/          ← tusd-managed uploaded files
+```
+
+Delete this folder to wipe all app data.
+
+---
+
+# ⚙️ Environment variables
+
+You can override defaults using `.env` or via inline `docker compose`:
+
+| Variable              | Default                             | Used by                     |
+| --------------------- | ----------------------------------- | --------------------------- |
+| `OLLAMA_PORT`         | `11434`                             | ollama                      |
+| `OLLAMA_MODEL`        | `deepseek-r1:1.5b`                  | backend                     |
+| `BACKEND_TEST_PROMPT` | “Say hi from the backend container” | backend demo script         |
+| `DATABASE_URL`        | `sqlite:////data/app.db`            | backend                     |
+| `TUSD_URL`            | `http://tusd:1080`                  | backend for linking uploads |
+
+---
+
+# 🧪 Backend API Usage
+
+### List regions
+
 ```bash
-docker compose stop        # Graceful stop
-docker compose down        # Stop and keep the volume
-docker compose down -v     # Stop and delete downloaded models/configs
+curl http://localhost:8000/regions
+```
+
+### Create a region
+
+```bash
+curl -X POST http://localhost:8000/regions \
+     -H "Content-Type: application/json" \
+     -d '{"name": "Hlavní město Praha"}'
+```
+
+### Create a school in a region (FK)
+
+```bash
+curl -X POST http://localhost:8000/schools \
+     -H "Content-Type: application/json" \
+     -d '{"name": "Gymnazium Nad Alejí", "region_id": 1}'
+```
+
+---
+
+# 📤 File Upload Flow (tusd → backend)
+
+1. **Upload file to tusd**
+
+   ```bash
+   curl -X POST http://localhost:1080/files
+   ```
+
+   (returns a `tus_id`)
+
+2. **Save metadata in backend**
+
+   ```bash
+   curl -X POST \
+     "http://localhost:8000/files?tus_id=<id>&filename=doc.pdf&school_id=1"
+   ```
+
+The backend stores `tus_id`, `filename`, and school association.
+
+---
+
+# 🤖 Asking the LLM via Backend
+
+Exec into backend and run its test script:
+
+```bash
+docker compose exec backend python app.py
+```
+
+Override prompt or model:
+
+```bash
+docker compose exec \
+  -e BACKEND_TEST_PROMPT="List three study tips" \
+  backend python app.py
+```
+
+---
+
+# 📡 Direct Ollama API prompting
+
+### Generate
+
+```bash
+curl http://localhost:11434/api/generate -d '{
+  "model": "deepseek-r1:1.5b",
+  "prompt": "Write a haiku about hackathons."
+}'
+```
+
+### Chat
+
+```bash
+curl http://localhost:11434/api/chat -d '{
+  "model": "deepseek-r1:1.5b",
+  "messages": [
+    {"role": "user", "content": "Explain REST APIs briefly."}
+  ]
+}'
+```
+
+---
+
+# 🖥 Logs
+
+```bash
+docker compose logs -f         # all services
+docker compose logs -f backend # backend only
+docker compose logs -f ollama  # ollama only
+docker compose logs -f tusd    # tusd only
+```
+
+---
+
+# 🛑 Stop / clean up
+
+```bash
+docker compose stop        # graceful stop
+docker compose down        # remove containers, keep volumes
+docker compose down -v     # remove containers + ollama model volume
+rm -rf ./data              # wipe DB + uploads
 ```

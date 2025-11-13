@@ -1,15 +1,15 @@
-from typing import Union
-
 from fastapi import FastAPI
 
-app = FastAPI()
+from .db import init_db
+from .routers import regions, schools, files
+
+app = FastAPI(title="DigiEduHack Backend")
+
+app.include_router(regions.router)
+app.include_router(schools.router)
+app.include_router(files.router)
 
 
-@app.get("/")
-def read_root():
-    return {"Hello": "World"}
-
-
-@app.get("/items/{item_id}")
-def read_item(item_id: int, q: Union[str, None] = None):
-    return {"item_id": item_id, "q": q}
+@app.on_event("startup")
+def on_startup():
+    init_db()
