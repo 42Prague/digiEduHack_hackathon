@@ -1,10 +1,14 @@
 import { relations } from "drizzle-orm";
 import {
   boolean,
+  integer,
+  json,
+  pgEnum,
   pgTable,
   pgTableCreator,
   text,
   timestamp,
+  uuid
 } from "drizzle-orm/pg-core";
 
 export const createTable = pgTableCreator((name) => `pg-drizzle_${name}`);
@@ -26,6 +30,7 @@ export const user = pgTable("user", {
   banned: boolean("banned"),
   banReason: text("ban_reason"),
   banExpires: timestamp("ban_expires"),
+  institution: uuid().references(()=>institution.id, {onDelete:"cascade"}) // Maybe not cascade?
 });
 
 
@@ -78,9 +83,13 @@ export const verification = pgTable("verification", {
     .notNull(),
 });
 
-export const userRelations = relations(user, ({ many }) => ({
+export const userRelations = relations(user, ({ many, one }) => ({
   account: many(account),
   session: many(session),
+  institutionRel: one(institution, {
+    fields: [user.institution],
+    references: [institution.id],
+  }),
 }));
 
 export const accountRelations = relations(account, ({ one }) => ({
@@ -90,6 +99,145 @@ export const accountRelations = relations(account, ({ one }) => ({
 export const sessionRelations = relations(session, ({ one }) => ({
   user: one(user, { fields: [session.userId], references: [user.id] }),
 }));
+
+
+export const institution = pgTable("institution", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  label: text("label").notNull(),
+  ico: text("ico").notNull(),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at")
+    .defaultNow()
+    .$onUpdate(() => /* @__PURE__ */ new Date())
+    .notNull(),
+});
+
+export const institutionRelations = relations(institution, ({ many }) => ({
+  users: many(user),
+}));
+
+
+export const form = pgTable("form", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  label: text("label").notNull(),
+  description: text(),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at")
+    .defaultNow()
+    .$onUpdate(() => /* @__PURE__ */ new Date())
+    .notNull(),
+});
+
+export const formState = pgEnum('form_state', ['todo', 'draft', 'submitted']);
+
+export const user_form = pgTable("user_form", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  user_id: text().references(()=>user.id).notNull(),
+  form_id: uuid().references(()=>form.id).notNull(),
+  submission_status: formState()
+});
+
+export type FieldConfigType = 
+  | {
+      type: 'text';
+      label: string;
+      required?: boolean;
+      help?: string;
+      placeholder?: string;
+    }
+  | {
+      type: 'textarea';
+      label: string;
+      required?: boolean;
+      help?: string;
+      placeholder?: string;
+      rows?: number;
+    }
+  | {
+      type: 'date';
+      label: string;
+      required?: boolean;
+      help?: string;
+      defaultValue?: string;
+    }
+  | {
+      type: 'number';
+      label: string;
+      required?: boolean;
+      help?: string;
+      minValue?: number;
+      maxValue?: number;
+      defaultValue?: number;
+    }
+  | {
+      type: 'boolean';
+      label: string;
+      required?: boolean;
+      help?: string;
+      defaultValue?: boolean;
+    }
+  | {
+      type: 'select';
+      label: string;
+      required?: boolean;
+      help?: string;
+      options: string[];
+      defaultValue?: string;
+    }
+  | {
+      type: 'radio';
+      label: string;
+      required?: boolean;
+      help?: string;
+      options: string[];
+      defaultValue?: string;
+    }
+  | {
+      type: 'multiselect';
+      label: string;
+      required?: boolean;
+      help?: string;
+      options: string[];
+      maxSelections?: number;
+    }
+  | {
+      type: 'slider';
+      label: string;
+      required?: boolean;
+      help?: string;
+      options: number[];
+      defaultValue?: number;
+    }| {
+      type: 'discrete_range';
+      label: string;
+      required?: boolean;
+      help?: string;
+      options: {value: number, label:string}[];
+    };
+
+export const field = pgTable("field", {
+  id: uuid().primaryKey().defaultRandom(),
+  name: text().notNull(),
+  description: text(),
+  config: json().$type<FieldConfigType>()
+})
+
+
+export const form_field_data = pgTable("form_field_data", {
+  id: uuid().primaryKey().defaultRandom(),
+  form_id: uuid().references(()=>form.id).notNull(),
+  user_form_id: uuid().references(()=>user_form.id),
+  state: formState(), 
+})
+
+export const form_field = pgTable("form_field_data", {
+  form_id: uuid().references(()=>form.id).notNull(),
+  field_id: uuid().references(()=>field.id).notNull(),
+  order: integer()
+})
+
+
+
 
 
 

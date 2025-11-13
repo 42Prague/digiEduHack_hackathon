@@ -1,0 +1,21 @@
+import { redirect } from "next/navigation";
+import { auth } from "~/server/better-auth";
+import { headers } from "next/headers";
+import { FormBuilder } from "./_components/FormBuilder";
+
+export default async function FormBuilderPage({
+  params,
+}: {
+  params: { form_id: string };
+}) {
+  const session = await auth.api.getSession({
+    headers: await headers(),
+  });
+
+  if (!session?.user || session.user.role !== "admin") {
+    redirect("/");
+  }
+
+  return <FormBuilder formId={params.form_id} />;
+}
+

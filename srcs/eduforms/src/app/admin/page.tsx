@@ -16,31 +16,26 @@ export default async function AdminPage() {
   }
 
   return (
-    <div className="container mx-auto p-8">
-      <h1 className="text-3xl font-bold mb-6">Admin Dashboard</h1>
-      
-      <div className="space-y-6">
-        {/* Admin Info Card */}
-        <div className="bg-white rounded-lg shadow p-6">
-          <p className="text-lg mb-4">
-            Welcome, <span className="font-semibold">{session.user.name}</span>!
-          </p>
-          <p className="text-gray-600">
-            You have admin access. This page is protected and only accessible to admin users.
-          </p>
-          <div className="mt-6 p-4 bg-blue-50 rounded-lg">
-            <h2 className="font-semibold mb-2">Admin Information:</h2>
-            <ul className="list-disc list-inside space-y-1 text-sm text-gray-700">
-              <li>Email: {session.user.email}</li>
-              <li>Role: {session.user.role}</li>
-              <li>User ID: {session.user.id}</li>
-            </ul>
-          </div>
-        </div>
-
-        {/* Admin Stats Card - demonstrates using adminProcedure from client */}
-        <AdminStatsCard />
+    <div className="space-y-6">
+      <div>
+        <h1 className="text-3xl font-bold">Admin Dashboard</h1>
+        <p className="text-gray-600 mt-2">Welcome back, <span className="font-semibold">{session.user.name}</span>!</p>
       </div>
+      
+      {/* Admin Info Card */}
+      <div className="bg-white rounded-lg shadow p-6">
+        <h2 className="text-xl font-semibold mb-4">Your Admin Profile</h2>
+        <div className="p-4 bg-blue-50 rounded-lg">
+          <ul className="space-y-2 text-sm text-gray-700">
+            <li><span className="font-semibold">Email:</span> {session.user.email}</li>
+            <li><span className="font-semibold">Role:</span> <span className="px-2 py-1 bg-purple-100 text-purple-700 rounded">Admin</span></li>
+            <li><span className="font-semibold">User ID:</span> {session.user.id}</li>
+          </ul>
+        </div>
+      </div>
+
+      {/* Admin Stats Card - demonstrates using adminProcedure from client */}
+      <AdminStatsCard />
     </div>
   );
 }

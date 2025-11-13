@@ -22,6 +22,34 @@
       "when": 1763057716518,
       "tag": "0002_marvelous_freak",
       "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "7",
+      "when": 1763059002320,
+      "tag": "0003_shallow_orphan",
+      "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1763059504513,
+      "tag": "0004_fair_leo",
+      "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "7",
+      "when": 1763060336864,
+      "tag": "0005_sloppy_the_hunter",
+      "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1763075100663,
+      "tag": "0006_melted_black_crow",
+      "breakpoints": true
     }
   ]
 }
