@@ -1,0 +1,80 @@
+services:
+  digiedu-db:
+    container_name: digiedu-db
+    build:
+      context: ./server
+      dockerfile: Dockerfile-postgres
+    image: digiedu-postgres:latest
+    command: ["postgres", "-c", "log_statement=all"]
+    ports:
+      - "5435:5432"
+    networks:
+      - digiedu_backend_network
+    environment:
+      POSTGRES_DB: develop
+      POSTGRES_USER: testuser
+      POSTGRES_PASSWORD: pleaseletmein
+  digiedu-backend:
+    container_name: digiedu-backend
+    build:
+      context: ./server
+      dockerfile: Dockerfile-backend
+    image: digiedu-backend:latest
+    ports:
+      - "4444:8080"
+    networks:
+      - digiedu_backend_network
+    depends_on:
+      - digiedu-db
+    environment:
+      SERVER_HOST: digiedu-db
+      SERVER_DB: develop
+      SERVER_PORT: 5432
+      SERVER_USER: testuser
+      SERVER_PASSWORD: pleaseletmein
+  digiedu-agent:
+    container_name: digiedu-agent
+    build:
+      context: /Users/egorulanov/Work/Custom/EduHackaton-11-2025/digiEduHack_hackathon/srcs/agentic_analysis
+      dockerfile: Dockerfile
+    image: digiedu-agent:latest
+    ports:
+      - "8001:8000"
+    networks:
+      - digiedu_backend_network
+    environment:
+      AZURE_OPENAI_API_KEY: "${AZURE_OPENAI_API_KEY:-changeme}"
+      AZURE_OPENAI_ENDPOINT: "${AZURE_OPENAI_ENDPOINT:-https://example.openai.azure.com/}"
+      AZURE_OPENAI_MODEL: "${AZURE_OPENAI_MODEL:-gpt-4.1-mini}"
+  digiedu-frontend:
+    container_name: digiedu-frontend
+    build:
+      context: /Users/egorulanov/Work/Custom/EduHackaton-11-2025/digiEduHack_hackathon/srcs/frontend
+      dockerfile: Dockerfile
+    image: digiedu-frontend:latest
+    ports:
+      - "4200:4200"
+    networks:
+      - digiedu_backend_network
+    depends_on:
+      - digiedu-backend
+      - digiedu-agent
+  digiedu-proxy:
+    container_name: digiedu-proxy
+    build:
+      context: /Users/egorulanov/Work/Custom/EduHackaton-11-2025/digiEduHack_hackathon/srcs/reverseproxy
+      dockerfile: Dockerfile
+    image: digiedu-proxy:latest
+    ports:
+      - "80:80"
+    networks:
+      - digiedu_backend_network
+    depends_on:
+      - digiedu-frontend
+      - digiedu-backend
+      - digiedu-agent
+
+networks:
+  digiedu_backend_network:
+    driver: bridge
+    name: digiedu_backend_network
