@@ -83,6 +83,27 @@ resource "google_storage_bucket_iam_member" "eventarc_object_viewer" {
   member = "serviceAccount:${google_service_account.eventarc_trigger.email}"
 }
 
+# Service Account for Cloud Run Engine
+resource "google_service_account" "cloud_run_engine" {
+  account_id   = "cloud-run-engine"
+  display_name = "Cloud Run Engine Service Account"
+  description  = "Service account for EduScale Engine running on Cloud Run"
+}
+
+# Grant Storage Object Admin to Cloud Run Engine service account
+resource "google_storage_bucket_iam_member" "cloud_run_engine_storage" {
+  bucket = google_storage_bucket.uploads.name
+  role   = "roles/storage.objectAdmin"
+  member = "serviceAccount:${google_service_account.cloud_run_engine.email}"
+}
+
+# Grant Service Account Token Creator role (needed for signing URLs)
+resource "google_project_iam_member" "cloud_run_engine_token_creator" {
+  project = var.project_id
+  role    = "roles/iam.serviceAccountTokenCreator"
+  member  = "serviceAccount:${google_service_account.cloud_run_engine.email}"
+}
+
 # Service Account for GitHub Actions
 resource "google_service_account" "github_actions" {
   account_id   = "github-actions"

@@ -9,6 +9,7 @@ spec:
         autoscaling.knative.dev/minScale: '0'
         autoscaling.knative.dev/maxScale: '10'
     spec:
+      serviceAccountName: SERVICE_ACCOUNT_PLACEHOLDER
       containerConcurrency: 80
       timeoutSeconds: 300
       containers:

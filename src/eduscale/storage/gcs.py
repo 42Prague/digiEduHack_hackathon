@@ -54,6 +54,8 @@ class GCSStorageBackend(StorageBackend):
         blob = bucket.blob(blob_path)
 
         # Generate V4 signed URL for PUT
+        # This will work with the Cloud Run service account that has
+        # iam.serviceAccountTokenCreator role
         signed_url = blob.generate_signed_url(
             version="v4",
             expiration=timedelta(minutes=expiration_minutes),

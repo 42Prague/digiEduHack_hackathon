@@ -28,6 +28,12 @@ output "service_name" {
   value       = var.service_name
 }
 
+# Cloud Run Engine Service Account Email
+output "cloud_run_engine_service_account_email" {
+  description = "The email of the Cloud Run Engine service account"
+  value       = google_service_account.cloud_run_engine.email
+}
+
 # GitHub Actions Service Account Email
 output "github_actions_service_account_email" {
   description = "The email of the GitHub Actions service account"
