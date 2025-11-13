@@ -4,6 +4,7 @@ type Envs = {
   NODE_ENV: string;
   PORT: number;
   DATABASE_URL: string;
+  GOOGLE_API_KEY: string;
 };
 
 export const envs: Envs = cleanEnv(process.env, {
@@ -13,4 +14,5 @@ export const envs: Envs = cleanEnv(process.env, {
   }),
   PORT: port({ default: 3600 }),
   DATABASE_URL: url({ default: "localhost:5432" }),
+  GOOGLE_API_KEY: str()
 });

@@ -1,0 +1,40 @@
+{
+  "name": "reg-form",
+  "version": "1.0.0",
+  "type": "module",
+  "description": "",
+  "main": "app.js",
+  "scripts": {
+    "build": "tsc",
+    "start": " node --env-file=.env ./dist/mongoExample.js",
+    "dev": "tsx watch src/app.ts",
+    "lint": "eslint . --max-warnings 0",
+    "check-types": "tsc --noEmit",
+    "docker:build": "docker build --target=prod -t lazylab/reg-form:latest -f ./Dockerfile --build-arg APP_NAME=reg-form ../../",
+    "docker:push": "docker buildx build --platform linux/amd64,linux/arm64 --target prod -t aldokezer/lazyform-reg-form:latest --build-arg APP_NAME=reg-form -f ./Dockerfile --push ../../"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "packageManager": "pnpm@10.13.1",
+  "dependencies": {
+    "@langchain/core": "^1.0.4",
+    "@langchain/google-genai": "^1.0.0",
+    "@langchain/langgraph": "^1.0.2",
+    "@langchain/textsplitters": "^1.0.0",
+    "@repo/mongo-connector": "workspace:*",
+    "dotenv": "^17.2.3",
+    "langchain": "^1.0.4",
+    "mongodb": "^7.0.0",
+    "mongodb,": "link:@langchain/mongodb,",
+    "zod": "^4.1.12"
+  },
+  "devDependencies": {
+    "@repo/eslint-config": "workspace:*",
+    "@repo/typescript-config": "workspace:*",
+    "@types/node": "^24.2.1",
+    "eslint": "^9.31.0",
+    "tsx": "^4.20.3",
+    "typescript": "^5.8.3"
+  }
+}
