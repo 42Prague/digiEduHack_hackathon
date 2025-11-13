@@ -43,6 +43,7 @@ def _build_client() -> OpenAI:
         # Azure expects the API key in the `api-key` header rather than Authorization bearer.
         default_headers["api-key"] = api_key
         #api_key = None  # Prevent OpenAI SDK from sending the key as Bearer token.
+    
     else:
         # Standard OpenAI endpoint: let the SDK handle default base URL when possible.
         if hostname == "api.openai.com":
@@ -54,10 +55,6 @@ def _build_client() -> OpenAI:
         elif base_url and not base_url.endswith("/v1"):
             base_url = f"{base_url}/v1"
 
-    print(f"base_url: {base_url}")
-    print(f"default_headers: {default_headers}")
-    print(f"default_query: {default_query}")
-    print(f"api_key: {api_key}")
     return OpenAI(
         api_key=api_key,
         base_url=base_url,
