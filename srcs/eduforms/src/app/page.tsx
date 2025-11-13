@@ -13,8 +13,9 @@ import {
   TextInput,
   Title,
   Alert,
+  Group,
 } from '@mantine/core';
-import { IconAlertCircle } from '@tabler/icons-react';
+import { IconAlertCircle, IconShield } from '@tabler/icons-react';
 import classes from './AuthenticationImage.module.css';
 import { authClient } from '~/server/better-auth/client';
 
@@ -23,6 +24,7 @@ export default function Home() {
   const [password, setPassword] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [isAdminMode, setIsAdminMode] = useState(false);
   const router = useRouter();
 
   const handleLogin = async () => {
@@ -31,7 +33,7 @@ export default function Home() {
     
     // Validation
     if (!email || !password) {
-      setError('Prosím vyplňte e-mail a heslo.');
+      setError(isAdminMode ? 'Please enter email and password.' : 'Prosím vyplňte e-mail a heslo.');
       return;
     }
 
@@ -41,24 +43,37 @@ export default function Home() {
       const { data, error } = await authClient.signIn.email({
         email,
         password,
-        callbackURL: "/dashboard",
+        callbackURL: isAdminMode ? "/admin" : "/dashboard",
         rememberMe: false
       });
 
       if (error) {
-        setError('Neplatný e-mail nebo heslo. Zkontrolujte své přihlašovací údaje.');
+        setError(isAdminMode 
+          ? 'Invalid credentials or insufficient permissions.' 
+          : 'Neplatný e-mail nebo heslo. Zkontrolujte své přihlašovací údaje.'
+        );
         setIsLoading(false);
         return;
       }
 
       // Successfully logged in
       if (data) {
-        router.push('/dashboard');
+        router.push(isAdminMode ? '/admin' : '/dashboard');
       }
     } catch (err) {
-      setError('Došlo k chybě při přihlašování. Zkuste to prosím znovu.');
+      setError(isAdminMode 
+        ? 'An error occurred during login. Please try again.' 
+        : 'Došlo k chybě při přihlašování. Zkuste to prosím znovu.'
+      );
       setIsLoading(false);
     }
+  };
+
+  const toggleMode = () => {
+    setIsAdminMode(!isAdminMode);
+    setEmail('');
+    setPassword('');
+    setError(null);
   };
 
   const handleKeyPress = (e: React.KeyboardEvent) => {
@@ -70,81 +85,144 @@ export default function Home() {
   return (
     <div className={classes.wrapper}>
       <Paper className={classes.form} radius="lg">
-        <Stack gap="lg">
-          <Stack gap="xs" align="center">
-            <Badge size="lg" radius="sm" variant="light" color="blue">
-              Přístup pro pedagogy EduForms
-            </Badge>
-            <Title order={2} className={classes.title}>
-              Vítejte zpět, učitelé
-            </Title>
-            <Text ta="center" c="dimmed">
-              Přihlaste se pomocí institucionální e-mailové adresy a hesla, které jste obdrželi v
-              uvítacím e-mailu. Po přihlášení si je můžete upravit přímo v portálu.
-            </Text>
-          </Stack>
+        <Stack gap="md">
+          {isAdminMode ? (
+            // Admin Login Form
+            <>
+              <Stack gap="xs" align="center">
+                <Badge size="md" radius="sm" variant="light" color="red">
+                  <Group gap={4}>
+                    <IconShield size={14} />
+                    Admin Access
+                  </Group>
+                </Badge>
+                <Title order={3} className={classes.title}>
+                  Admin Login
+                </Title>
+              </Stack>
 
-          {error && (
-            <Alert 
-              icon={<IconAlertCircle size={16} />} 
-              title="Chyba přihlášení" 
-              color="red"
-              radius="md"
-            >
-              {error}
-            </Alert>
+              {error && (
+                <Alert 
+                  icon={<IconAlertCircle size={16} />} 
+                  color="red"
+                  radius="md"
+                >
+                  {error}
+                </Alert>
+              )}
+
+              <Stack gap="sm">
+                <TextInput
+                  label="Email"
+                  placeholder="admin@eduforms.org"
+                  size="sm"
+                  radius="md"
+                  required
+                  value={email}
+                  onChange={(e) => setEmail(e.currentTarget.value)}
+                  onKeyPress={handleKeyPress}
+                  disabled={isLoading}
+                />
+                <PasswordInput
+                  label="Password"
+                  placeholder="Enter password"
+                  size="sm"
+                  radius="md"
+                  required
+                  value={password}
+                  onChange={(e) => setPassword(e.currentTarget.value)}
+                  onKeyPress={handleKeyPress}
+                  disabled={isLoading}
+                />
+              </Stack>
+
+              <Button
+                fullWidth
+                size="sm"
+                radius="md"
+                variant="filled"
+                color="red"
+                onClick={handleLogin}
+                loading={isLoading}
+              >
+                Login
+              </Button>
+            </>
+          ) : (
+            // Teacher Login Form
+            <>
+              <Stack gap="xs" align="center">
+                <Badge size="md" radius="sm" variant="light" color="blue">
+                  EduForms
+                </Badge>
+                <Title order={3} className={classes.title}>
+                  Vítejte zpět
+                </Title>
+              </Stack>
+
+              {error && (
+                <Alert 
+                  icon={<IconAlertCircle size={16} />} 
+                  color="red"
+                  radius="md"
+                >
+                  {error}
+                </Alert>
+              )}
+
+              <Stack gap="sm">
+                <TextInput
+                  label="E-mail"
+                  placeholder="jmeno.prijmeni@skola.cz"
+                  size="sm"
+                  radius="md"
+                  required
+                  value={email}
+                  onChange={(e) => setEmail(e.currentTarget.value)}
+                  onKeyPress={handleKeyPress}
+                  disabled={isLoading}
+                />
+                <PasswordInput
+                  label="Heslo"
+                  placeholder="Zadejte heslo"
+                  size="sm"
+                  radius="md"
+                  required
+                  value={password}
+                  onChange={(e) => setPassword(e.currentTarget.value)}
+                  onKeyPress={handleKeyPress}
+                  disabled={isLoading}
+                />
+              </Stack>
+
+              <Button
+                fullWidth
+                size="sm"
+                radius="md"
+                variant="gradient"
+                gradient={{ from: 'blue', to: 'cyan' }}
+                onClick={handleLogin}
+                loading={isLoading}
+              >
+                Přihlásit
+              </Button>
+            </>
           )}
 
-          <Stack gap="sm">
-            <TextInput
-              label="Institucionální e-mail"
-              placeholder="jmeno.prijmeni@skola.cz"
-              size="md"
-              radius="md"
-              required
-              value={email}
-              onChange={(e) => setEmail(e.currentTarget.value)}
-              onKeyPress={handleKeyPress}
+          {/* Toggle button at the bottom */}
+          <Divider />
+          <Group justify="center">
+            <Button
+              variant="subtle"
+              size="xs"
+              color="gray"
+              leftSection={<IconShield size={14} />}
+              onClick={toggleMode}
               disabled={isLoading}
-              description="Použijte školní e-mail, který vám sdělil váš koordinátor."
-            />
-            <PasswordInput
-              label="Přidělené heslo"
-              placeholder="Zadejte dočasné heslo"
-              size="md"
-              radius="md"
-              required
-              value={password}
-              onChange={(e) => setPassword(e.currentTarget.value)}
-              onKeyPress={handleKeyPress}
-              disabled={isLoading}
-              description="Opíšete přístupový kód z uvítacího e-mailu přesně tak, jak vám přišel."
-            />
-          </Stack>
-
-          <Text size="sm" c="dimmed">
-            Tip: Pokud nemůžete své přihlašovací údaje najít, vyhledejte e-mail s předmětem
-            &quot;EDUZměna Přístupové údaje&quot; nebo požádejte koordinátora o nové zaslání.
-          </Text>
-
-          <Button
-            fullWidth
-            size="md"
-            radius="md"
-            variant="gradient"
-            gradient={{ from: 'blue', to: 'cyan' }}
-            onClick={handleLogin}
-            loading={isLoading}
-          >
-            Bezpečně přihlásit
-          </Button>
-
-          <Divider label="Potřebujete pomoc?" labelPosition="center" />
-
-          <Text size="sm" c="dimmed" ta="center">
-            Stále vám chybí e-mail nebo heslo? Obraťte se na svého koordinátora nebo napište na{' '}
-            <Anchor href="mailto:help@eduforms.org">help@eduforms.org</Anchor> a my vás připojíme.
-          </Text>
+            >
+              {isAdminMode ? 'Teacher Login' : 'Admin'}
+            </Button>
+          </Group>
         </Stack>
       </Paper>
     </div>
