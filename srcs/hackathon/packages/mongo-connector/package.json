@@ -26,6 +26,7 @@
     "@repo/env-loader": "workspace:*",
     "mongodb": "^7.0.0",
     "zod": "^4.1.12"
+
   },
   "devDependencies": {
     "@repo/eslint-config": "workspace:*",
