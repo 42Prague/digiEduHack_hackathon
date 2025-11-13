@@ -82,7 +82,10 @@ class GCSStorageBackend(StorageBackend):
         signing_creds = service_account.Credentials(
             signer=signer,
             service_account_email=service_account_email,
-            token_uri=credentials.token_uri,
+            # Use the default Google OAuth2 token endpoint; we only need this
+            # because the constructor requires a token_uri, but signing itself
+            # is done via the IAM Signer above.
+            token_uri="https://oauth2.googleapis.com/token",
         )
 
         # Generate V4 signed URL for PUT using IAM signing
