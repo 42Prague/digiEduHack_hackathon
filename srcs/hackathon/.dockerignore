@@ -18,7 +18,7 @@ dist
 pnpm-debug.log*
 
 # Local environment files
-.env
+apps/analytics-egine/.env
 .env.*
 !.env.example
 
