@@ -89,10 +89,22 @@ You can also override the agent's reasoning depth on a per-request basis by addi
 
 ### Session-based workflow
 
-The `/analyze` endpoint now orchestrates long-running conversations. Each request returns a `session_id` and streams progress into a lightweight JSON store located at `app/tmp_db.json`:
+The `/analyze` endpoint now orchestrates long-running conversations. Each request returns a `session_id` and streams progress into a session store. By default the service connects to PostgreSQL when the following variables are present in `.env`:
+
+```
+SERVER_HOST=localhost
+SERVER_DB=develop
+SERVER_PORT=5435
+SERVER_USER=testuser
+SERVER_PASSWORD=pleaseletmein
+```
+
+The table `fancy_session` is created automatically (id `TEXT` primary key, `message_history` stored as `JSONB`). If these variables are omitted—or if PostgreSQL is unavailable—the service seamlessly falls back to the original JSON file at `app/tmp_db.json`.
+
+When using either backing store, the interaction pattern is the same:
 
 1. Send a POST to `/analyze` with a `query`. Omit `session_id` to start a fresh session; the response will include the generated identifier.
 2. Poll `GET /session/{session_id}` from the frontend (for example, every second) to retrieve the growing message history while the agent reasons and calls tools.
 3. For follow-up questions, include the previously issued `session_id` in the next `/analyze` request so the agent retrieves the full conversation context.
 
-The on-disk storage is intentionally simple. Swap out `app/session_store.py` with your production database integration when ready.
+The default implementations are intentionally lightweight so you can adapt `app/session_store.py` for your production data store if needed.
