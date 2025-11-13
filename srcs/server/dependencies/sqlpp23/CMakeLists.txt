@@ -1,0 +1,8 @@
+# Configure the project here as needed
+# set(BUILD_MYSQL_CONNECTOR ON)
+# set(BUILD_MARIADB_CONNECTOR ON)
+set(BUILD_POSTGRESQL_CONNECTOR ON)
+# set(BUILD_SQLITE3_CONNECTOR ON)
+# set(BUILD_SQLCIPHER_CONNECTOR ON)
+
+FetchContent_MakeAvailable(sqlpp23)
