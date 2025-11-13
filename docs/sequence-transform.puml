@@ -1,0 +1,58 @@
+@startuml
+autonumber
+participant "User PWA" as U
+participant "Backend (Cloud Run FastAPI)" as B
+participant "Cloud Storage (EU)" as GCS
+participant "Eventarc" as EA
+participant "MIME Decoder (Cloud Run)" as MD
+participant "Transformer" as TR
+participant "Tabular" as TB
+participant "BigQuery (EU)" as BQ
+
+U -> B: initiate_upload(region_id, filename, mime)
+note right of B
+  Initiate
+  resumable upload
+end note
+B -> GCS: create_resumable_upload()
+GCS --> B: {session_uri}
+B --> U: {session_uri, file_id}
+U -> GCS: upload_chunks(session_uri, data)
+GCS --> U: {upload_complete}
+
+GCS --> EA: OBJECT_FINALIZE event
+EA -> MD: decode(file_id)
+
+MD -> GCS: get_file(file_id)
+MD -> MD: detect_mime_type() → classify(text/image/audio/archive/other)
+note right of MD
+  Map MIME to category:
+  text, image, audio,
+  archive, other
+end note
+
+MD -> TR: transform(file_id, type)
+note right of TR
+  Processes file based on type:
+  text→extract, image→OCR, audio→ASR,
+  archive→unpack, other→best-effort
+  Saves result to GCS
+end note
+
+TR -> TB: analyze_structure(text_uri(s), metadata)
+note right of TB
+  Analyzes text structure,
+  converts to standardized format
+  and saves to BigQuery
+end note
+TB -> GCS: get_file(text_uri)
+TB -> TB: infer_schema() + standardize_format()
+TB -> TB: validate() → {audit_report}
+TB -> BQ: load_to_staging(data)
+TB -> BQ: merge_to_tables(dim_*, fact_*, observations)
+BQ --> TB: {bytes_processed, cache_hit}
+
+TB --> MD: {status: INGESTED, issues, warnings}
+MD --> B: {status: INGESTED, issues, warnings}
+B --> U: update_ui(data_health, preview, logs)
+@enduml

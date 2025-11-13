@@ -1,0 +1,239 @@
+@startuml
+!define ENTITY_COLOR #E3F2FD
+!define JUNCTION_COLOR #FFF3E0
+!define FEEDBACK_COLOR #F3E5F5
+
+' Core Entities
+class Region <<entity>> ENTITY_COLOR {
+  +UUID id
+  +String name
+  +String type
+  +Text description
+}
+
+class Student <<entity>> ENTITY_COLOR {
+  +UUID id
+  +String name
+  +Text description
+}
+
+class Parent <<entity>> ENTITY_COLOR {
+  +UUID id
+  +String name
+  +Text description
+}
+
+class Teacher <<entity>> ENTITY_COLOR {
+  +UUID id
+  +String name
+  +Text description
+}
+
+class Subject <<entity>> ENTITY_COLOR {
+  +UUID id
+  +String name
+  +Text description
+}
+
+' Governance & Rules
+class Rule <<entity>> ENTITY_COLOR {
+  +UUID id
+  +String title
+  +String type
+  +String source_url
+  +DateTime from
+  +DateTime to
+  +Text description
+}
+
+class Criteria <<entity>> ENTITY_COLOR {
+  +UUID id
+  +String name
+  +Float target_value
+  +DateTime from
+  +DateTime to
+  +Text description
+}
+
+class Experiment <<entity>> ENTITY_COLOR {
+  +UUID id
+  +String name
+  +DateTime from
+  +DateTime to
+  +String status
+  +Text description
+}
+
+' Feedback
+class Feedback <<entity>> FEEDBACK_COLOR {
+  +UUID id
+  +UUID author_id
+  +String author_type
+  +DateTime timestamp
+  +Float sentiment_score
+  +String category
+  +Text text_content
+}
+
+' Analysis
+class AnalysisResult <<entity>> FEEDBACK_COLOR {
+  +UUID id
+  +DateTime timestamp
+  +String status
+  +Text report
+}
+
+' Junction Tables
+class StudentParent <<junction>> JUNCTION_COLOR {
+  +UUID student_id
+  +UUID parent_id
+}
+
+class StudentTeacherSubject <<junction>> JUNCTION_COLOR {
+  +UUID id
+  +UUID student_id
+  +UUID teacher_id
+  +UUID subject_id
+  +UUID region_id
+  +DateTime from
+  +DateTime to
+  +Text description
+}
+
+class RegionRule <<junction>> JUNCTION_COLOR {
+  +UUID region_id
+  +UUID rule_id
+  +DateTime from
+  +DateTime to
+  +String status
+}
+
+class RegionCriteria <<junction>> JUNCTION_COLOR {
+  +UUID region_id
+  +UUID criteria_id
+  +DateTime from
+  +DateTime to
+  +Float baseline_value
+}
+
+class RegionExperiment <<junction>> JUNCTION_COLOR {
+  +UUID region_id
+  +UUID experiment_id
+  +DateTime from
+  +DateTime to
+}
+
+class ExperimentCriteria <<junction>> JUNCTION_COLOR {
+  +UUID experiment_id
+  +UUID criteria_id
+  +Float weight
+  +String role
+}
+
+class FeedbackTarget <<junction>> JUNCTION_COLOR {
+  +UUID feedback_id
+  +String target_type
+  +UUID target_id
+  +Float relevance_score
+}
+
+class AnalysisFeedback <<junction>> JUNCTION_COLOR {
+  +UUID analysis_id
+  +UUID feedback_id
+}
+
+class AnalysisImpact <<junction>> JUNCTION_COLOR {
+  +UUID analysis_id
+  +String target_type
+  +UUID target_id
+  +Float impact_score
+}
+
+' Relationships
+Region "1" --> "*" RegionRule : follows
+Region "1" --> "*" RegionCriteria : tracks
+Region "1" --> "*" RegionExperiment : participates_in
+
+Student "1" --> "*" StudentParent : has
+Parent "1" --> "*" StudentParent : parents
+
+Student "1" --> "*" StudentTeacherSubject : enrolled_in
+Teacher "1" --> "*" StudentTeacherSubject : teaches
+Subject "1" --> "*" StudentTeacherSubject : taught_in
+Region "1" --> "*" StudentTeacherSubject : hosts
+
+Rule "1" --> "*" RegionRule : applied_in
+
+Criteria "1" --> "*" RegionCriteria : measured_in
+Criteria "1" --> "*" ExperimentCriteria : evaluated_in
+
+Experiment "1" --> "*" RegionExperiment : conducted_in
+Experiment "1" --> "*" ExperimentCriteria : measures
+
+Student "1" --> "*" Feedback : provides
+Teacher "1" --> "*" Feedback : provides
+Parent "1" --> "*" Feedback : provides
+
+Feedback "1" --> "*" FeedbackTarget : relates_to
+
+AnalysisResult "1" --> "*" AnalysisFeedback : based_on
+Feedback "1" --> "*" AnalysisFeedback : included_in
+
+AnalysisResult "1" --> "*" AnalysisImpact : impacts
+
+note right of Region
+  Central organizational unit
+  Can represent school, district, or any other boundary
+  Defines rules and criteria
+  Students/teachers linked via StudentTeacherSubject
+end note
+
+note right of Feedback
+  Polymorphic feedback from
+  students, teachers, parents.
+  Given freely without direct targeting.
+  System automatically identifies related
+  experiments and criteria via AI analysis.
+end note
+
+note bottom of StudentTeacherSubject
+  Captures "who teaches what to whom,
+  when, and where" with full history.
+  Contains region_id to track student/teacher
+  location history over time.
+end note
+
+note right of FeedbackTarget
+  Polymorphic system-computed relationships.
+  AI automatically determines which entities
+  (experiments, criteria, teachers, regions, etc.)
+  are mentioned or relevant to each feedback.
+  target_type examples: "experiment", "criteria",
+  "teacher", "region", "subject"
+  relevance_score indicates confidence level.
+end note
+
+note right of AnalysisResult
+  AI-generated analysis report based on
+  multiple feedback entries.
+  Contains insights, recommendations,
+  and actionable advice.
+  status: "processing", "completed", "failed"
+end note
+
+note right of AnalysisFeedback
+  Links analysis to the feedback entries
+  that were used as input for the analysis.
+  Many feedback → One analysis report.
+end note
+
+note right of AnalysisImpact
+  Polymorphic system-computed impacts.
+  Identifies which entities are affected
+  by the analysis recommendations.
+  target_type examples: "teacher", "region",
+  "experiment", "criteria", "subject"
+  impact_score indicates strength of impact.
+end note
+
+@enduml
