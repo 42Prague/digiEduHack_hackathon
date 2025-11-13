@@ -147,6 +147,8 @@ def run_agent(request: AnalysisRequest) -> AnalysisResponse:
     """
     steps: List[Step] = []
 
+    max_steps = request.max_steps or settings.agent_max_steps
+
     # Initial user message
     user_content = f"Language: {request.language}\n\nUser question:\n{request.query}"
 
@@ -168,7 +170,7 @@ def run_agent(request: AnalysisRequest) -> AnalysisResponse:
     total_input_tokens = 0
     total_output_tokens = 0
 
-    for step_index in range(settings.agent_max_steps):
+    for step_index in range(max_steps):
         response = client.responses.create(
             model=model_name,
             instructions=SYSTEM_PROMPT,

@@ -23,6 +23,12 @@ class AnalysisRequest(BaseModel):
         default="en",
         description="Preferred language of the answer, e.g. 'en' or 'cs'.",
     )
+    max_steps: Optional[int] = Field(
+        default=None,
+        ge=1,
+        le=20,
+        description="Optional override for maximum reasoning steps (default from server settings).",
+    )
 
 
 class PlotSpec(BaseModel):

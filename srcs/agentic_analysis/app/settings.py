@@ -9,7 +9,7 @@ class Settings(BaseSettings):
     azure_openai_api_version: str = "2024-09-01-preview"
 
     # Agent
-    agent_max_steps: int = 4
+    agent_max_steps: int = 10
     agent_debug: bool = False
 
     # FastAPI server

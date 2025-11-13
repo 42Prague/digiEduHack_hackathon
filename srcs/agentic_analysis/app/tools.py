@@ -53,7 +53,7 @@ def temporal_search(start_date: str, end_date: str) -> Dict[str, Any]:
         "end_date": end_date,
         "files": [
             {
-                "id": "region_a_scores_6m_after_join",
+                "id": "region_a_scores_6m_after_join.pdf",
                 "name": "Region A – 6 months after joining",
                 "summary": "Scores and interventions in the 6-month window after region onboarding.",
             }
