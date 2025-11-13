@@ -120,14 +120,13 @@
     "last12mo": "Posledních 12 měsíců"
   },
   "upload": {
-    "csvFile": "CSV soubor",
-    "dragHere": "Přetáhněte CSV sem nebo klikněte pro výběr",
+    "file": "Soubor",
+    "dragHere": "Přetáhněte soubor sem nebo klikněte pro výběr",
     "upload": "Nahrát",
     "blocked": "Nahrávání zablokováno",
-    "tips": "Používejte CSV v UTF-8, přidejte hlavičku a vyhněte se prázdným sloupcům.",
-    "provideIdAndFile": "Zadejte prosím ID a zvolte CSV soubor.",
-    "fileMustBeCsv": "Soubor musí být s příponou .csv",
-    "fileTooLarge": "Velikost souboru musí být menší než 5 MB",
+    "tips": "Můžete nahrát CSV, XLSX, PDF, audio nebo jiné soubory.",
+    "provideIdAndFile": "Zadejte prosím ID a zvolte soubor.",
+    "fileTooLarge": "Velikost souboru musí být menší než 50 MB",
     "successMessage": "Nahrán dataset {{id}} pro {{scopeId}}"
   }
 }

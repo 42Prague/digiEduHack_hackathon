@@ -10,3 +10,4 @@ faster-whisper==1.0.3
 pydantic==2.7.4
 pdfplumber==0.11.2
 numpy==1.26.4
+requests==2.32.3

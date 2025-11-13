@@ -120,14 +120,13 @@
     "last12mo": "Last 12 months"
   },
   "upload": {
-    "csvFile": "CSV File",
-    "dragHere": "Drag & drop CSV here, or click to browse",
+    "file": "File",
+    "dragHere": "Drag & drop a file here, or click to browse",
     "upload": "Upload",
     "blocked": "Upload blocked",
-    "tips": "Use UTF-8 CSV, include header row, and avoid empty columns.",
-    "provideIdAndFile": "Please provide an ID and choose a CSV file.",
-    "fileMustBeCsv": "File must be a .csv",
-    "fileTooLarge": "File size must be less than 5MB",
+    "tips": "You can upload CSV, XLSX, PDF, audio, or other files.",
+    "provideIdAndFile": "Please provide an ID and choose a file.",
+    "fileTooLarge": "File size must be less than 50MB",
     "successMessage": "Uploaded dataset {{id}} for {{scopeId}}"
   }
 }

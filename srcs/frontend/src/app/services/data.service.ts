@@ -1,34 +1,79 @@
-import { Injectable } from '@angular/core';
-import { Observable, of } from 'rxjs';
+import { Injectable, inject } from '@angular/core';
+import { Observable, map, tap } from 'rxjs';
+import { HttpClient, HttpEvent, HttpEventType } from '@angular/common/http';
 import { DatasetSummary } from '../models/dataset';
 
 @Injectable({ providedIn: 'root' })
 export class DataService {
 	// #region Private Properties
-	private readonly datasets: DatasetSummary[] = [
-		{ id: 'd-1', scope: 'region', scopeId: 'r-1', period: '2025-Q1', records: 1200, lastUpdated: '2025-03-31' },
-		{ id: 'd-2', scope: 'region', scopeId: 'r-2', period: '2025-Q1', records: 980, lastUpdated: '2025-03-22' },
-		{ id: 'd-3', scope: 'school', scopeId: 's-1', period: '2025-Q1', records: 300, lastUpdated: '2025-03-20' }
-	];
+	private readonly http: HttpClient = inject(HttpClient);
+	private readonly datasets: DatasetSummary[] = [];
 	// #endregion
 
 	// #region Public Methods
 	public listByScope(scope: 'region' | 'school', scopeId?: string): Observable<DatasetSummary[]> {
 		const filtered = scopeId ? this.datasets.filter(d => d.scope === scope && d.scopeId === scopeId) : this.datasets.filter(d => d.scope === scope);
-		return of(filtered);
+		return new Observable<DatasetSummary[]>((subscriber) => {
+			subscriber.next(filtered);
+			subscriber.complete();
+		});
 	}
 
 	public upload(scope: 'region' | 'school', scopeId: string, _file: File): Observable<DatasetSummary> {
-		const created: DatasetSummary = {
-			id: crypto.randomUUID(),
-			scope,
-			scopeId,
-			period: '2025-Q2',
-			records: Math.floor(200 + Math.random() * 1200),
-			lastUpdated: new Date().toISOString().slice(0, 10)
-		};
-		this.datasets.push(created);
-		return of(created);
+		type RawIngestResult = { success: boolean; raw_id?: string; has_text: boolean; has_table_data: boolean; };
+		const form = new FormData();
+		form.append('file', _file, _file.name);
+		// Map scope into optional metadata fields understood by ingest
+		form.append('doc_type', scope);
+		// Only send numeric workshop_id; backend expects Optional[int]
+		const numericId = Number(scopeId);
+		if (Number.isFinite(numericId) && String(numericId) === scopeId.trim()) {
+			form.append('workshop_id', String(numericId));
+		}
+
+		return this.http.post<RawIngestResult>('/ingest/raw/ingest', form).pipe(
+			map((res: RawIngestResult) => {
+				const id = res.raw_id || crypto.randomUUID();
+				const created: DatasetSummary = {
+					id,
+					scope,
+					scopeId,
+					period: new Date().toISOString().slice(0, 7), // YYYY-MM
+					records: res.has_table_data ? 1 : 0,
+					lastUpdated: new Date().toISOString().slice(0, 10)
+				};
+				this.datasets.push(created);
+				return created;
+			})
+		);
+	}
+
+	public uploadWithProgress(scope: 'region' | 'school', scopeId: string, _file: File): Observable<HttpEvent<unknown>> {
+		type RawIngestResult = { success: boolean; raw_id?: string; has_text: boolean; has_table_data: boolean; };
+		const form = new FormData();
+		form.append('file', _file, _file.name);
+		form.append('doc_type', scope);
+		const numericId = Number(scopeId);
+		if (Number.isFinite(numericId) && String(numericId) === scopeId.trim()) {
+			form.append('workshop_id', String(numericId));
+		}
+		return this.http.post<RawIngestResult>('/ingest/raw/ingest', form, { observe: 'events', reportProgress: true }).pipe(
+			tap((event: HttpEvent<RawIngestResult>) => {
+				if (event.type === HttpEventType.Response && event.body) {
+					const res = event.body;
+					const id = res.raw_id || crypto.randomUUID();
+					const created: DatasetSummary = {
+						id,
+						scope,
+						scopeId,
+						period: new Date().toISOString().slice(0, 7),
+						records: res.has_table_data ? 1 : 0,
+						lastUpdated: new Date().toISOString().slice(0, 10)
+					};
+					this.datasets.push(created);
+				}
+			})
+		);
 	}
 	// #endregion
 }
