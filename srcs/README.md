@@ -54,6 +54,13 @@ The Docker image now launches Uvicorn with `--reload`, so `docker compose up bac
 * Exposes port **1080**
 * Stores uploaded file chunks & metadata in `./data/uploads/`
 
+### **4. frontend (EduZmena file upload UI)**
+
+* Builds from `./eduzmena-frontend/file-upload`
+* Runs [`live-server`](https://www.npmjs.com/package/live-server) inside the container
+* Serves the static upload UI on **[http://localhost:4173](http://localhost:4173)**
+* Talks to the backend (`http://localhost:8000`) and tusd (`http://localhost:1080`) by default
+
 Both `backend` and `tusd` access `/data` through a **shared bind mount**.
 
 ---

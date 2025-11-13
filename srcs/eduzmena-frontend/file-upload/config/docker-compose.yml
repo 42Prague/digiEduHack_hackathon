@@ -1,9 +1,0 @@
-services:
-  tusd:
-    image: tusproject/tusd:latest
-    container_name: tusd-server
-    restart: unless-stopped
-    ports:
-      - "1080:8080"
-    volumes:
-      - ../uploads:/srv/tusd-data

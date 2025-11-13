@@ -23,14 +23,14 @@ services:
     #           capabilities: [gpu]
 
   tusd:
-    image: tusproject/tusd:v2
-    container_name: tusd
+    image: tusproject/tusd:latest
+    container_name: tusd-server
     restart: unless-stopped
     command:
       - "-upload-dir=/data/uploads"
       - "-behind-proxy"
     volumes:
-      - ./data:/data          # uploads will end up in ./data/uploads on host
+      - ./data:/data
     ports:
       - "1080:1080"           # tusd HTTP API
 
@@ -58,6 +58,18 @@ services:
       - TUSD_URL=http://tusd:1080
     volumes:
       - ./data:/data          # SQLite DB + any extra app data
+
+  frontend:
+    build:
+      context: ./eduzmena-frontend/file-upload
+    depends_on:
+      - backend
+      - tusd
+    restart: unless-stopped
+    environment:
+      - PORT=4173
+    ports:
+      - "4173:4173"
 
 volumes:
   ollama_data:
