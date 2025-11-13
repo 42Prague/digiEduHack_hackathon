@@ -28,6 +28,13 @@ class Settings(BaseSettings):
     MAX_UPLOAD_MB: int = 50
     ALLOWED_UPLOAD_MIME_TYPES: str = ""  # Comma-separated, empty = allow all
 
+    # MIME Decoder Service Configuration
+    TRANSFORMER_SERVICE_URL: str = ""
+    BACKEND_SERVICE_URL: str = ""
+    REQUEST_TIMEOUT: int = 300  # seconds for Transformer calls
+    BACKEND_UPDATE_TIMEOUT: int = 5  # seconds for Backend status updates
+    LOG_LEVEL: str = "INFO"
+
     @property
     def allowed_mime_types(self) -> list[str] | None:
         """Parse ALLOWED_UPLOAD_MIME_TYPES into a list."""

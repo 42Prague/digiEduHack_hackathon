@@ -77,7 +77,7 @@ async def handle_cloud_event(request: Request):
         )
 
         # Process the event
-        result = process_cloud_event(event_data)
+        result = await process_cloud_event(event_data)
 
         # Return success response
         return JSONResponse(

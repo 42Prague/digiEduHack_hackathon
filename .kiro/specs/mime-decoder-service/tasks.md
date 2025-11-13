@@ -6,11 +6,11 @@
   - Create __init__.py files for package structure (DONE)
   - _Requirements: 9.1_
 
-- [ ] 2. Extend configuration for MIME Decoder
-  - Update src/eduscale/core/config.py with MIME Decoder settings
-  - Add TRANSFORMER_SERVICE_URL, BACKEND_SERVICE_URL
-  - Add REQUEST_TIMEOUT, BACKEND_UPDATE_TIMEOUT, LOG_LEVEL
-  - Validate required environment variables at startup
+- [x] 2. Extend configuration for MIME Decoder
+  - Update src/eduscale/core/config.py with MIME Decoder settings (DONE)
+  - Add TRANSFORMER_SERVICE_URL, BACKEND_SERVICE_URL (DONE)
+  - Add REQUEST_TIMEOUT, BACKEND_UPDATE_TIMEOUT, LOG_LEVEL (DONE)
+  - Validate required environment variables at startup (DONE)
   - _Requirements: 8.1, 8.2, 8.3, 8.4, 8.5, 8.6_
 
 - [x] 3. Implement MIME type classifier
@@ -22,35 +22,35 @@
   - Return "other" for unrecognized types (DONE)
   - _Requirements: 3.1, 3.2, 3.3, 3.4, 3.5, 3.6, 3.7, 3.8_
 
-- [ ] 4. Enhance metadata extraction in models.py
-  - Update ProcessingRequest.from_cloud_event() method in models.py
-  - Parse object path pattern: uploads/{region_id}/{file_id}.{ext}
-  - Extract file_id and region_id from path using regex or split
-  - Handle invalid path formats with warnings and default values
-  - Add region_id field to ProcessingRequest model
+- [x] 4. Enhance metadata extraction in models.py
+  - Update ProcessingRequest.from_cloud_event() method in models.py (DONE)
+  - Parse object path pattern: uploads/{region_id}/{file_id}.{ext} (DONE)
+  - Extract file_id and region_id from path using regex or split (DONE)
+  - Handle invalid path formats with warnings and default values (DONE)
+  - Add region_id field to ProcessingRequest model (DONE)
   - _Requirements: 2.1, 2.2, 2.3, 2.4, 2.5_
 
-- [ ] 5. Implement HTTP clients
-  - Create src/eduscale/services/mime_decoder/clients.py
-  - Implement call_transformer() async function with httpx.AsyncClient
-  - Set timeout to REQUEST_TIMEOUT (300s) for Transformer calls
-  - Build request payload with file metadata and category
-  - Parse response and extract status from Transformer
-  - Implement update_backend_status() async function
-  - Use fire-and-forget pattern with asyncio.create_task() for Backend updates
-  - Set short timeout (5s) for Backend calls
-  - Log errors but don't fail the request if Backend update fails
-  - Handle timeouts and HTTP errors appropriately
+- [x] 5. Implement HTTP clients
+  - Create src/eduscale/services/mime_decoder/clients.py (DONE)
+  - Implement call_transformer() async function with httpx.AsyncClient (DONE)
+  - Set timeout to REQUEST_TIMEOUT (300s) for Transformer calls (DONE)
+  - Build request payload with file metadata and category (DONE)
+  - Parse response and extract status from Transformer (DONE)
+  - Implement update_backend_status() async function (DONE)
+  - Use fire-and-forget pattern with asyncio.create_task() for Backend updates (DONE)
+  - Set short timeout (5s) for Backend calls (DONE)
+  - Log errors but don't fail the request if Backend update fails (DONE)
+  - Handle timeouts and HTTP errors appropriately (DONE)
   - _Requirements: 4.1, 4.2, 4.3, 4.4, 4.5, 4.6, 4.7, 5.1, 5.2, 5.3, 5.4, 5.5_
 
-- [ ] 6. Enhance service orchestration
-  - Update src/eduscale/services/mime_decoder/service.py
-  - Import and use clients.py functions (call_transformer, update_backend_status)
-  - After classification, call Transformer service with ProcessingRequest
-  - Fire-and-forget Backend status update (don't await)
-  - Measure processing time
-  - Return detailed response with status and timing
-  - Remove TODO comment about routing to Transformer
+- [x] 6. Enhance service orchestration
+  - Update src/eduscale/services/mime_decoder/service.py (DONE)
+  - Import and use clients.py functions (call_transformer, update_backend_status) (DONE)
+  - After classification, call Transformer service with ProcessingRequest (DONE)
+  - Fire-and-forget Backend status update (don't await) (DONE)
+  - Measure processing time (DONE)
+  - Return detailed response with status and timing (DONE)
+  - Remove TODO comment about routing to Transformer (DONE)
   - _Requirements: 4.1, 4.2, 4.3, 4.4, 5.1_
 
 - [x] 7. Implement CloudEvents handler endpoint
@@ -132,10 +132,10 @@
   - Not integrated into main eduscale app (DONE)
   - _Requirements: 1.1, 7.1_
 
-- [ ] 17. Add missing environment variables to deployment config
-  - Update infra/mime-decoder-config.yaml
-  - Add TRANSFORMER_SERVICE_URL environment variable
-  - Add BACKEND_SERVICE_URL environment variable
-  - Add REQUEST_TIMEOUT with default 300
-  - Add BACKEND_UPDATE_TIMEOUT with default 5
+- [x] 17. Add missing environment variables to deployment config
+  - Update infra/mime-decoder-config.yaml (DONE)
+  - Add TRANSFORMER_SERVICE_URL environment variable (DONE)
+  - Add BACKEND_SERVICE_URL environment variable (DONE)
+  - Add REQUEST_TIMEOUT with default 300 (DONE)
+  - Add BACKEND_UPDATE_TIMEOUT with default 5 (DONE)
   - _Requirements: 8.1, 8.2, 8.5_

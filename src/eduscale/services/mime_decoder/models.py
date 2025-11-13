@@ -5,10 +5,14 @@ Implements CloudEvents 1.0 specification for Cloud Storage events.
 See: https://github.com/cloudevents/spec/blob/v1.0/spec.md
 """
 
+import logging
+import re
 from datetime import datetime
 from typing import Optional
 
 from pydantic import BaseModel, Field
+
+logger = logging.getLogger(__name__)
 
 
 class StorageObjectData(BaseModel):
@@ -71,11 +75,12 @@ class ProcessingRequest(BaseModel):
     """
 
     file_id: str = Field(..., description="Unique file identifier (derived from object name)")
+    region_id: str = Field(..., description="Region identifier (extracted from object path)")
     bucket: str = Field(..., description="Cloud Storage bucket name")
     object_name: str = Field(..., description="Object path in bucket")
     content_type: str = Field(..., description="MIME type of the file")
     file_category: str = Field(
-        ..., description="Classified file category (text, image, audio, archive, other)"
+        ..., description="Classified file category (text, csv, excel, image, audio, archive, other)"
     )
     size_bytes: int = Field(..., description="File size in bytes")
     event_id: str = Field(..., description="Original CloudEvent ID for tracing")
@@ -85,6 +90,8 @@ class ProcessingRequest(BaseModel):
     def from_cloud_event(cls, event: CloudEvent, file_category: str) -> "ProcessingRequest":
         """
         Create a ProcessingRequest from a CloudEvent and classified file category.
+        
+        Extracts file_id and region_id from object path pattern: uploads/{region_id}/{file_id}.{ext}
 
         Args:
             event: The CloudEvent received from Eventarc
@@ -93,11 +100,40 @@ class ProcessingRequest(BaseModel):
         Returns:
             ProcessingRequest ready for downstream processing
         """
-        # Derive file_id from object name (remove path prefixes if any)
-        file_id = event.data.name.split("/")[-1].split(".")[0]
+        object_path = event.data.name
+        
+        # Parse path pattern: uploads/{region_id}/{file_id}.{ext}
+        # Example: uploads/region-cz-01/abc123.pdf
+        path_pattern = r"^uploads/([^/]+)/([^/]+?)(?:\.[^.]+)?$"
+        match = re.match(path_pattern, object_path)
+        
+        if match:
+            region_id = match.group(1)
+            file_id = match.group(2)
+            logger.info(
+                f"Extracted metadata from path",
+                extra={
+                    "object_path": object_path,
+                    "region_id": region_id,
+                    "file_id": file_id
+                }
+            )
+        else:
+            # Fallback: use defaults if path doesn't match expected pattern
+            logger.warning(
+                f"Object path does not match expected pattern 'uploads/{{region_id}}/{{file_id}}.{{ext}}'",
+                extra={
+                    "object_path": object_path,
+                    "expected_pattern": "uploads/{region_id}/{file_id}.{ext}"
+                }
+            )
+            # Extract file_id from filename (last part of path without extension)
+            file_id = object_path.split("/")[-1].split(".")[0]
+            region_id = "unknown"
 
         return cls(
             file_id=file_id,
+            region_id=region_id,
             bucket=event.data.bucket,
             object_name=event.data.name,
             content_type=event.data.contentType,

@@ -2,7 +2,9 @@
 MIME type classifier for file categorization.
 
 Classifies files into categories based on their MIME type:
-- text: Plain text, markdown, HTML, PDF, Office documents
+- text: Plain text, markdown, HTML, PDF, Word documents, PowerPoint
+- csv: Plain text tabular data (CSV, TSV)
+- excel: Binary spreadsheet formats (Excel .xls/.xlsx, ODS)
 - image: Images (JPEG, PNG, GIF, etc.)
 - audio: Audio files and voice recordings
 - archive: ZIP, TAR, GZIP archives
@@ -17,6 +19,8 @@ class FileCategory(str, Enum):
     """File categories for processing routing."""
 
     TEXT = "text"
+    CSV = "csv"
+    EXCEL = "excel"
     IMAGE = "image"
     AUDIO = "audio"
     ARCHIVE = "archive"
@@ -29,20 +33,23 @@ MIME_CATEGORY_MAP: Dict[str, FileCategory] = {
     "text/plain": FileCategory.TEXT,
     "text/markdown": FileCategory.TEXT,
     "text/html": FileCategory.TEXT,
-    "text/csv": FileCategory.TEXT,
     "application/pdf": FileCategory.TEXT,
     "application/rtf": FileCategory.TEXT,
     # Microsoft Office formats
     "application/msword": FileCategory.TEXT,  # .doc
     "application/vnd.openxmlformats-officedocument.wordprocessingml.document": FileCategory.TEXT,  # .docx
-    "application/vnd.ms-excel": FileCategory.TEXT,  # .xls
-    "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet": FileCategory.TEXT,  # .xlsx
     "application/vnd.ms-powerpoint": FileCategory.TEXT,  # .ppt
     "application/vnd.openxmlformats-officedocument.presentationml.presentation": FileCategory.TEXT,  # .pptx
     # OpenDocument formats
     "application/vnd.oasis.opendocument.text": FileCategory.TEXT,  # .odt
-    "application/vnd.oasis.opendocument.spreadsheet": FileCategory.TEXT,  # .ods
     "application/vnd.oasis.opendocument.presentation": FileCategory.TEXT,  # .odp
+    # CSV/TSV formats (plain text tabular data)
+    "text/csv": FileCategory.CSV,  # .csv
+    "text/tab-separated-values": FileCategory.CSV,  # .tsv
+    # Excel/Spreadsheet formats (binary/complex formats)
+    "application/vnd.ms-excel": FileCategory.EXCEL,  # .xls
+    "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet": FileCategory.EXCEL,  # .xlsx
+    "application/vnd.oasis.opendocument.spreadsheet": FileCategory.EXCEL,  # .ods
     # Image formats
     "image/jpeg": FileCategory.IMAGE,
     "image/png": FileCategory.IMAGE,

@@ -4,13 +4,17 @@ MIME Decoder service implementation.
 Handles CloudEvent processing and routes files to appropriate transformers.
 """
 
+import asyncio
 import json
 import logging
+import time
 from datetime import datetime
 from typing import Dict, Any
 
 from eduscale.services.mime_decoder.classifier import classify_mime_type
 from eduscale.services.mime_decoder.models import CloudEvent, StorageObjectData, ProcessingRequest
+from eduscale.services.mime_decoder.clients import call_transformer, update_backend_status
+from eduscale.core.config import settings
 
 # Configure structured logging for Cloud Logging
 logger = logging.getLogger(__name__)
@@ -94,7 +98,7 @@ def _convert_gcs_notification_to_cloud_event(gcs_data: Dict[str, Any]) -> CloudE
         raise ValueError(f"Invalid GCS notification format: {str(e)}")
 
 
-def process_cloud_event(event_data: Dict[str, Any]) -> Dict[str, Any]:
+async def process_cloud_event(event_data: Dict[str, Any]) -> Dict[str, Any]:
     """
     Process a CloudEvent from Eventarc.
 
@@ -108,6 +112,8 @@ def process_cloud_event(event_data: Dict[str, Any]) -> Dict[str, Any]:
         ValueError: If event data is invalid
         Exception: For unexpected processing errors
     """
+    start_time = time.time()
+    
     try:
         # Check if this is a raw GCS notification or a CloudEvent
         # GCS notifications have 'kind': 'storage#object'
@@ -147,19 +153,52 @@ def process_cloud_event(event_data: Dict[str, Any]) -> Dict[str, Any]:
             extra={
                 "event_id": cloud_event.id,
                 "file_id": processing_req.file_id,
+                "region_id": processing_req.region_id,
                 "file_category": file_category.value,
                 "content_type": cloud_event.data.contentType,
             },
         )
 
-        # TODO: Route to Transformer service based on file_category
-        # For now, just return success
+        # Call Transformer service
+        transformer_response = await call_transformer(
+            request=processing_req,
+            transformer_url=settings.TRANSFORMER_SERVICE_URL,
+            timeout=settings.REQUEST_TIMEOUT
+        )
+        
+        # Fire-and-forget Backend status update (don't await)
+        asyncio.create_task(
+            update_backend_status(
+                file_id=processing_req.file_id,
+                region_id=processing_req.region_id,
+                status="PROCESSING",
+                backend_url=settings.BACKEND_SERVICE_URL,
+                timeout=settings.BACKEND_UPDATE_TIMEOUT
+            )
+        )
+        
+        # Calculate processing time
+        processing_time_ms = int((time.time() - start_time) * 1000)
+        
+        logger.info(
+            "Event processed successfully",
+            extra={
+                "event_id": cloud_event.id,
+                "file_id": processing_req.file_id,
+                "region_id": processing_req.region_id,
+                "processing_time_ms": processing_time_ms,
+                "transformer_status": transformer_response.get("status")
+            }
+        )
 
         return {
             "status": "success",
             "event_id": cloud_event.id,
             "file_id": processing_req.file_id,
+            "region_id": processing_req.region_id,
             "file_category": file_category.value,
+            "processing_time_ms": processing_time_ms,
+            "transformer_status": transformer_response.get("status"),
             "message": "Event processed successfully",
         }
 

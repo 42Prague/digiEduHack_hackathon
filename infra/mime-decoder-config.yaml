@@ -31,6 +31,16 @@ spec:
           value: BUCKET_NAME_PLACEHOLDER
         - name: ENVIRONMENT
           value: prod
+        - name: TRANSFORMER_SERVICE_URL
+          value: TRANSFORMER_SERVICE_URL_PLACEHOLDER
+        - name: BACKEND_SERVICE_URL
+          value: BACKEND_SERVICE_URL_PLACEHOLDER
+        - name: REQUEST_TIMEOUT
+          value: '300'
+        - name: BACKEND_UPDATE_TIMEOUT
+          value: '5'
+        - name: LOG_LEVEL
+          value: INFO
         resources:
           limits:
             cpu: '1'
