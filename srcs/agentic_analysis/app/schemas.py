@@ -89,3 +89,16 @@ class SummaryResponse(BaseModel):
     summary: str
     model: str
     token_usage: Optional[Dict] = None
+
+
+class EmbeddingRequest(BaseModel):
+    text: str = Field(
+        ...,
+        min_length=1,
+        description="Short text to embed. Optimized for <1000 tokens.",
+    )
+
+
+class EmbeddingResponse(BaseModel):
+    embedding: List[float]
+    model: str

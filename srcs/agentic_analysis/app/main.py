@@ -9,11 +9,14 @@ from .schemas import (
     SessionHistory,
     SummaryRequest,
     SummaryResponse,
+    EmbeddingRequest,
+    EmbeddingResponse,
 )
 from .agent import run_agent
 from .settings import settings
 from . import session_store
 from .azure_client import client
+from .embeddings import embed_text, EMBEDDING_MODEL_NAME
 
 app = FastAPI(
     title="EduScale LLM Analysis Service",
@@ -128,3 +131,13 @@ def summarize(request: SummaryRequest) -> SummaryResponse:
         }
 
     return SummaryResponse(summary=summary, model=settings.azure_openai_model, token_usage=token_usage)
+
+
+@app.post("/embed", response_model=EmbeddingResponse)
+def embed(request: EmbeddingRequest) -> EmbeddingResponse:
+    text = request.text.strip()
+    if not text:
+        raise HTTPException(status_code=400, detail="Text must not be empty.")
+
+    vector = embed_text(text)
+    return EmbeddingResponse(embedding=vector, model=EMBEDDING_MODEL_NAME)
