@@ -18,3 +18,12 @@ resource "google_project_iam_member" "eventarc_receiver" {
 
 # Note: Cloud Run Invoker role for MIME Decoder service will be added in eventarc.tf
 # after the MIME Decoder Cloud Run service is defined, to avoid circular dependencies.
+
+# Grant Cloud Storage service agent permission to publish to Pub/Sub
+# Required for Eventarc to receive Cloud Storage events via Pub/Sub
+# The Cloud Storage service agent has the format: service-PROJECT_NUMBER@gs-project-accounts.iam.gserviceaccount.com
+resource "google_project_iam_member" "gcs_pubsub_publisher" {
+  project = var.project_id
+  role    = "roles/pubsub.publisher"
+  member  = "serviceAccount:service-${data.google_project.project.number}@gs-project-accounts.iam.gserviceaccount.com"
+}

@@ -127,5 +127,5 @@ variable "alert_email" {
 variable "enable_monitoring_dashboard" {
   description = "Create Cloud Monitoring dashboard for Eventarc integration"
   type        = bool
-  default     = true
+  default     = false
 }

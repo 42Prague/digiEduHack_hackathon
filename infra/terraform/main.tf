@@ -75,6 +75,14 @@ resource "google_storage_bucket_iam_member" "cloud_run_object_admin" {
   member = "serviceAccount:${data.google_project.project.number}-compute@developer.gserviceaccount.com"
 }
 
+# Grant Eventarc service account access to bucket
+# Eventarc needs to read bucket metadata to validate the trigger
+resource "google_storage_bucket_iam_member" "eventarc_object_viewer" {
+  bucket = google_storage_bucket.uploads.name
+  role   = "roles/storage.objectViewer"
+  member = "serviceAccount:${google_service_account.eventarc_trigger.email}"
+}
+
 # Service Account for GitHub Actions
 resource "google_service_account" "github_actions" {
   account_id   = "github-actions"
