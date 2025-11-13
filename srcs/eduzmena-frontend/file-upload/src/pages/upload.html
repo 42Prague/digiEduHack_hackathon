@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>File Upload Service - TUS Protocol</title>
+    <link href="https://releases.transloadit.com/uppy/v5.1.11/uppy.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="../css/styles.css">
+</head>
+<body>
+    <div class="container">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+            <h1 style="margin: 0;">File Upload Service</h1>
+            <a href="admin.html" style="color: #3b82f6; text-decoration: none; padding: 0.5rem 1rem; border: 1px solid #3b82f6; border-radius: 6px; font-size: 0.875rem;">Admin Panel</a>
+        </div>
+        <div id="files-drag-drop"></div>
+        <div class="config-section">
+            <div class="config-section-item">
+                <label for="region">Region</label>
+                <select name="region" id="region">
+                    <option value="">Select a region</option>
+                </select>
+            </div>
+            <div class="config-section-item">
+                <label for="school">School</label>
+                <select name="school" id="school">
+                    <option value="">Select a school</option>
+                </select>
+            </div>
+        </div>
+    </div>
+    <script type="module">
+        import '../js/upload.js'
+    </script>
+</body>
+</html>

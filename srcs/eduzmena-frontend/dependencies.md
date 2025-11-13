@@ -1,0 +1,1 @@
+npm install @uppy/core @uppy/dashboard @uppy/tus
