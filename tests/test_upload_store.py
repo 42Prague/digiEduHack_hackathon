@@ -55,7 +55,7 @@ def test_list_all_with_records(upload_store):
     """Test listing all records."""
     record1 = UploadRecord(
         file_id="id-1",
-        region_id="eu-west",
+        region_id="school-paris",
         file_name="file1.csv",
         content_type="text/csv",
         size_bytes=100,
@@ -65,7 +65,7 @@ def test_list_all_with_records(upload_store):
     )
     record2 = UploadRecord(
         file_id="id-2",
-        region_id="us-east",
+        region_id="school-berlin",
         file_name="file2.csv",
         content_type="text/csv",
         size_bytes=200,
@@ -90,7 +90,7 @@ def test_overwrite_record(upload_store, sample_record):
     # Create new record with same file_id but different data
     new_record = UploadRecord(
         file_id=sample_record.file_id,
-        region_id="us-east",
+        region_id="school-madrid",
         file_name="different.csv",
         content_type="text/csv",
         size_bytes=2048,
@@ -102,7 +102,7 @@ def test_overwrite_record(upload_store, sample_record):
 
     # Should retrieve the new record
     retrieved = upload_store.get(sample_record.file_id)
-    assert retrieved.region_id == "us-east"
+    assert retrieved.region_id == "school-madrid"
     assert retrieved.file_name == "different.csv"
     assert retrieved.storage_backend == "gcs"
 

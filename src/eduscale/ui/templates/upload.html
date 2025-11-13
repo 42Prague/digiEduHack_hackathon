@@ -62,17 +62,13 @@
     <h1>Upload File</h1>
     <form id="uploadForm">
         <div class="form-group">
-            <label for="regionId">Region:</label>
-            <select id="regionId" required>
-                <option value="">-- Select Region --</option>
-                <option value="eu-west">EU West</option>
-                <option value="us-east">US East</option>
-                <option value="asia-pacific">Asia Pacific</option>
-            </select>
+            <label for="regionId">Region ID:</label>
+            <input type="text" id="regionId" placeholder="e.g., school-123, city-paris, etc." required />
         </div>
         <div class="form-group">
-            <label for="fileInput">File:</label>
-            <input type="file" id="fileInput" required />
+            <label for="fileInput">Files:</label>
+            <input type="file" id="fileInput" multiple required />
+            <small style="color: #666;">You can select multiple files</small>
         </div>
         <button type="submit" id="submitBtn">Upload</button>
     </form>
@@ -88,53 +84,90 @@
 
             const regionId = document.getElementById('regionId').value;
             const fileInput = document.getElementById('fileInput');
-            const file = fileInput.files[0];
+            const files = fileInput.files;
 
-            if (!file) {
-                statusDiv.innerHTML = '<p class="error">Please select a file</p>';
+            if (files.length === 0) {
+                statusDiv.innerHTML = '<p class="error">Please select at least one file</p>';
                 return;
             }
 
             if (!regionId) {
-                statusDiv.innerHTML = '<p class="error">Please select a region</p>';
+                statusDiv.innerHTML = '<p class="error">Please enter a region ID</p>';
                 return;
             }
 
             // Disable submit button
             submitBtn.disabled = true;
-            statusDiv.innerHTML = '<p class="info">Uploading...</p>';
+            
+            const results = [];
+            const errors = [];
+            
+            statusDiv.innerHTML = `<p class="info">Uploading ${files.length} file(s)...</p>`;
 
-            try {
-                const formData = new FormData();
-                formData.append('file', file);
-                formData.append('region_id', regionId);
+            // Upload files sequentially
+            for (let i = 0; i < files.length; i++) {
+                const file = files[i];
+                
+                try {
+                    statusDiv.innerHTML += `<p class="info">Uploading ${i + 1}/${files.length}: ${file.name}...</p>`;
+                    
+                    const formData = new FormData();
+                    formData.append('file', file);
+                    formData.append('region_id', regionId);
 
-                const response = await fetch('/api/v1/upload', {
-                    method: 'POST',
-                    body: formData
-                });
+                    const response = await fetch('/api/v1/upload', {
+                        method: 'POST',
+                        body: formData
+                    });
 
-                const data = await response.json();
+                    const data = await response.json();
 
-                if (response.ok) {
-                    statusDiv.innerHTML = `
-                        <p class="success">Upload complete!</p>
-                        <p><strong>File ID:</strong> ${data.file_id}</p>
-                        <p><strong>File Name:</strong> ${data.file_name}</p>
-                        <p><strong>Storage Backend:</strong> ${data.storage_backend}</p>
-                        <p><strong>Storage Path:</strong> ${data.storage_path}</p>
-                        <p><strong>Region:</strong> ${data.region_id}</p>
-                        <p><strong>Size:</strong> ${data.size_bytes} bytes</p>
-                    `;
-                    form.reset();
-                } else {
-                    statusDiv.innerHTML = `<p class="error">Error: ${data.detail || 'Upload failed'}</p>`;
+                    if (response.ok) {
+                        results.push({
+                            fileName: data.file_name,
+                            fileId: data.file_id,
+                            size: data.size_bytes
+                        });
+                    } else {
+                        errors.push({
+                            fileName: file.name,
+                            error: data.detail || 'Upload failed'
+                        });
+                    }
+                } catch (error) {
+                    errors.push({
+                        fileName: file.name,
+                        error: error.message
+                    });
                 }
-            } catch (error) {
-                statusDiv.innerHTML = `<p class="error">Error: ${error.message}</p>`;
-            } finally {
-                submitBtn.disabled = false;
             }
+
+            // Display results
+            let resultHtml = '<h3>Upload Results:</h3>';
+            
+            if (results.length > 0) {
+                resultHtml += `<p class="success"><strong>${results.length} file(s) uploaded successfully:</strong></p><ul>`;
+                results.forEach(r => {
+                    resultHtml += `<li>${r.fileName} (ID: ${r.fileId}, Size: ${r.size} bytes)</li>`;
+                });
+                resultHtml += '</ul>';
+            }
+            
+            if (errors.length > 0) {
+                resultHtml += `<p class="error"><strong>${errors.length} file(s) failed:</strong></p><ul>`;
+                errors.forEach(e => {
+                    resultHtml += `<li>${e.fileName}: ${e.error}</li>`;
+                });
+                resultHtml += '</ul>';
+            }
+            
+            statusDiv.innerHTML = resultHtml;
+            
+            if (errors.length === 0) {
+                form.reset();
+            }
+            
+            submitBtn.disabled = false;
         });
     </script>
 </body>

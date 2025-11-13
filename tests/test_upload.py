@@ -40,7 +40,7 @@ def test_upload_valid_file(client, mock_local_backend, local_storage_settings):
     """Test uploading a valid file."""
     file_content = b"name,age\nJohn,30\nJane,25"
     files = {"file": ("test.csv", io.BytesIO(file_content), "text/csv")}
-    data = {"region_id": "eu-west"}
+    data = {"region_id": "school-123"}
 
     response = client.post("/api/v1/upload", files=files, data=data)
 
@@ -49,7 +49,7 @@ def test_upload_valid_file(client, mock_local_backend, local_storage_settings):
     assert "file_id" in json_data
     assert json_data["file_name"] == "test.csv"
     assert json_data["storage_backend"] == "local"
-    assert json_data["region_id"] == "eu-west"
+    assert json_data["region_id"] == "school-123"
     assert json_data["content_type"] == "text/csv"
     assert json_data["size_bytes"] == len(file_content)
 
@@ -71,7 +71,7 @@ def test_upload_oversized_file(client, local_storage_settings):
     # Create file larger than 10MB
     file_content = b"x" * (11 * 1024 * 1024)
     files = {"file": ("large.csv", io.BytesIO(file_content), "text/csv")}
-    data = {"region_id": "eu-west"}
+    data = {"region_id": "school-456"}
 
     response = client.post("/api/v1/upload", files=files, data=data)
 
@@ -83,7 +83,7 @@ def test_upload_invalid_mime_type(client, local_storage_settings):
     """Test upload with disallowed MIME type."""
     file_content = b"test data"
     files = {"file": ("test.txt", io.BytesIO(file_content), "text/plain")}
-    data = {"region_id": "eu-west"}
+    data = {"region_id": "school-789"}
 
     response = client.post("/api/v1/upload", files=files, data=data)
 
@@ -99,7 +99,7 @@ def test_upload_creates_record(
 
     file_content = b"name,age\nJohn,30"
     files = {"file": ("test.csv", io.BytesIO(file_content), "text/csv")}
-    data = {"region_id": "us-east"}
+    data = {"region_id": "city-london"}
 
     response = client.post("/api/v1/upload", files=files, data=data)
 
@@ -110,5 +110,5 @@ def test_upload_creates_record(
     record = upload_store.get(file_id)
     assert record is not None
     assert record.file_id == file_id
-    assert record.region_id == "us-east"
+    assert record.region_id == "city-london"
     assert record.file_name == "test.csv"
