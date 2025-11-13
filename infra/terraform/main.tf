@@ -13,96 +13,59 @@ resource "google_project_service" "cloud_run" {
   disable_on_destroy = false
 }
 
+resource "google_project_service" "storage" {
+  project = var.project_id
+  service = "storage.googleapis.com"
+
+  disable_on_destroy = false
+}
+
 # Artifact Registry Repository for Docker Images
-resource "google_artifact_registry_repository" "eduscale_repo" {
+resource "google_artifact_registry_repository" "jedouscale_repo" {
   location      = var.region
   repository_id = var.repository_id
-  description   = "Docker repository for EduScale Engine container images"
+  description   = "Docker repository for JedouScale Engine container images"
   format        = "DOCKER"
 
   # Ensure API is enabled before creating repository
   depends_on = [google_project_service.artifact_registry]
 }
 
-# Cloud Run Service (v2)
-resource "google_cloud_run_v2_service" "eduscale_engine" {
-  name               = var.service_name
-  location           = var.region
-  ingress            = "INGRESS_TRAFFIC_ALL"
-  deletion_protection = false
+# GCS Bucket for File Uploads
+resource "google_storage_bucket" "uploads" {
+  name          = "${var.project_id}-eduscale-uploads"
+  location      = var.region
+  force_destroy = false
 
-  template {
-    # Scaling configuration
-    scaling {
-      min_instance_count = var.min_instance_count
-      max_instance_count = var.max_instance_count
+  uniform_bucket_level_access = true
+
+  lifecycle_rule {
+    condition {
+      age = var.uploads_bucket_lifecycle_days
     }
-
-    containers {
-      # Container image from Artifact Registry
-      image = "${var.region}-docker.pkg.dev/${var.project_id}/${var.repository_id}/${var.service_name}:${var.image_tag}"
-
-      # Container port
-      ports {
-        container_port = var.container_port
-      }
-
-      # Resource limits
-      resources {
-        limits = {
-          cpu    = var.cpu
-          memory = var.memory
-        }
-      }
-
-      # Environment variables matching the FastAPI application
-      env {
-        name  = "ENV"
-        value = var.environment
-      }
-
-      env {
-        name  = "SERVICE_NAME"
-        value = var.service_name
-      }
-
-      env {
-        name  = "SERVICE_VERSION"
-        value = var.service_version
-      }
-
-      env {
-        name  = "GCP_PROJECT_ID"
-        value = var.project_id
-      }
-
-      env {
-        name  = "GCP_REGION"
-        value = var.region
-      }
-
-      env {
-        name  = "GCP_RUN_SERVICE"
-        value = var.service_name
-      }
+    action {
+      type = "Delete"
     }
   }
 
-  # Ensure API is enabled and repository exists before creating service
-  depends_on = [
-    google_project_service.cloud_run,
-    google_artifact_registry_repository.eduscale_repo
-  ]
+  versioning {
+    enabled = false
+  }
+
+  depends_on = [google_project_service.storage]
 }
 
-# IAM Policy to Allow Unauthenticated Access
-resource "google_cloud_run_v2_service_iam_member" "public_access" {
-  count = var.allow_unauthenticated ? 1 : 0
+# Data source to get project number for default compute service account
+data "google_project" "project" {
+  project_id = var.project_id
+}
 
-  location = google_cloud_run_v2_service.eduscale_engine.location
-  name     = google_cloud_run_v2_service.eduscale_engine.name
-  role     = "roles/run.invoker"
-  member   = "allUsers"
+# Grant Cloud Run default service account access to bucket
+# Cloud Run uses the default compute service account: PROJECT_NUMBER-compute@developer.gserviceaccount.com
+resource "google_storage_bucket_iam_member" "cloud_run_object_admin" {
+  bucket = google_storage_bucket.uploads.name
+  role   = "roles/storage.objectAdmin"
+  member = "serviceAccount:${data.google_project.project.number}-compute@developer.gserviceaccount.com"
 }
 
 # Service Account for GitHub Actions

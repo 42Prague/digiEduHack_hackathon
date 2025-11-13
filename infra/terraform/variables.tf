@@ -15,13 +15,13 @@ variable "region" {
 variable "service_name" {
   description = "The name of the Cloud Run service"
   type        = string
-  default     = "eduscale-engine"
+  default     = "jedouscale-engine"
 }
 
 variable "repository_id" {
   description = "The Artifact Registry repository ID for Docker images"
   type        = string
-  default     = "eduscale-engine-repo"
+  default     = "jedouscale-engine-repo"
 }
 
 variable "image_tag" {
@@ -77,4 +77,11 @@ variable "allow_unauthenticated" {
   description = "Allow unauthenticated access to the Cloud Run service"
   type        = bool
   default     = true
+}
+
+# Storage Configuration
+variable "uploads_bucket_lifecycle_days" {
+  description = "Number of days before uploaded files are deleted"
+  type        = number
+  default     = 90
 }

@@ -1,9 +1,3 @@
-# Cloud Run Service URL
-output "cloud_run_url" {
-  description = "The URL of the deployed Cloud Run service"
-  value       = google_cloud_run_v2_service.eduscale_engine.uri
-}
-
 # Artifact Registry Repository URL
 output "artifact_registry_repository" {
   description = "The full Artifact Registry repository URL"
@@ -45,4 +39,10 @@ output "github_actions_service_account_key" {
   description = "The private key for GitHub Actions service account (base64 encoded)"
   value       = google_service_account_key.github_actions_key.private_key
   sensitive   = true
+}
+
+# Uploads Bucket Name
+output "uploads_bucket_name" {
+  description = "Name of the GCS bucket for file uploads"
+  value       = google_storage_bucket.uploads.name
 }
