@@ -7,6 +7,7 @@
   "scripts": {
     "build": "tsc",
     "start": " node --env-file=.env ./dist/mongoExample.js",
+    "start-extraction": "node ./dist/ingestionEngine/ingestionPipeline.js",
     "dev": "tsx watch src/app.ts",
     "lint": "eslint . --max-warnings 0",
     "check-types": "tsc --noEmit",

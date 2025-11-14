@@ -49,7 +49,7 @@ const eduDocumentRecord = z.object({
       })
     ),
   }).optional().describe("Multimedia files each as object."),
-
+  rawData: z.string().optional().describe("Raw transcription text"),
   processedData: z.object({
     attendanceRate: z.number(),
     averageScoreImprovement: z.number(),
@@ -67,43 +67,43 @@ if (!db) {
 }
 const collection = db.collection<EduDocumentSchema>(CLOUD_COLLECTION_NAME);
 
-const eduDocumentRecordExample: EduDocumentSchema = {
-  schoolName: "Green Valley High School",
-  regionName: "Central Bohemia",
-  guideName: "Dr. Martina Nováková",
-  interventionType: "STEM Mentorship Program",
-  listOfParticipants: {
-    schoolStaff: [
-      { name: "Anna Horáková", age: 16, grade: "10A" },
-      { name: "Petr Dvořák", age: 17, grade: "11B" }
-    ],
-    mentors: [
-      { name: "Karel Veselý", subject: "Mathematics" }
-    ]
-  },
-  listOfFiles: {
-    reports: [
-      { fileName: "progress_report_q1.pdf", uploadedAt: "2025-03-12" },
-      { fileName: "summary_notes.docx", uploadedAt: "2025-04-05" }
-    ]
-  },
-  listOfMultimedia: {
-    multimedia: [
-      { url: "https://example.com/photos/group1.jpg", description: "Team photo" }
-    ],
-  },
-  processedData: {
-    attendanceRate: 0.92,
-    averageScoreImprovement: 12.5,
-    sentimentSummary: "Positive engagement throughout the semester"
-  }
-};
+// const eduDocumentRecordExample: EduDocumentSchema = {
+//   schoolName: "Green Valley High School",
+//   regionName: "Central Bohemia",
+//   guideName: "Dr. Martina Nováková",
+//   interventionType: "STEM Mentorship Program",
+//   listOfParticipants: {
+//     schoolStaff: [
+//       { name: "Anna Horáková", age: 16, grade: "10A" },
+//       { name: "Petr Dvořák", age: 17, grade: "11B" }
+//     ],
+//     mentors: [
+//       { name: "Karel Veselý", subject: "Mathematics" }
+//     ]
+//   },
+//   listOfFiles: {
+//     reports: [
+//       { fileName: "progress_report_q1.pdf", uploadedAt: "2025-03-12" },
+//       { fileName: "summary_notes.docx", uploadedAt: "2025-04-05" }
+//     ]
+//   },
+//   listOfMultimedia: {
+//     multimedia: [
+//       { url: "https://example.com/photos/group1.jpg", description: "Team photo" }
+//     ],
+//   },
+//   processedData: {
+//     attendanceRate: 0.92,
+//     averageScoreImprovement: 12.5,
+//     sentimentSummary: "Positive engagement throughout the semester"
+//   }
+// };
 
-
-async function insertJunk() {
-  await collection.insertOne(eduDocumentRecordExample)
-}
-await insertJunk();
+//
+// async function insertJunk() {
+//   await collection.insertOne(eduDocumentRecordExample)
+// }
+// await insertJunk();
 await closeMongo();
 
 
