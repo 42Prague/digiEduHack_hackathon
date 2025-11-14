@@ -8,10 +8,10 @@
 			<div class="card-subtitle">{{ 'user.details' | translate }}</div>
 		</div>
 		<div>
-			<div *ngIf="!isEditing" class="grid" style="grid-template-columns:auto;">
+			<div *ngIf="canEdit && !isEditing" class="grid" style="grid-template-columns:auto;">
 				<button class="btn secondary" (click)="enableEditing()">✏️ {{ 'common.edit' | translate }}</button>
 			</div>
-			<div *ngIf="isEditing" class="grid" style="grid-template-columns:auto auto; gap:8px">
+			<div *ngIf="canEdit && isEditing" class="grid" style="grid-template-columns:auto auto; gap:8px">
 				<button class="btn" [disabled]="form?.invalid || isSaving" (click)="save()">
 					{{ isSaving ? ('common.saving' | translate) : ('common.saveChanges' | translate) }}
 				</button>

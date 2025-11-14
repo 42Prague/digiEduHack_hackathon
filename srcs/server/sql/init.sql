@@ -82,3 +82,120 @@ CREATE TABLE raw_document(
     embedding TSVECTOR,
     CONSTRAINT pk_raw_document PRIMARY KEY (id)
 );
+
+INSERT INTO raw_document(
+    id,
+    doc_type,
+    teacher_id,
+    workshop_id,
+    uploaded_at,
+    original_filename,
+    mime_type,
+    file_path,
+    text_content,
+    table_data,
+    summary,
+    embedding
+)
+VALUES (
+    '11111111-1111-1111-1111-111111111111'::uuid,
+    'pre_workshop_questionnaire',
+    101,
+    501,
+    '2025-06-05T09:15:00+00',
+    'teacher_pre_workshop_questionnaire_2025-06-05.txt',
+    'text/plain',
+    '/data/raw/teacher_pre_workshop_questionnaire_2025-06-05.txt',
+    $text$
+Pre-workshop questionnaire – June workshop on formative assessment
+
+Q1: How confident do you currently feel using formative assessment in your classroom?
+( ) Not confident at all
+( ) Slightly confident
+( ) Moderately confident
+( ) Very confident
+
+Q2: What are your main goals for this June workshop?
+_____________________________________________________________________
+
+Q3: Which student groups do you find hardest to support effectively?
+_____________________________________________________________________
+
+Q4: What kinds of practical tools or examples would be most useful for you?
+_____________________________________________________________________
+
+Q5: How often do you currently participate in any professional development activities?
+( ) Never
+( ) Once per semester
+( ) Several times per semester
+( ) Monthly or more
+$text$,
+    NULL,
+    'Pre-workshop questionnaire capturing teachers’ confidence, goals and needs before the June formative assessment workshop.',
+    to_tsvector(
+        'english',
+        'pre workshop questionnaire teachers confidence goals needs june formative assessment'
+    )
+);
+
+
+-- 2) Post-workshop feedback (two months later, teachers report improvement and want monthly workshops)
+
+INSERT INTO raw_document(
+    id,
+    doc_type,
+    teacher_id,
+    workshop_id,
+    uploaded_at,
+    original_filename,
+    mime_type,
+    file_path,
+    text_content,
+    table_data,
+    summary,
+    embedding
+)
+VALUES (
+    '22222222-2222-2222-2222-222222222222'::uuid,
+    'post_workshop_followup',
+    101,
+    501,
+    '2025-08-05T10:00:00+00',
+    'teacher_post_workshop_feedback_2025-08-05.txt',
+    'text/plain',
+    '/data/raw/teacher_post_workshop_feedback_2025-08-05.txt',
+    $text$
+Follow-up survey – August (two months after June workshop)
+
+Q1: Overall, how has your confidence in using formative assessment changed since the June workshop?
+( ) No change
+( ) Slight improvement
+( ) Moderate improvement
+( ) Significant improvement
+
+Q2: Please describe one concrete change you have made in your teaching practice as a result of the workshop.
+_____________________________________________________________________
+
+Q3: Have you noticed any changes in student engagement or learning outcomes?
+( ) No noticeable change
+( ) Some improvement
+( ) Clear improvement
+Please describe:
+_____________________________________________________________________
+
+Q4: How often would you like these workshops to continue in the future?
+( ) One-off only
+( ) Once per semester
+( ) Every two months
+( ) Monthly
+
+Q5: Any suggestions for future workshop topics or formats?
+_____________________________________________________________________
+$text$,
+    NULL,
+    'Post-workshop feedback: teachers report overall improvement in confidence and student outcomes and request to keep the workshops on a monthly basis.',
+    to_tsvector(
+        'english',
+        'post workshop feedback teachers improvement confidence student outcomes request monthly workshops'
+    )
+);
