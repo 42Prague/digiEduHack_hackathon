@@ -111,3 +111,28 @@
     font-size: 13px;
     padding: 8px;
 }
+
+.files-pagination {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: var(--spacing-md);
+    flex-wrap: wrap;
+    gap: var(--spacing-md);
+}
+
+.files-pagination .pagination-info {
+    font-size: var(--font-size-sm);
+    color: var(--color-muted);
+}
+
+.files-pagination .pagination-controls {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-sm);
+}
+
+.files-pagination .pagination-controls .pagination-page {
+    font-size: var(--font-size-sm);
+    color: var(--color-text);
+}

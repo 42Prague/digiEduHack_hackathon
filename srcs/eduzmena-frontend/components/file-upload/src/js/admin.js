@@ -3,9 +3,16 @@
 import { regionsApi, schoolsApi, filesApi } from './api.js'
 import { config } from './config.js'
 
+const DEFAULT_FILES_PAGE_SIZE = 10
+
 let regions = []
 let schools = []
 let files = []
+
+const filePagination = {
+    page: 1,
+    pageSize: DEFAULT_FILES_PAGE_SIZE
+}
 
 function escapeHtml(str) {
     if (!str) return ''
@@ -39,6 +46,7 @@ async function loadData() {
         regions = regionData
         schools = schoolData
         files = fileData
+        filePagination.page = 1
 
         renderRegions()
         renderRegionSelects()
@@ -191,10 +199,28 @@ function renderFiles() {
             ? 'No files found for the selected school'
             : 'No files uploaded yet'
         container.innerHTML = `<div class="empty-state">${emptyMessage}</div>`
+        renderFilePagination({ totalItems: 0, totalPages: 0, start: 0, end: 0 })
         return
     }
 
-    container.innerHTML = filteredFiles.map(file => {
+    const safePageSize = Math.max(1, Number(filePagination.pageSize) || DEFAULT_FILES_PAGE_SIZE)
+    if (safePageSize !== filePagination.pageSize) {
+        filePagination.pageSize = safePageSize
+    }
+
+    const totalItems = filteredFiles.length
+    const totalPages = Math.max(Math.ceil(totalItems / safePageSize), 1)
+    if (filePagination.page > totalPages) {
+        filePagination.page = totalPages
+    }
+    const currentPage = Math.max(filePagination.page, 1)
+    filePagination.page = currentPage
+
+    const startIndex = (currentPage - 1) * safePageSize
+    const paginatedFiles = filteredFiles.slice(startIndex, startIndex + safePageSize)
+    const endIndex = startIndex + paginatedFiles.length
+
+    container.innerHTML = paginatedFiles.map(file => {
         const school = schools.find(s => s.id === file.school_id)
         const region = school ? regions.find(r => r.id === school.region_id) : null
 
@@ -277,6 +303,58 @@ function renderFiles() {
             </div>
         `
     }).join('')
+
+    renderFilePagination({
+        totalItems,
+        totalPages,
+        start: startIndex + 1,
+        end: endIndex
+    })
+}
+
+function renderFilePagination({ totalItems, totalPages, start, end }) {
+    const container = document.getElementById('files-pagination')
+    if (!container) return
+
+    if (!totalItems) {
+        container.innerHTML = ''
+        return
+    }
+
+    const pageCount = Math.max(totalPages, 1)
+    const currentPage = Math.min(Math.max(filePagination.page, 1), pageCount)
+    const rangeStart = Math.min(start, totalItems)
+    const rangeEnd = Math.min(end, totalItems)
+    const prevDisabled = currentPage <= 1
+    const nextDisabled = currentPage >= pageCount
+
+    container.innerHTML = `
+        <div class="pagination-info">Showing ${rangeStart}-${rangeEnd} of ${totalItems}</div>
+        <div class="pagination-controls">
+            <button type="button" class="btn btn-secondary" data-action="prev" ${prevDisabled ? 'disabled' : ''}>
+                Previous
+            </button>
+            <div class="pagination-page">Page ${currentPage} / ${pageCount}</div>
+            <button type="button" class="btn btn-secondary" data-action="next" ${nextDisabled ? 'disabled' : ''}>
+                Next
+            </button>
+        </div>
+    `
+
+    container.querySelector('[data-action="prev"]')?.addEventListener('click', () => {
+        if (filePagination.page > 1) {
+            filePagination.page -= 1
+            renderFiles()
+        }
+    })
+
+    container.querySelector('[data-action="next"]')?.addEventListener('click', () => {
+        const maxPage = Math.max(pageCount, 1)
+        if (filePagination.page < maxPage) {
+            filePagination.page += 1
+            renderFiles()
+        }
+    })
 }
 
 function previewFile(id) {
@@ -366,6 +444,7 @@ function setupForms() {
     const schoolForm = document.getElementById('school-form')
     const filesRegionFilter = document.getElementById('files-region-filter')
     const filesSchoolFilter = document.getElementById('files-school-filter')
+    const filesPageSizeSelect = document.getElementById('files-page-size')
 
     regionForm?.addEventListener('submit', async (e) => {
         e.preventDefault()
@@ -389,11 +468,31 @@ function setupForms() {
     })
 
     filesRegionFilter?.addEventListener('change', () => {
+        filePagination.page = 1
         renderSchoolFilterSelect()
         renderSchools()
         renderFiles()
     })
-    filesSchoolFilter?.addEventListener('change', () => renderFiles())
+    filesSchoolFilter?.addEventListener('change', () => {
+        filePagination.page = 1
+        renderFiles()
+    })
+
+    if (filesPageSizeSelect) {
+        const parsedValue = Number(filesPageSizeSelect.value)
+        if (!Number.isNaN(parsedValue) && parsedValue > 0) {
+            filePagination.pageSize = parsedValue
+        }
+
+        filesPageSizeSelect.addEventListener('change', (event) => {
+            const newSize = Number(event.target.value)
+            filePagination.pageSize = !Number.isNaN(newSize) && newSize > 0
+                ? newSize
+                : DEFAULT_FILES_PAGE_SIZE
+            filePagination.page = 1
+            renderFiles()
+        })
+    }
 }
 
 window.deleteRegion = deleteRegion
