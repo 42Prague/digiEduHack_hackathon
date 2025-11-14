@@ -1,244 +1,469 @@
 "use client";
-import { useRouter } from "next/navigation"; // <-- Use 'next/navigation'
+
+import { useState, useEffect, useMemo, useCallback } from "react";
+import { Plus, Users, TrendingUp, ArrowLeft } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { ChevronLeft, Plus } from "lucide-react";
-import {
-  LineChart,
-  Line,
-  BarChart,
-  Bar,
-  XAxis,
-  YAxis,
-  CartesianGrid,
-  Tooltip,
-  ResponsiveContainer,
-  Legend,
-} from "recharts";
-import InterventionTableRow from "./intervention-table-row";
-import NewInterventionModal from "./new-intervention-modal";
-import { useState } from "react";
+import { Skeleton } from "@/components/ui/skeleton";
 
-interface SchoolDashboardProps {
-  schoolId: string;
-}
-
-const mockSchoolData = {
-  name: "Lincoln Elementary School",
-  district: "Central District",
-  students: 450,
-  staff: 32,
-  successRate: 78,
+// Define the map outside of the component functions
+const SCHOOL_NAME_MAP: { [key: string]: string } = {
+  capek: "ZŠ Karla Čapka",
+  jarov: "Scio škola Praha Jarov",
+  hostinska: "Základní škola Hostýnská",
 };
 
-const trendsData = [
-  { month: "Jan", success: 65, total: 12 },
-  { month: "Feb", success: 70, total: 14 },
-  { month: "Mar", success: 72, total: 16 },
-  { month: "Apr", success: 75, total: 18 },
-  { month: "May", success: 78, total: 22 },
-  { month: "Jun", success: 80, total: 24 },
-];
+// Helper function to get the display name
+const getDisplayName = (schoolNameKey: string): string => {
+  return SCHOOL_NAME_MAP[schoolNameKey] || schoolNameKey;
+};
 
-const interventionsData = [
-  {
-    id: 1,
-    type: "Reading Support",
-    students: 12,
-    startDate: "2024-01-15",
-    status: "Active",
-    success: 82,
-  },
-  {
-    id: 2,
-    type: "Math Tutoring",
-    students: 8,
-    startDate: "2024-02-20",
-    status: "Active",
-    success: 75,
-  },
-  {
-    id: 3,
-    type: "Social-Emotional",
-    students: 15,
-    startDate: "2024-01-10",
-    status: "Active",
-    success: 80,
-  },
-  {
-    id: 4,
-    type: "Attendance Focus",
-    students: 5,
-    startDate: "2024-03-01",
-    status: "Pending",
-    success: 68,
-  },
-  {
-    id: 5,
-    type: "Behavioral Support",
-    students: 6,
-    startDate: "2023-12-05",
-    status: "Completed",
-    success: 76,
-  },
-];
+// --- INTERFACE Definitions ---
+export interface Intervention {
+  _id: string; // Mongo ObjectId
+  schoolName: string;
+  interventionType: string;
+  createdAt: string | { $date: string };
+  processedData?: {
+    overall_sentiment?: {
+      polarity: "positive" | "negative" | "neutral";
+      [key: string]: any;
+    };
+    [key: string]: any;
+  };
+  success?: boolean; // Derived from polarity
+  type?: string; // Derived from interventionType
+  [key: string]: any;
+}
 
-export default function SchoolDashboard({ schoolId }: SchoolDashboardProps) {
-  const [isModalOpen, setIsModalOpen] = useState(false);
+export interface SchoolData {
+  id: string;
+  name: string;
+  totalInterventions: number;
+  successRate: string;
+  lastIntervention: string;
+  interventions: Intervention[];
+}
 
-  const handleNewInterventionClick = () => {
-    setIsModalOpen(true);
+// --- InterventionDetail Component (Unchanged) ---
+const InterventionDetail = ({
+  intervention,
+  onBack,
+}: {
+  intervention: Intervention;
+  onBack: () => void;
+}) => {
+  const fullData = intervention as any;
+
+  const formatDate = (date: string | { $date: string }) => {
+    if (typeof date === "object" && "$date" in date) {
+      return (
+        new Date(date.$date).toLocaleDateString() +
+        " " +
+        new Date(date.$date).toLocaleTimeString()
+      );
+    }
+    return (
+      new Date(date).toLocaleDateString() +
+      " " +
+      new Date(date).toLocaleTimeString()
+    );
   };
 
-  const handleCloseModal = () => {
-    setIsModalOpen(false);
-  };
+  return (
+    <div className="p-6">
+      <Button onClick={onBack} variant="outline" className="mb-4 gap-2">
+        <ArrowLeft className="h-4 w-4" />
+        Back to School History
+      </Button>
+      <h2 className="text-3xl font-bold mb-4">
+        Intervention Detail: {fullData.interventionType}
+      </h2>
 
-  const router = useRouter(); // Initialize router
-  // Define the interaction handlers *inside* the client component
-  const handleBack = () => {
-    router.back(); // Use the router for navigation
-  };
+      <div className="space-y-6">
+        {/* Basic Info */}
+        <Card className="p-4">
+          <h4 className="text-xl font-semibold mb-3">Basic Information</h4>
+          <div className="grid grid-cols-2 gap-y-2">
+            <p>
+              <span className="font-medium">School:</span>{" "}
+              {getDisplayName(fullData.schoolName)}
+            </p>
+            <p>
+              <span className="font-medium">Type:</span>{" "}
+              {fullData.interventionType}
+            </p>
+            <p>
+              <span className="font-medium">Date:</span>{" "}
+              {formatDate(fullData.createdAt)}
+            </p>
+            <p>
+              <span className="font-medium">Status:</span>
+              <span
+                className={`ml-1 font-bold ${fullData.success ? "text-green-600" : "text-red-600"}`}
+              >
+                {fullData.success ? "Success" : "Pending/Fail"}
+              </span>
+            </p>
+          </div>
+        </Card>
 
-  const handleNewIntervention = () => {
-    // Navigate to a new route for the form
-    router.push(`/schools/${schoolId}/new-intervention`);
-  };
+        {fullData.processedData && (
+          <Card className="p-4">
+            <h4 className="text-xl font-semibold mb-3">
+              AI-Processed Data Summary
+            </h4>
+            <div className="space-y-4">
+              <p>
+                <span className="font-medium">Overall Sentiment Polarity:</span>{" "}
+                <span className="font-bold">
+                  {fullData.processedData.overall_sentiment.polarity.toUpperCase()}
+                </span>{" "}
+                (Confidence:{" "}
+                {(
+                  fullData.processedData.overall_sentiment.confidence * 100
+                ).toFixed(0)}
+                %)
+              </p>
+            </div>
+          </Card>
+        )}
+      </div>
+    </div>
+  );
+};
+
+// --- SchoolDetail Component (Unchanged) ---
+const SchoolDetail = ({
+  school,
+  onBack,
+  onSelectIntervention,
+}: {
+  school: SchoolData;
+  onBack: () => void;
+  onSelectIntervention: (intervention: Intervention) => void;
+}) => (
+  <div className="p-6">
+    <Button onClick={onBack} variant="outline" className="mb-4 gap-2">
+      <ArrowLeft className="h-4 w-4" />
+      Back to All Schools
+    </Button>
+    <h2 className="text-3xl font-bold">{school.name} History</h2>
+    <p className="mt-2 text-lg text-muted-foreground">
+      Total Interventions: {school.totalInterventions}
+    </p>
+    <Card className="mt-6 p-4">
+      <h4 className="text-xl font-semibold mb-3">Interventions History</h4>
+      {school.interventions.map((intervention) => (
+        <Card
+          key={intervention._id}
+          className="p-3 mb-2 hover:bg-muted cursor-pointer transition-colors"
+          onClick={() => onSelectIntervention(intervention)}
+        >
+          <div className="flex justify-between items-center">
+            {/* Use the derived 'type' property */}
+            <span className="font-medium">{intervention.type}</span>
+            <span
+              className={`text-sm ${intervention.success ? "text-green-600" : "text-red-600"}`}
+            >
+              {intervention.success ? "Success" : "Pending/Fail"}
+            </span>
+          </div>
+        </Card>
+      ))}
+    </Card>
+  </div>
+);
+
+// Helper function to format date difference (simplified for example)
+const timeSince = (dateString: string): string => {
+  const date = new Date(dateString);
+  const seconds = Math.floor((new Date().getTime() - date.getTime()) / 1000);
+
+  let interval = seconds / 31536000;
+  if (interval > 1) return Math.floor(interval) + " years ago";
+  interval = seconds / 2592000;
+  if (interval > 1) return Math.floor(interval) + " months ago";
+  interval = seconds / 86400;
+  if (interval > 1) return Math.floor(interval) + " days ago";
+  interval = seconds / 3600;
+  if (interval > 1) return Math.floor(interval) + " hours ago";
+  interval = seconds / 60;
+  if (interval > 1) return Math.floor(interval) + " minutes ago";
+  return Math.floor(seconds) + " seconds ago";
+};
+
+// --- Main Component ---
+export default function SchoolDashboard({
+  onNewIntervention,
+}: {
+  onNewIntervention: () => void;
+}) {
+  const [schoolsData, setSchoolsData] = useState<SchoolData[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [selectedSchool, setSelectedSchool] = useState<SchoolData | null>(null);
+  const [selectedIntervention, setSelectedIntervention] =
+    useState<Intervention | null>(null);
+
+  // 1. Data Fetching and Processing
+  useEffect(() => {
+    const fetchInterventions = async () => {
+      try {
+        setLoading(true);
+        // Assuming your API route is at /api/interventions
+        const response = await fetch("/api/interventions");
+        if (!response.ok) throw new Error("Failed to fetch data");
+
+        const { interventions }: { interventions: Intervention[] } =
+          await response.json();
+
+        // ----------------------------------------------------
+        // 1. FIX APPLIED: Derive success from polarity (MAP)
+        // ----------------------------------------------------
+        const interventionsWithStatus = interventions.map((i: Intervention) => {
+          // 1. Check if polarity is 'positive'
+          const isSuccess =
+            i.processedData?.overall_sentiment?.polarity === "positive";
+
+          // 2. Handle Mongo $date object if present
+          const createdAtDateString =
+            typeof i.createdAt === "object" && "$date" in i.createdAt
+              ? i.createdAt.$date
+              : (i.createdAt as string);
+
+          return {
+            ...i,
+            // Assign derived fields for component compatibility
+            success: isSuccess,
+            type: i.interventionType, // Map JSON field name to component field name
+            createdAt: createdAtDateString,
+          };
+        });
+
+        // -------------------------------------------------------------------------
+        // 2. CORRECTED LOGIC: Aggregate data by schoolName (REDUCE)
+        // Ensure you use the school KEY for the acc property and the display NAME for the SchoolData property
+        // -------------------------------------------------------------------------
+        const schoolMap = interventionsWithStatus.reduce(
+          (acc, intervention) => {
+            const key = intervention.schoolName; // e.g., 'capek' (use as the map key)
+            const name = getDisplayName(key); // e.g., 'ZŠ Karla Čapka' (use as the display name)
+
+            if (!acc[key]) {
+              acc[key] = {
+                id: key.replace(/\s/g, "-").toLowerCase(), // Use key for ID
+                name: name, // Store the DISPLAY NAME here
+                totalInterventions: 0,
+                successfulCount: 0,
+                interventions: [],
+                lastTimestamp: 0,
+              };
+            }
+
+            acc[key].totalInterventions++;
+            if (intervention.success) acc[key].successfulCount++; // Use derived success
+            acc[key].interventions.push(intervention);
+
+            // Track the latest intervention date
+            const currentTimestamp = new Date(
+              intervention.createdAt as string
+            ).getTime();
+            if (currentTimestamp > acc[key].lastTimestamp) {
+              acc[key].lastTimestamp = currentTimestamp;
+            }
+
+            return acc;
+          },
+          {} as Record<
+            string,
+            SchoolData & { successfulCount: number; lastTimestamp: number }
+          >
+        );
+
+        // Finalize calculations
+        const processedSchools = Object.values(schoolMap).map((school) => ({
+          ...school,
+          successRate: `${Math.round((school.successfulCount / school.totalInterventions) * 100)}%`,
+          lastIntervention: timeSince(
+            new Date(school.lastTimestamp).toISOString()
+          ),
+          // Sort interventions within the school by recency for detail view
+          interventions: school.interventions.sort(
+            (a, b) =>
+              new Date(b.createdAt as string).getTime() -
+              new Date(a.createdAt as string).getTime()
+          ),
+        }));
+
+        setSchoolsData(processedSchools);
+        setError(null);
+      } catch (e) {
+        console.error(e);
+        setError("Could not load intervention data. Please check the API.");
+        setSchoolsData([]);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchInterventions();
+  }, []);
+
+  // 2. Global Statistics Calculation (Unchanged)
+  const { totalSchools, totalInterventions, avgSuccessRate } = useMemo(() => {
+    const totalSchools = schoolsData.length;
+    const totalInterventions = schoolsData.reduce(
+      (sum, s) => sum + s.totalInterventions,
+      0
+    );
+
+    const successSum = schoolsData.reduce((sum, s) => {
+      const rate = Number.parseInt(s.successRate.replace("%", ""));
+      return sum + rate * s.totalInterventions;
+    }, 0);
+
+    const avgSuccessRate =
+      totalInterventions > 0 ? Math.round(successSum / totalInterventions) : 0;
+
+    return { totalSchools, totalInterventions, avgSuccessRate };
+  }, [schoolsData]);
+
+  // 3. Navigation Handlers (Unchanged)
+  const handleSelectIntervention = useCallback((intervention: Intervention) => {
+    setSelectedIntervention(intervention);
+  }, []);
+
+  // 4. Render Logic (List View vs. Detail View) (Unchanged)
+
+  if (selectedIntervention) {
+    return (
+      <InterventionDetail
+        intervention={selectedIntervention}
+        onBack={() => setSelectedIntervention(null)}
+      />
+    );
+  }
+
+  if (selectedSchool) {
+    return (
+      <SchoolDetail
+        school={selectedSchool}
+        onBack={() => setSelectedSchool(null)}
+        onSelectIntervention={handleSelectIntervention}
+      />
+    );
+  }
+
+  // School List View (Default)
   return (
     <div className="min-h-screen bg-background p-6">
       <div className="mx-auto max-w-7xl">
-        {/* Header */}
-        <div className="mb-8 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+        {/* Header and Stats Overview */}
+        <div className="mb-8 flex items-center justify-between">
           <div>
-            <button
-              onClick={handleBack}
-              className="mb-4 flex items-center gap-2 text-accent hover:text-accent/80"
-            >
-              <ChevronLeft className="h-5 w-5" />
-              Back
-            </button>
-            <h1 className="text-3xl font-bold text-foreground">
-              {mockSchoolData.name}
+            <h1 className="text-4xl font-bold text-foreground">
+              School interventions
             </h1>
-            <p className="mt-1 text-muted-foreground">
-              {mockSchoolData.district}
+            <p className="mt-2 text-muted-foreground">
+              Track and analyze interventions across your schools
             </p>
           </div>
-          <Button onClick={handleNewInterventionClick} className="gap-2">
-            <Plus className="h-4 w-4" />
+          <Button
+            onClick={onNewIntervention}
+            className="gap-2 bg-accent hover:bg-accent/90 text-accent-foreground"
+          >
+            <Plus className="h-5 w-5" />
             New Intervention
           </Button>
-          <NewInterventionModal
-            isOpen={isModalOpen}
-            onClose={handleCloseModal}
-          />
         </div>
 
-        {/* Key Metrics */}
-        <div className="mb-8 grid gap-4 md:grid-cols-4">
-          <Card className="border-border bg-card p-6">
-            <p className="text-sm text-muted-foreground">Students</p>
-            <p className="mt-2 text-3xl font-bold text-foreground">
-              {mockSchoolData.students}
-            </p>
-          </Card>
-          <Card className="border-border bg-card p-6">
-            <p className="text-sm text-muted-foreground">Staff</p>
-            <p className="mt-2 text-3xl font-bold text-foreground">
-              {mockSchoolData.staff}
-            </p>
-          </Card>
-          <Card className="border-border bg-card p-6">
-            <p className="text-sm text-muted-foreground">
-              Active Interventions
-            </p>
-            <p className="mt-2 text-3xl font-bold text-accent">
-              {interventionsData.filter((i) => i.status === "Active").length}
-            </p>
-          </Card>
-          <Card className="border-border bg-card p-6">
-            <p className="text-sm text-muted-foreground">Success Rate</p>
-            <p className="mt-2 text-3xl font-bold text-primary">
-              {mockSchoolData.successRate}%
-            </p>
-          </Card>
-        </div>
-
-        {/* Charts */}
-        <div className="mb-8 grid gap-6 lg:grid-cols-2">
-          {/* Success Rate Trend */}
-          <Card className="border-border bg-card p-6">
-            <h3 className="mb-4 font-semibold text-foreground">
-              Success Rate Trend
-            </h3>
-            <ResponsiveContainer width="100%" height={300}>
-              <LineChart data={trendsData}>
-                <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" />
-                <XAxis stroke="var(--muted-foreground)" />
-                <YAxis stroke="var(--muted-foreground)" />
-                <Tooltip
-                  contentStyle={{
-                    backgroundColor: "var(--card)",
-                    border: "1px solid var(--border)",
-                  }}
-                />
-                <Legend />
-                <Line
-                  type="monotone"
-                  dataKey="success"
-                  stroke="var(--chart-1)"
-                  strokeWidth={2}
-                  dot={false}
-                />
-              </LineChart>
-            </ResponsiveContainer>
-          </Card>
-
-          {/* Interventions by Type */}
-          <Card className="border-border bg-card p-6">
-            <h3 className="mb-4 font-semibold text-foreground">
-              Interventions by Month
-            </h3>
-            <ResponsiveContainer width="100%" height={300}>
-              <BarChart data={trendsData}>
-                <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" />
-                <XAxis stroke="var(--muted-foreground)" />
-                <YAxis stroke="var(--muted-foreground)" />
-                <Tooltip
-                  contentStyle={{
-                    backgroundColor: "var(--card)",
-                    border: "1px solid var(--border)",
-                  }}
-                />
-                <Legend />
-                <Bar dataKey="total" fill="var(--chart-2)" />
-              </BarChart>
-            </ResponsiveContainer>
-          </Card>
-        </div>
-        {/* Interventions Table */}
-        <Card className="border-border bg-card p-6">
-          <h3 className="mb-6 font-semibold text-foreground">
-            All Interventions
-          </h3>
-          <div className="overflow-x-auto">
-            <table className="w-full">
-              {/* ... (table head <thead>) ... */}
-              <tbody>
-                {/* REPLACE the map logic with the new InterventionTableRow 
-                  Since SchoolDashboard is already a Client Component, 
-                  it can safely import and render another Client Component.
-                */}
-                {interventionsData.map((intervention) => (
-                  <InterventionTableRow
-                    key={intervention.id}
-                    intervention={intervention}
-                  />
-                ))}
-              </tbody>
-            </table>
+        {error && (
+          <div className="p-4 mb-6 text-red-700 bg-red-100 border border-red-300 rounded">
+            {error}
           </div>
-        </Card>
+        )}
+
+        {/* Stats Overview */}
+        <div className="mb-8 grid grid-cols-1 gap-4 md:grid-cols-2">
+          <Card className="border-border bg-card p-6">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm text-muted-foreground">Total Schools</p>
+                <div className="mt-2 text-3xl font-bold text-foreground">
+                  {loading ? <Skeleton className="h-8 w-20" /> : totalSchools}
+                </div>
+              </div>
+              <Users className="h-8 w-8 text-accent" />
+            </div>
+          </Card>
+          <Card className="border-border bg-card p-6">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm text-muted-foreground">
+                  Total Interventions
+                </p>
+                <div className="mt-2 text-3xl font-bold text-foreground">
+                  {loading ? (
+                    <Skeleton className="h-8 w-20" />
+                  ) : (
+                    totalInterventions
+                  )}
+                </div>
+              </div>
+              <TrendingUp className="h-8 w-8 text-primary" />
+            </div>
+          </Card>
+        </div>
+
+        {/* Schools List/Grid */}
+        <div className="grid gap-4 lg:grid-cols-1">
+          <h2 className="text-2xl font-semibold mb-4 text-foreground">
+            School Performance Overview
+          </h2>
+
+          {loading ? (
+            <div className="space-y-4">
+              <Skeleton className="h-32 w-full" />
+              <Skeleton className="h-32 w-full" />
+              <Skeleton className="h-32 w-full" />
+            </div>
+          ) : schoolsData.length === 0 ? (
+            <p className="text-center text-muted-foreground">
+              No schools found. Add your first intervention!
+            </p>
+          ) : (
+            schoolsData.map((school) => (
+              <Card
+                key={school.id}
+                className="border-border bg-card p-6 transition-all hover:border-primary/50 cursor-pointer"
+                onClick={() => setSelectedSchool(school)}
+              >
+                <div className="flex items-start justify-between">
+                  <div className="flex-1">
+                    <h3 className="text-xl font-semibold text-foreground">
+                      {school.name}
+                    </h3>
+                    <div className="mt-4 flex gap-6">
+                      <div>
+                        <p className="text-2xl font-semibold text-foreground">
+                          {school.totalInterventions}
+                        </p>
+                        <p className="text-xs text-muted-foreground">
+                          Interventions
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                  <div className="text-right">
+                    <p className="text-xs text-muted-foreground">
+                      Last Update: {school.lastIntervention}
+                    </p>
+                  </div>
+                </div>
+              </Card>
+            ))
+          )}
+        </div>
       </div>
     </div>
   );

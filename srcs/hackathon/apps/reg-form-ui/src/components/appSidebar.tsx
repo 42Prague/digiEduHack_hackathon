@@ -71,7 +71,7 @@ function AppSidebar() {
       <SidebarSeparator className={"mx-0"} />
       <SidebarContent>
         <SidebarGroup>
-          <SidebarGroupLabel>Application</SidebarGroupLabel>
+          {/* <SidebarGroupLabel></SidebarGroupLabel> */}
           <SidebarGroupContent>
             <SidebarMenu>
               {itemsMainMenu.map((item) => (

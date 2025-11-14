@@ -1,13 +1,5 @@
-// app/page.tsx
-import { UserList } from "./userList";
-import { LoginCard } from "./loginCard";
-import React from "react";
-import InterventionsList from "@/components/interventions-list";
+import { InterventionDashboard } from "@/components/intervention-dashboard";
 
-export default async function Home() {
-  return (
-    <div>
-      <InterventionsList />
-    </div>
-  );
+export default function Home() {
+  return <InterventionDashboard />;
 }
