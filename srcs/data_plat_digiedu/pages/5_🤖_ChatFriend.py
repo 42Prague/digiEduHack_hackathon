@@ -1,7 +1,7 @@
 """
 ====================================================================
 CHATFRIEND - AI-POWERED QUALITATIVE ANALYSIS
-Semantic Search, Theme Extraction, and Insights using Local LLM
+Semantic Search, Theme Extraction, and Insights using Cloud LLM
 ====================================================================
 """
 
@@ -18,76 +18,16 @@ import json
 # Add parent directory to path
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from database_utils import get_database_connection, execute_query
+from llm_service import check_llm_available, call_llm_simple, call_llm_chat, get_service_status
 
 st.set_page_config(page_title="ChatFriend AI", page_icon="🤖", layout="wide")
 
 # ====================================================================
-# OLLAMA SETUP AND CONFIGURATION
+# LLM SERVICE CONFIGURATION
 # ====================================================================
 
-def check_ollama_available():
-    """Check if Ollama is installed and running."""
-    try:
-        import requests
-        response = requests.get('http://localhost:11434/api/tags', timeout=2)
-        return response.status_code == 200
-    except:
-        return False
-
-def get_ollama_models():
-    """Get list of available Ollama models."""
-    try:
-        import requests
-        response = requests.get('http://localhost:11434/api/tags')
-        if response.status_code == 200:
-            models = response.json().get('models', [])
-            return [m['name'] for m in models]
-        return []
-    except:
-        return []
-
-def call_ollama(prompt, model="llama3", temperature=0.7):
-    """Call Ollama API with a prompt."""
-    try:
-        import requests
-        
-        response = requests.post(
-            'http://localhost:11434/api/generate',
-            json={
-                'model': model,
-                'prompt': prompt,
-                'stream': False,
-                'temperature': temperature
-            },
-            timeout=60
-        )
-        
-        if response.status_code == 200:
-            return response.json().get('response', '')
-        else:
-            return f"Error: {response.status_code}"
-    except Exception as e:
-        return f"Error calling Ollama: {str(e)}"
-
-def embed_text(text, model="nomic-embed-text"):
-    """Generate embeddings for text using Ollama."""
-    try:
-        import requests
-        
-        response = requests.post(
-            'http://localhost:11434/api/embeddings',
-            json={
-                'model': model,
-                'prompt': text
-            },
-            timeout=30
-        )
-        
-        if response.status_code == 200:
-            return response.json().get('embedding', [])
-        return None
-    except:
-        return None
+# The actual LLM functions are now imported from llm_service.py
+# This provides a unified interface to the Hugging Face API
 
 # ====================================================================
 # DATA LOADING
@@ -207,7 +147,7 @@ def extract_themes_simple(df, field='all_text'):
     
     return word_counts.most_common(30)
 
-def extract_themes_llm(df, model="llama3"):
+def extract_themes_llm(df):
     """Extract themes using LLM analysis."""
     
     # Sample responses to analyze (to keep prompt manageable)
@@ -246,13 +186,13 @@ Format your response as:
 - ...
 """
     
-    return call_ollama(prompt, model=model, temperature=0.3)
+    return call_llm_simple(prompt, temperature=0.3)
 
 # ====================================================================
 # COMPARATIVE ANALYSIS
 # ====================================================================
 
-def compare_groups(df, group_by='intervention_status', model="llama3"):
+def compare_groups(df, group_by='intervention_status'):
     """Compare responses between different groups."""
     
     groups = df[group_by].unique()
@@ -285,13 +225,13 @@ Please analyze:
 Provide a concise comparative analysis.
 """
     
-    return call_ollama(prompt, model=model, temperature=0.4)
+    return call_llm_simple(prompt, temperature=0.4)
 
 # ====================================================================
 # TEMPORAL TRENDS
 # ====================================================================
 
-def analyze_temporal_trends(df, model="llama3"):
+def analyze_temporal_trends(df):
     """Analyze how responses change over time."""
     
     if 'time_period' not in df.columns:
@@ -326,13 +266,13 @@ Please identify:
 Provide a concise temporal analysis.
 """
     
-    return call_ollama(prompt, model=model, temperature=0.4)
+    return call_llm_simple(prompt, temperature=0.4)
 
 # ====================================================================
 # SUMMARY GENERATION
 # ====================================================================
 
-def generate_summary(df, focus=None, model="llama3"):
+def generate_summary(df, focus=None):
     """Generate a comprehensive summary of qualitative data."""
     
     # Sample responses
@@ -368,65 +308,109 @@ Provide a comprehensive summary that:
 Be specific and evidence-based.
 """
     
-    return call_ollama(prompt, model=model, temperature=0.5)
+    return call_llm_simple(prompt, temperature=0.5)
 
 # ====================================================================
 # MAIN PAGE
 # ====================================================================
 
 def main():
-    st.title("🤖 ChatFriend - AI Qualitative Analysis")
-    
+    # Custom CSS for beautiful UI
     st.markdown("""
-    ### Your AI Assistant for Qualitative Insights
+    <style>
+    /* Main title styling */
+    .main-title {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        font-size: 3rem;
+        font-weight: 800;
+        text-align: center;
+        margin-bottom: 0.5rem;
+    }
     
-    ChatFriend uses a local LLM to help you analyze teacher narratives and discover meaningful patterns.
-    """)
+    .subtitle {
+        text-align: center;
+        color: #6c757d;
+        font-size: 1.2rem;
+        margin-bottom: 2rem;
+    }
     
-    # Check Ollama status
-    col1, col2, col3 = st.columns([2, 1, 1])
+    /* Status badge */
+    .status-badge {
+        display: inline-block;
+        padding: 0.5rem 1rem;
+        border-radius: 20px;
+        font-size: 0.9rem;
+        font-weight: 600;
+        margin: 0.5rem;
+    }
     
-    with col1:
-        st.markdown("**System Status:**")
+    .status-connected {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+    }
     
-    with col3:
-        if st.button("🔄 Refresh Data", use_container_width=True):
-            st.cache_data.clear()
-            st.rerun()
+    /* Chat container styling */
+    .chat-container {
+        background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+        border-radius: 15px;
+        padding: 2rem;
+        margin: 1rem 0;
+    }
     
-    ollama_available = check_ollama_available()
+    /* Example questions */
+    .stButton button {
+        border-radius: 10px;
+        border: 2px solid #667eea;
+        transition: all 0.3s ease;
+    }
     
-    if ollama_available:
-        st.success("✅ Ollama is running locally")
-        available_models = get_ollama_models()
-        
-        if available_models:
-            st.info(f"📦 Available models: {', '.join(available_models)}")
-            
-            # Model selection
-            default_model = 'llama3' if 'llama3' in available_models else available_models[0]
-            selected_model = st.selectbox(
-                "Select LLM Model:",
-                options=available_models,
-                index=available_models.index(default_model) if default_model in available_models else 0
+    .stButton button:hover {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+    }
+    
+    /* Chat input */
+    .stChatInput {
+        border-radius: 15px;
+    }
+    
+    /* Metrics */
+    [data-testid="stMetricValue"] {
+        font-size: 2rem;
+        color: #667eea;
+    }
+    </style>
+    """, unsafe_allow_html=True)
+    
+    # Beautiful header
+    st.markdown('<h1 class="main-title">💬 ChatFriend AI</h1>', unsafe_allow_html=True)
+    st.markdown('<p class="subtitle">Your intelligent assistant for analyzing teacher survey responses</p>', unsafe_allow_html=True)
+    
+    # Check LLM service status
+    llm_available = check_llm_available()
+    service_status = get_service_status()
+    
+    col1, col2, col3 = st.columns([1, 2, 1])
+    
+    with col2:
+        if llm_available:
+            st.markdown(
+                f'<div style="text-align: center;"><span class="status-badge status-connected">✅ Connected to {service_status["provider"]}</span></div>',
+                unsafe_allow_html=True
             )
         else:
-            st.warning("⚠️ No models found. Please install a model: `ollama pull llama3`")
-            selected_model = "llama3"
-    else:
-        st.error("""
-        ❌ **Ollama is not running**
-        
-        To use ChatFriend, you need to:
-        1. Install Ollama: https://ollama.ai
-        2. Pull a model: `ollama pull llama3`
-        3. Start Ollama (it should run automatically)
-        
-        Then refresh this page.
-        """)
-        return
+            st.error(f"""
+            ❌ **LLM Service Unavailable**
+            
+            Please ensure the LLM service is running with a valid HF_API_KEY.
+            """)
+            return
     
-    st.markdown("---")
+    st.markdown("<br>", unsafe_allow_html=True)
     
     # Load data
     engine = get_database_connection()
@@ -438,324 +422,120 @@ def main():
         st.warning("⚠️ No qualitative data available. Please submit responses through the Survey Form first.")
         return
     
-    # Show data statistics
-    st.caption(f"📅 Loaded {len(df)} responses | Last updated: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
+    # Show data statistics with nice formatting
+    col1, col2, col3, col4 = st.columns(4)
+    with col1:
+        st.metric("Total Responses", len(df), help="Number of teacher survey responses")
+    with col2:
+        st.metric("Schools", df['school_id'].nunique(), help="Unique schools in dataset")
+    with col3:
+        st.metric("Teachers", df['teacher_id'].nunique(), help="Unique teachers surveyed")
+    with col4:
+        st.metric("Regions", df['region'].nunique(), help="Geographic regions covered")
+    
+    st.markdown("<br>", unsafe_allow_html=True)
     
     # ====================================================================
-    # ANALYSIS TABS
+    # CHAT ASSISTANT
     # ====================================================================
     
-    tab1, tab2, tab3, tab4, tab5 = st.tabs([
-        "🔍 Semantic Search",
-        "🎯 Theme Extraction", 
-        "⚖️ Comparative Analysis",
-        "⏱️ Temporal Trends",
-        "📝 Summary Generation"
-    ])
+    # Initialize chat history in session state
+    if "chat_history" not in st.session_state:
+        st.session_state.chat_history = []
     
-    # TAB 1: SEMANTIC SEARCH
-    with tab1:
-        st.markdown("### 🔍 Semantic Search")
-        st.markdown("*Search teacher responses by keywords and relevance*")
-        
-        search_query = st.text_input(
-            "Enter search terms:",
-            placeholder="e.g., student engagement, problem solving, time constraints",
-            key="search_query"
-        )
-        
-        col1, col2 = st.columns([3, 1])
-        
-        with col1:
-            search_filters = st.multiselect(
-                "Filter by:",
-                options=['intervention_status', 'region', 'time_period'],
-                default=[]
-            )
-        
-        with col2:
-            top_k = st.number_input("Results to show:", min_value=5, max_value=50, value=10)
-        
-        if st.button("🔍 Search", type="primary", use_container_width=True):
-            if search_query:
-                with st.spinner("Searching..."):
-                    # Apply filters
-                    filtered_df = df.copy()
-                    
-                    # Perform search
-                    results = semantic_search(filtered_df, search_query, top_k=top_k)
-                    
-                    if not results.empty:
-                        st.success(f"✅ Found {len(results)} relevant responses")
-                        
-                        # Display results
-                        for idx, row in results.iterrows():
-                            with st.expander(
-                                f"📝 {row['survey_date'].strftime('%Y-%m-%d')} | {row['school_name']} | "
-                                f"{row['intervention_status']} | Relevance: {row['relevance_score']:.1f}"
-                            ):
-                                col1, col2 = st.columns([1, 1])
-                                
-                                with col1:
-                                    st.markdown(f"**Teacher:** {row['teacher_id']}")
-                                    st.markdown(f"**Region:** {row['region']}")
-                                    st.markdown(f"**Time Period:** {row['time_period']}")
-                                
-                                with col2:
-                                    st.markdown(f"**Experience:** {row['teaching_experience_years']} years")
-                                    st.markdown(f"**Grade:** {row['grade_level']}")
-                                    st.markdown(f"**Subject:** {row['subject_area']}")
-                                
-                                st.markdown("---")
-                                
-                                if pd.notna(row['f1_performance_factors']) and row['f1_performance_factors']:
-                                    st.markdown("**🎯 Performance Factors:**")
-                                    st.markdown(f"> {row['f1_performance_factors']}")
-                                
-                                if pd.notna(row['f2_effective_practice']) and row['f2_effective_practice']:
-                                    st.markdown("**✨ Effective Practices:**")
-                                    st.markdown(f"> {row['f2_effective_practice']}")
-                                
-                                if pd.notna(row['f3_challenges']) and row['f3_challenges']:
-                                    st.markdown("**⚠️ Challenges:**")
-                                    st.markdown(f"> {row['f3_challenges']}")
-                                
-                                if pd.notna(row['f4_additional_comments']) and row['f4_additional_comments']:
-                                    st.markdown("**💬 Additional Comments:**")
-                                    st.markdown(f"> {row['f4_additional_comments']}")
-                    else:
-                        st.warning("No results found. Try different search terms.")
-            else:
-                st.warning("Please enter search terms.")
+    if "chat_messages" not in st.session_state:
+        st.session_state.chat_messages = []
     
-    # TAB 2: THEME EXTRACTION
-    with tab2:
-        st.markdown("### 🎯 Theme Extraction")
-        st.markdown("*Identify common themes and patterns across responses*")
+    # No filters - analyze all data
+    chat_filters = []
         
-        col1, col2 = st.columns(2)
-        
-        with col1:
-            theme_method = st.radio(
-                "Analysis Method:",
-                options=["Keyword Frequency", "AI Analysis (LLM)"],
-                help="Keyword: Fast, simple patterns. AI: Deep analysis, slower."
-            )
-        
-        with col2:
-            theme_filters = st.multiselect(
-                "Filter responses by:",
-                options=['Treatment', 'Control'] + df['region'].unique().tolist(),
-                default=[]
-            )
-        
-        if st.button("🎯 Extract Themes", type="primary", use_container_width=True):
-            with st.spinner("Analyzing themes..."):
-                # Apply filters
-                filtered_df = df.copy()
-                if 'Treatment' in theme_filters:
-                    filtered_df = filtered_df[filtered_df['intervention_status'] == 'Treatment']
-                if 'Control' in theme_filters:
-                    filtered_df = filtered_df[filtered_df['intervention_status'] == 'Control']
-                
-                region_filters = [f for f in theme_filters if f not in ['Treatment', 'Control']]
-                if region_filters:
-                    filtered_df = filtered_df[filtered_df['region'].isin(region_filters)]
-                
-                if theme_method == "Keyword Frequency":
-                    themes = extract_themes_simple(filtered_df)
-                    
-                    st.markdown("#### 📊 Most Common Themes (by keyword frequency)")
-                    
-                    theme_df = pd.DataFrame(themes, columns=['Theme', 'Frequency'])
-                    
-                    col1, col2 = st.columns([2, 1])
-                    
-                    with col1:
-                        import plotly.express as px
-                        fig = px.bar(
-                            theme_df.head(20),
-                            x='Frequency',
-                            y='Theme',
-                            orientation='h',
-                            title='Top 20 Themes',
-                            labels={'Frequency': 'Count', 'Theme': ''}
-                        )
-                        fig.update_layout(height=600, yaxis={'categoryorder': 'total ascending'})
-                        st.plotly_chart(fig, use_container_width=True)
-                    
-                    with col2:
-                        st.dataframe(theme_df, hide_index=True, height=600)
-                
-                else:  # AI Analysis
-                    themes = extract_themes_llm(filtered_df, model=selected_model)
-                    
-                    st.markdown("#### 🤖 AI-Generated Theme Analysis")
-                    st.markdown(themes)
-                    
-                    # Download option
-                    st.download_button(
-                        label="📥 Download Theme Analysis",
-                        data=themes,
-                        file_name=f"theme_analysis_{datetime.now().strftime('%Y%m%d_%H%M%S')}.txt",
-                        mime="text/plain"
-                    )
+    # Display chat messages
+    st.markdown("### 💬 Conversation")
     
-    # TAB 3: COMPARATIVE ANALYSIS
-    with tab3:
-        st.markdown("### ⚖️ Comparative Analysis")
-        st.markdown("*Compare responses between different groups*")
+    if st.session_state.chat_messages:
+        for msg in st.session_state.chat_messages:
+            with st.chat_message(msg["role"], avatar="🧑‍🏫" if msg["role"] == "user" else "🤖"):
+                st.markdown(msg["content"])
+    else:
+        st.info("👋 **Welcome!** Ask me anything about the teacher survey data. I'll analyze the responses and provide insights.")
         
-        compare_by = st.selectbox(
-            "Compare groups by:",
-            options=['intervention_status', 'region', 'time_period'],
-            format_func=lambda x: {
-                'intervention_status': 'Treatment vs Control',
-                'region': 'Regions',
-                'time_period': 'Time Periods'
-            }[x]
-        )
+    # Chat input
+    user_question = st.chat_input("💭 Ask a question about the teacher survey data...", key="chat_input")
         
-        if st.button("⚖️ Run Comparison", type="primary", use_container_width=True):
-            with st.spinner("Analyzing differences between groups..."):
-                comparison = compare_groups(df, group_by=compare_by, model=selected_model)
-                
-                st.markdown("#### 🤖 Comparative Analysis Results")
-                st.markdown(comparison)
-                
-                # Download option
-                st.download_button(
-                    label="📥 Download Comparison",
-                    data=comparison,
-                    file_name=f"comparative_analysis_{datetime.now().strftime('%Y%m%d_%H%M%S')}.txt",
-                    mime="text/plain"
-                )
-    
-    # TAB 4: TEMPORAL TRENDS
-    with tab4:
-        st.markdown("### ⏱️ Temporal Trends")
-        st.markdown("*Analyze how teacher perspectives evolve over time*")
+    if user_question:
+        # Add user message to display
+        st.session_state.chat_messages.append({"role": "user", "content": user_question})
         
-        temporal_filter = st.selectbox(
-            "Focus on:",
-            options=['All Responses', 'Treatment Only', 'Control Only'],
-            key="temporal_filter"
-        )
+        # Filter data based on selections
+        filtered_df = df.copy()
+        if 'Treatment' in chat_filters:
+            filtered_df = filtered_df[filtered_df['intervention_status'] == 'Treatment']
+        if 'Control' in chat_filters:
+            filtered_df = filtered_df[filtered_df['intervention_status'] == 'Control']
         
-        if st.button("⏱️ Analyze Trends", type="primary", use_container_width=True):
-            with st.spinner("Analyzing temporal patterns..."):
-                # Apply filter
-                filtered_df = df.copy()
-                if temporal_filter == 'Treatment Only':
-                    filtered_df = filtered_df[filtered_df['intervention_status'] == 'Treatment']
-                elif temporal_filter == 'Control Only':
-                    filtered_df = filtered_df[filtered_df['intervention_status'] == 'Control']
-                
-                trends = analyze_temporal_trends(filtered_df, model=selected_model)
-                
-                st.markdown("#### 🤖 Temporal Trend Analysis")
-                st.markdown(trends)
-                
-                # Show response counts by time period
-                st.markdown("#### 📊 Response Distribution Over Time")
-                time_counts = filtered_df.groupby('time_period').size().reset_index(name='count')
-                
-                import plotly.express as px
-                fig = px.bar(
-                    time_counts,
-                    x='time_period',
-                    y='count',
-                    title='Number of Responses by Time Period',
-                    labels={'time_period': 'Time Period', 'count': 'Response Count'}
-                )
-                st.plotly_chart(fig, use_container_width=True)
-                
-                # Download option
-                st.download_button(
-                    label="📥 Download Temporal Analysis",
-                    data=trends,
-                    file_name=f"temporal_analysis_{datetime.now().strftime('%Y%m%d_%H%M%S')}.txt",
-                    mime="text/plain"
-                )
-    
-    # TAB 5: SUMMARY GENERATION
-    with tab5:
-        st.markdown("### 📝 Summary Generation")
-        st.markdown("*Generate comprehensive summaries of qualitative data*")
+        region_filters = [f for f in chat_filters if f not in ['Treatment', 'Control']]
+        if region_filters:
+            filtered_df = filtered_df[filtered_df['region'].isin(region_filters)]
         
-        col1, col2 = st.columns(2)
+        # Prepare context from data - filter out empty responses first
+        non_empty_df = filtered_df[filtered_df['all_text'].str.len() > 50].copy()
         
-        with col1:
-            summary_focus = st.text_input(
-                "Focus area (optional):",
-                placeholder="e.g., student engagement, intervention challenges",
-                help="Leave blank for general summary"
-            )
+        if len(non_empty_df) == 0:
+            st.warning("No qualitative responses found with the selected filters.")
+            st.stop()
         
-        with col2:
-            summary_filter = st.selectbox(
-                "Filter by:",
-                options=['All Responses', 'Treatment Only', 'Control Only'],
-                key="summary_filter"
-            )
+        sample_size = min(50, len(non_empty_df))
+        sampled_responses = non_empty_df.sample(sample_size)
         
-        if st.button("📝 Generate Summary", type="primary", use_container_width=True):
-            with st.spinner("Generating comprehensive summary..."):
-                # Apply filter
-                filtered_df = df.copy()
-                if summary_filter == 'Treatment Only':
-                    filtered_df = filtered_df[filtered_df['intervention_status'] == 'Treatment']
-                elif summary_filter == 'Control Only':
-                    filtered_df = filtered_df[filtered_df['intervention_status'] == 'Control']
-                
-                summary = generate_summary(
-                    filtered_df, 
-                    focus=summary_focus if summary_focus else None,
-                    model=selected_model
-                )
-                
-                st.markdown("#### 🤖 Generated Summary")
-                st.markdown(summary)
-                
-                # Statistics
-                st.markdown("---")
-                st.markdown("#### 📊 Summary Statistics")
-                
-                col1, col2, col3, col4 = st.columns(4)
-                
-                with col1:
-                    st.metric("Total Responses", len(filtered_df))
-                with col2:
-                    st.metric("Schools", filtered_df['school_id'].nunique())
-                with col3:
-                    st.metric("Teachers", filtered_df['teacher_id'].nunique())
-                with col4:
-                    response_rate = (filtered_df['f1_performance_factors'].notna().sum() / len(filtered_df) * 100)
-                    st.metric("Response Rate", f"{response_rate:.0f}%")
-                
-                # Download option
-                full_report = f"""CHATFRIEND QUALITATIVE SUMMARY
-Generated: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}
-Filter: {summary_filter}
-Focus: {summary_focus if summary_focus else 'General'}
+        # Create context with more space and better formatting
+        context_parts = []
+        for i, (idx, row) in enumerate(sampled_responses.iterrows(), 1):
+            text = row['all_text'][:600].strip()  # Increased from 500 to 600 chars
+            if text:
+                context_parts.append(f"[Response {i} - {row['intervention_status']} - {row['region']}]\n{text}")
+        
+        # Increased context limit to 15000 characters
+        context_text = '\n\n---\n\n'.join(context_parts)[:15000]
+        
+        # Build system prompt with context
+        system_prompt = f"""You are an AI assistant analyzing teacher survey data about student performance and educational interventions.
 
-{summary}
+CONTEXT - Teacher Survey Responses:
+{context_text}
 
----
-STATISTICS:
-- Total Responses: {len(filtered_df)}
-- Schools: {filtered_df['school_id'].nunique()}
-- Teachers: {filtered_df['teacher_id'].nunique()}
-- Time Range: {filtered_df['survey_date'].min().strftime('%Y-%m-%d')} to {filtered_df['survey_date'].max().strftime('%Y-%m-%d')}
+Your role:
+- Answer questions based on the survey data provided above
+- Be specific and cite patterns you see in the responses
+- If you don't see relevant information in the data, say so
+- Provide actionable insights when possible
+- Keep responses concise but informative
+- Use bullet points for clarity when appropriate
+
+Dataset info:
+- Total responses in database: {len(filtered_df)}
+- Non-empty responses: {len(non_empty_df)}
+- Sample size provided: {len(context_parts)} responses
+- Filters applied: {', '.join(chat_filters) if chat_filters else 'None (analyzing all data)'}
 """
-                
-                st.download_button(
-                    label="📥 Download Full Report",
-                    data=full_report,
-                    file_name=f"summary_report_{datetime.now().strftime('%Y%m%d_%H%M%S')}.txt",
-                    mime="text/plain"
-                )
+        
+        # Call LLM with chat history
+        with st.spinner("🤔 Analyzing responses..."):
+            assistant_response = call_llm_chat(
+                message=user_question,
+                history=st.session_state.chat_history,
+                system_prompt=system_prompt
+            )
+        
+        # Add to chat history for continuity
+        st.session_state.chat_history.append({"role": "user", "content": user_question})
+        st.session_state.chat_history.append({"role": "assistant", "content": assistant_response})
+        
+        # Add assistant message to display
+        st.session_state.chat_messages.append({"role": "assistant", "content": assistant_response})
+        
+        # Rerun to show new messages
+        st.rerun()
+        
 
 if __name__ == "__main__":
     main()
-

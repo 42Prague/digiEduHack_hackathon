@@ -1,6 +1,6 @@
 # 🤖 ChatFriend Setup Guide
 
-ChatFriend is your AI-powered qualitative analysis assistant. It uses **Ollama** to run large language models (LLMs) locally on your computer - no cloud, no API costs, complete privacy!
+ChatFriend is your AI-powered qualitative analysis assistant. It uses **Hugging Face's cloud-based LLM API** to provide powerful AI analysis capabilities through a simple, containerized service.
 
 ## ✅ What You Get
 
@@ -12,74 +12,65 @@ ChatFriend is your AI-powered qualitative analysis assistant. It uses **Ollama**
 
 ## 📦 Installation Steps
 
-### Step 1: Install Ollama
+### Step 1: Get a Hugging Face API Key
 
-**macOS:**
-```bash
-# Download and install from website
-open https://ollama.ai/download
+1. Go to [https://huggingface.co/settings/tokens](https://huggingface.co/settings/tokens)
+2. Create a new token (Read role is sufficient)
+3. Copy the token
 
-# Or use Homebrew
-brew install ollama
-```
+### Step 2: Configure Environment Variables
 
-**Linux:**
-```bash
-curl -fsSL https://ollama.ai/install.sh | sh
-```
-
-**Windows:**
-Download from: https://ollama.ai/download
-
-### Step 2: Pull a Model
-
-Once Ollama is installed, pull a language model. We recommend **llama3** (4.7GB):
-
-```bash
-ollama pull llama3
-```
-
-**Alternative models (if llama3 is too large):**
-- `ollama pull mistral` (4.1GB) - Faster, still very good
-- `ollama pull phi3` (2.3GB) - Smallest, good for basic tasks
-- `ollama pull gemma:7b` (4.8GB) - Google's model
-
-### Step 3: Verify Installation
-
-Check that Ollama is running:
-
-```bash
-ollama list
-```
-
-You should see your installed model(s).
-
-Test it:
-```bash
-ollama run llama3 "Hello, how are you?"
-```
-
-### Step 4: Install Python Dependencies
-
-If you haven't already:
-
-```bash
-cd /Users/kira/42/afolder
-source venv/bin/activate
-pip install requests>=2.31.0
-```
-
-(This should already be in `requirements.txt`)
-
-### Step 5: Start Using ChatFriend!
-
-1. Make sure Ollama is running (it usually starts automatically)
-2. Open your Streamlit app:
+1. Navigate to the project directory:
    ```bash
-   streamlit run app.py
+   cd /Users/kira/fuckk/srcs/data_plat_digiedu
    ```
-3. Navigate to **5_🤖_ChatFriend** in the sidebar
+
+2. Edit the `.env` file and add your API key:
+   ```bash
+   # Open the .env file
+   nano .env
+   
+   # Replace 'your_huggingface_api_key_here' with your actual token
+   HF_API_KEY=hf_YourActualTokenHere
+   ```
+
+3. Save the file (Ctrl+O, Enter, Ctrl+X in nano)
+
+### Step 3: Start the Services with Docker
+
+```bash
+# Build and start all services
+docker-compose up -d
+
+# Check if services are running
+docker-compose ps
+```
+
+You should see two services running:
+- `student-survey-app` on port 8501
+- `llm-service` on port 8000
+
+### Step 4: Access ChatFriend
+
+1. Open your browser and go to [http://localhost:8501](http://localhost:8501)
+2. Navigate to **5_🤖_ChatFriend** in the sidebar
+3. You should see "✅ LLM Service Connected (Hugging Face)"
 4. Start analyzing your qualitative data!
+
+### Step 5: Verify Everything is Working
+
+Check service logs if you encounter issues:
+
+```bash
+# View all logs
+docker-compose logs
+
+# View just the LLM service logs
+docker-compose logs llm-service
+
+# View just the app logs
+docker-compose logs app
+```
 
 ## 🎯 How to Use ChatFriend
 
@@ -111,35 +102,57 @@ Choose between:
 
 ## 🔧 Troubleshooting
 
-### "Ollama is not running"
+### "LLM Service is not available"
+
+**Check if the service is running:**
 ```bash
-# Check if Ollama service is running
-curl http://localhost:11434/api/tags
-
-# If not, start it manually (Linux)
-ollama serve
-
-# On Mac/Windows, Ollama should start automatically
+docker-compose ps
+# Both services should show "Up"
 ```
 
-### "No models found"
+**Check LLM service logs:**
 ```bash
-# Pull a model
-ollama pull llama3
-
-# Verify it's installed
-ollama list
+docker-compose logs llm-service
 ```
 
-### Slow performance
-- Try a smaller model: `ollama pull mistral` or `ollama pull phi3`
-- Close other applications to free up RAM
-- Consider using a GPU if available (Ollama auto-detects)
+**Restart the services:**
+```bash
+docker-compose restart llm-service
+```
+
+### "HF_API_KEY not set on server"
+
+This means your Hugging Face API key is missing or incorrect.
+
+1. Check your `.env` file:
+   ```bash
+   cat .env
+   ```
+
+2. Make sure it contains:
+   ```
+   HF_API_KEY=hf_YourActualTokenHere
+   ```
+
+3. Restart the services:
+   ```bash
+   docker-compose down
+   docker-compose up -d
+   ```
+
+### 404 Errors in Logs
+
+The healthcheck might show 404 errors for the root route - this is normal. The actual API endpoints (`/chat` and `/summarize`) work fine.
 
 ### API timeout errors
-- Increase timeout in the code (currently set to 60 seconds)
-- Use a smaller/faster model
-- Reduce the amount of text being analyzed at once
+- The service has a 90-second timeout
+- If requests are timing out, try reducing the amount of text being analyzed
+- Check your internet connection (the service needs to reach Hugging Face)
+
+### Connection refused errors
+- Make sure both containers are on the same network (`survey-network`)
+- Check that the LLM service is running: `docker-compose ps`
+- Try rebuilding: `docker-compose up -d --build`
 
 ## 💡 Tips for Best Results
 
@@ -149,32 +162,46 @@ ollama list
 4. **Combine Methods** - Use keyword frequency to identify themes, then AI for deeper analysis
 5. **Export Everything** - Download reports for documentation and sharing
 
-## 📊 Model Comparison
+## ☁️ Cloud vs Local LLM Comparison
 
-| Model | Size | Speed | Quality | Best For |
-|-------|------|-------|---------|----------|
-| llama3 | 4.7GB | Medium | Excellent | General use, best quality |
-| mistral | 4.1GB | Fast | Very Good | Faster responses |
-| phi3 | 2.3GB | Very Fast | Good | Limited hardware |
-| gemma:7b | 4.8GB | Medium | Excellent | Alternative to llama3 |
+| Aspect | Cloud (Current) | Local (Ollama) |
+|--------|----------------|----------------|
+| Setup | Quick, API key only | Complex, download models |
+| Cost | Pay per use | Free after setup |
+| Performance | Fast, consistent | Depends on hardware |
+| Privacy | Data sent to HF | 100% private |
+| Updates | Automatic | Manual |
+| Requirements | Internet + API key | 8GB+ RAM + storage |
 
 ## 🔐 Privacy & Data Security
 
-**All data stays local!**
-- No data sent to cloud servers
-- No API keys needed
-- No internet required (after model download)
-- Your teacher responses remain completely private
+**Data handling:**
+- Teacher responses are sent to Hugging Face's API for analysis
+- Only the text selected for analysis is sent (not your entire database)
+- Hugging Face processes requests and doesn't store them permanently
+- Your API key is kept secure in the `.env` file
+- All services run in isolated Docker containers
 
 ## 🚀 Advanced Usage
 
-### Using Different Models
+### Changing the LLM Model
 
-In the ChatFriend interface, you can switch between installed models using the dropdown selector. Each model has different strengths:
+The service uses `openai/gpt-oss-20b:groq` by default. To change it:
 
-- **llama3** - Best overall quality, good at nuanced analysis
-- **mistral** - Faster, excellent for summaries
-- **phi3** - Smallest, good for simple searches and themes
+1. Edit `llm_api.py`:
+   ```python
+   HF_MODEL = "meta-llama/Llama-3.2-3B-Instruct"  # or another model
+   ```
+
+2. Rebuild the service:
+   ```bash
+   docker-compose up -d --build llm-service
+   ```
+
+**Popular alternatives:**
+- `meta-llama/Llama-3.2-3B-Instruct` - Fast, good quality
+- `mistralai/Mistral-7B-Instruct-v0.3` - Excellent for analysis
+- `google/gemma-2-9b-it` - Google's model
 
 ### Customizing Analysis
 

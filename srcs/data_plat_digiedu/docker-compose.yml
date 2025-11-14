@@ -24,6 +24,7 @@ services:
       - ./load_sample_data.py:/app/load_sample_data.py
       - ./mixed_effects_analysis.py:/app/mixed_effects_analysis.py
       - ./streamlit_dashboard.py:/app/streamlit_dashboard.py
+      - ./llm_service.py:/app/llm_service.py
       - ./demographics_config.xlsx:/app/demographics_config.xlsx
       - ./data_structure_template.csv:/app/data_structure_template.csv
       - ./pages:/app/pages
@@ -40,6 +41,9 @@ services:
       # Database configuration
       - DB_PATH=/app/data/teacher_survey.db
       
+      # LLM Service configuration
+      - LLM_SERVICE_URL=http://llm-service:8000
+      
       # Application settings
       - GENERATE_MOCK_DATA=true
       - PYTHONUNBUFFERED=1
@@ -49,6 +53,27 @@ services:
       timeout: 10s
       retries: 3
       start_period: 60s
+    restart: unless-stopped
+    networks:
+      - survey-network
+    depends_on:
+      - llm-service
+
+  llm-service:
+    build:
+      context: .
+      dockerfile: Dockerfile.llm
+    container_name: llm-service
+    ports:
+      - "8000:8000"
+    environment:
+      - HF_API_KEY=${HF_API_KEY}
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 10s
     restart: unless-stopped
     networks:
       - survey-network
