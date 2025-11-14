@@ -37,7 +37,7 @@
 /* Grid Layout */
 .admin-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    grid-template-columns: repeat(2, minmax(0, 1fr));
     gap: var(--spacing-xl);
 }
 
@@ -47,6 +47,7 @@
     padding: var(--spacing-lg);
     border: var(--border-width) solid var(--color-border);
 }
+
 
 .admin-section h2 {
     font-size: var(--font-size-xl);
@@ -88,7 +89,7 @@
 }
 
 /* Responsive */
-@media (max-width: 768px) {
+@media (max-width: 900px) {
     .admin-container {
         padding: var(--spacing-lg);
     }
