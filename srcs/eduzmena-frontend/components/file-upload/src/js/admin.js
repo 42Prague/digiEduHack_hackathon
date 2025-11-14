@@ -4,6 +4,7 @@ import { regionsApi, schoolsApi, filesApi } from './api.js'
 import { config } from './config.js'
 
 const DEFAULT_FILES_PAGE_SIZE = 10
+const UNKNOWN_DOCUMENT_TYPE_VALUE = '__unknown__'
 
 let regions = []
 let schools = []
@@ -51,6 +52,7 @@ async function loadData() {
         renderRegions()
         renderRegionSelects()
         renderSchoolFilterSelect()
+        renderDocumentTypeFilterSelect()
         renderSchools()
         renderFiles()
     } catch (error) {
@@ -176,6 +178,41 @@ function renderSchoolFilterSelect() {
     select.value = optionExists ? prevValue : ''
 }
 
+function renderDocumentTypeFilterSelect() {
+    const select = document.getElementById('files-doc-type-filter')
+    if (!select) return
+
+    const prevValue = select.value
+    select.innerHTML = '<option value="">All document types</option>'
+
+    const typeMap = new Map()
+    files.forEach(file => {
+        const { type, label, icon } = getDocumentTypeInfo(file)
+        const value = type ?? UNKNOWN_DOCUMENT_TYPE_VALUE
+        if (!typeMap.has(value)) {
+            typeMap.set(value, {
+                label: label || 'Unknown document type',
+                icon: icon || ''
+            })
+        }
+    })
+
+    const sortedTypes = Array
+        .from(typeMap.entries())
+        .sort((a, b) => a[1].label.localeCompare(b[1].label))
+
+    sortedTypes.forEach(([value, info]) => {
+        const option = document.createElement('option')
+        option.value = value
+        const text = info.icon ? `${info.icon} ${info.label}` : info.label
+        option.textContent = text
+        select.appendChild(option)
+    })
+
+    const optionExists = sortedTypes.some(([value]) => value === prevValue)
+    select.value = optionExists ? prevValue : ''
+}
+
 function getDocumentTypeInfo(file) {
     const raw = file.llm_summary
     if (!raw) {
@@ -211,6 +248,7 @@ function renderFiles() {
 
     const regionFilter = document.getElementById('files-region-filter')?.value || ''
     const schoolFilter = document.getElementById('files-school-filter')?.value || ''
+    const docTypeFilter = document.getElementById('files-doc-type-filter')?.value || ''
 
     const filteredFiles = files.filter(file => {
         const school = schools.find(s => s.id === file.school_id)
@@ -220,7 +258,12 @@ function renderFiles() {
         const matchesSchool = schoolFilter
             ? String(file.school_id) === schoolFilter
             : true
-        return matchesRegion && matchesSchool
+        const { type } = getDocumentTypeInfo(file)
+        const docTypeValue = type ?? UNKNOWN_DOCUMENT_TYPE_VALUE
+        const matchesDocType = docTypeFilter
+            ? docTypeValue === docTypeFilter
+            : true
+        return matchesRegion && matchesSchool && matchesDocType
     })
 
     if (!filteredFiles.length) {
@@ -480,6 +523,7 @@ function setupForms() {
     const schoolForm = document.getElementById('school-form')
     const filesRegionFilter = document.getElementById('files-region-filter')
     const filesSchoolFilter = document.getElementById('files-school-filter')
+    const filesDocTypeFilter = document.getElementById('files-doc-type-filter')
     const filesPageSizeSelect = document.getElementById('files-page-size')
 
     regionForm?.addEventListener('submit', async (e) => {
@@ -510,6 +554,10 @@ function setupForms() {
         renderFiles()
     })
     filesSchoolFilter?.addEventListener('change', () => {
+        filePagination.page = 1
+        renderFiles()
+    })
+    filesDocTypeFilter?.addEventListener('change', () => {
         filePagination.page = 1
         renderFiles()
     })
