@@ -292,7 +292,8 @@ async def process_archive(
                 "files_extracted": len(extracted_files),
                 "files_uploaded": files_uploaded,
                 "files_processed": files_processed,
-                "processing_time_ms": processing_time_ms
+                "processing_time_ms": processing_time_ms,
+                "outcome": "success"
             }
         )
         
@@ -313,7 +314,9 @@ async def process_archive(
             extra={
                 "event_id": cloud_event.id,
                 "archive_name": cloud_event.data.name,
-                "error": str(e)
+                "error": str(e),
+                "error_type": type(e).__name__,
+                "outcome": "failed"
             },
             exc_info=True
         )
@@ -436,7 +439,8 @@ async def process_cloud_event(event_data: Dict[str, Any]) -> Dict[str, Any]:
                 "file_id": processing_req.file_id,
                 "region_id": processing_req.region_id,
                 "processing_time_ms": processing_time_ms,
-                "transformer_status": transformer_response.get("status")
+                "transformer_status": transformer_response.get("status"),
+                "outcome": "success"
             }
         )
 
@@ -486,6 +490,7 @@ async def process_cloud_event(event_data: Dict[str, Any]) -> Dict[str, Any]:
                 "size_bytes": size,
                 "error": str(e),
                 "error_type": type(e).__name__,
+                "outcome": "failed"
             },
             exc_info=True,
         )

@@ -123,18 +123,20 @@ class ProcessingRequest(BaseModel):
                 }
             )
         else:
-            # Fallback: use defaults if path doesn't match expected pattern
-            logger.warning(
-                f"Object path does not match expected pattern 'uploads/{{region_id}}/{{file_id}}_{{filename}}'",
+            # Reject invalid paths immediately
+            logger.error(
+                "Object path does not match expected pattern",
                 extra={
+                    "event_id": event.id,
                     "object_path": object_path,
-                    "expected_pattern": "uploads/{region_id}/{file_id}_{filename}"
+                    "expected_pattern": "uploads/{region_id}/{file_id}_{filename}",
+                    "outcome": "invalid_path"
                 }
             )
-            # Extract file_id from filename (last part of path, first part before underscore)
-            filename = object_path.split("/")[-1]
-            file_id = filename.split("_")[0] if "_" in filename else filename.split(".")[0]
-            region_id = "unknown"
+            raise ValueError(
+                f"Invalid object path: {object_path}. "
+                f"Expected pattern: uploads/{{region_id}}/{{file_id}}_{{filename}}"
+            )
 
         return cls(
             file_id=file_id,

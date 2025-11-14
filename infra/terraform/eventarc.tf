@@ -77,16 +77,9 @@ resource "google_eventarc_trigger" "storage_trigger" {
     value     = google_storage_bucket.uploads.name
   }
 
-  # Optional: Filter events by object name prefix
-  # Only applied if event_filter_prefix is not empty
-  dynamic "matching_criteria" {
-    for_each = var.event_filter_prefix != "" ? [1] : []
-    content {
-      attribute = "bucket"
-      value     = google_storage_bucket.uploads.name
-      operator  = "match-path-pattern"
-    }
-  }
+  # Note: Direct Cloud Storage events only support filtering by 'type' and 'bucket'
+  # Path-based filtering (e.g., uploads/* vs text/*) must be done in the service code
+  # The MIME Decoder service validates paths and returns HTTP 400 for invalid paths
 
   # Route events to MIME Decoder Cloud Run service
   destination {
@@ -155,12 +148,8 @@ resource "google_eventarc_trigger" "text_trigger" {
     value     = google_storage_bucket.uploads.name
   }
 
-  # Filter events by object name pattern "text/*"
-  matching_criteria {
-    attribute = "name"
-    value     = "text/"
-    operator  = "match-path-pattern"
-  }
+  # Note: Direct Cloud Storage events only support filtering by 'type' and 'bucket'
+  # Path-based filtering must be done in the Tabular service code
 
   # Route events to Tabular Cloud Run service
   destination {

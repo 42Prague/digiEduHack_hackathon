@@ -43,57 +43,78 @@ async def call_transformer(
         "timestamp": request.timestamp.isoformat()
     }
     
-    logger.info(
-        f"Calling Transformer service",
-        extra={
-            "file_id": request.file_id,
-            "region_id": request.region_id,
-            "category": request.file_category,
-            "transformer_url": transformer_url
-        }
-    )
+    MAX_ATTEMPTS = 3
+    RETRY_DELAY_SECONDS = 2
     
     async with httpx.AsyncClient(timeout=timeout) as client:
-        try:
-            response = await client.post(
-                f"{transformer_url}/process",
-                json=payload
-            )
-            response.raise_for_status()
-            result = response.json()
-            
-            logger.info(
-                f"Transformer service responded successfully",
-                extra={
-                    "file_id": request.file_id,
-                    "status": result.get("status"),
-                    "status_code": response.status_code
-                }
-            )
-            
-            return result
-            
-        except httpx.TimeoutException as e:
-            logger.error(
-                f"Transformer service timeout",
-                extra={
-                    "file_id": request.file_id,
-                    "timeout": timeout,
-                    "error": str(e)
-                }
-            )
-            raise
-            
-        except httpx.HTTPError as e:
-            logger.error(
-                f"Transformer service HTTP error",
-                extra={
-                    "file_id": request.file_id,
-                    "error": str(e),
-                    "status_code": getattr(e.response, "status_code", None) if hasattr(e, "response") else None
-                }
-            )
-            raise
+        last_error = None
+        
+        for attempt in range(1, MAX_ATTEMPTS + 1):
+            try:
+                logger.info(
+                    f"Calling Transformer service (attempt {attempt}/{MAX_ATTEMPTS})",
+                    extra={
+                        "file_id": request.file_id,
+                        "region_id": request.region_id,
+                        "category": request.file_category,
+                        "transformer_url": transformer_url,
+                        "attempt": attempt,
+                        "max_attempts": MAX_ATTEMPTS
+                    }
+                )
+                
+                response = await client.post(
+                    f"{transformer_url}/process",
+                    json=payload
+                )
+                response.raise_for_status()
+                result = response.json()
+                
+                logger.info(
+                    f"Transformer service responded successfully",
+                    extra={
+                        "file_id": request.file_id,
+                        "status": result.get("status"),
+                        "status_code": response.status_code,
+                        "attempt": attempt
+                    }
+                )
+                
+                return result
+                
+            except (httpx.TimeoutException, httpx.HTTPError) as e:
+                last_error = e
+                status_code = getattr(e.response, "status_code", None) if hasattr(e, "response") else None
+                error_type = "timeout" if isinstance(e, httpx.TimeoutException) else "http_error"
+                
+                logger.warning(
+                    f"Transformer service error (attempt {attempt}/{MAX_ATTEMPTS})",
+                    extra={
+                        "file_id": request.file_id,
+                        "attempt": attempt,
+                        "max_attempts": MAX_ATTEMPTS,
+                        "error": str(e),
+                        "error_type": error_type,
+                        "status_code": status_code
+                    }
+                )
+                
+                # If this was the last attempt, raise the error
+                if attempt == MAX_ATTEMPTS:
+                    logger.error(
+                        f"Transformer service failed after {MAX_ATTEMPTS} attempts",
+                        extra={
+                            "file_id": request.file_id,
+                            "total_attempts": MAX_ATTEMPTS,
+                            "final_error": str(e),
+                            "final_error_type": error_type,
+                            "final_status_code": status_code
+                        }
+                    )
+                    raise
+                
+                # Wait before retrying
+                await asyncio.sleep(RETRY_DELAY_SECONDS)
 
 
 async def update_backend_status(
