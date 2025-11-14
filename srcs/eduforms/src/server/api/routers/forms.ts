@@ -1,8 +1,8 @@
 import { z } from "zod";
 import { adminProcedure, createTRPCRouter, protectedProcedure } from "~/server/api/trpc";
-import { form, field, form_field } from "~/server/db/schema";
+import { form, field, form_field, user_form, form_field_data } from "~/server/db/schema";
 import type { FieldConfigType } from "~/server/db/schema";
-import { eq, desc } from "drizzle-orm";
+import { eq, desc, and } from "drizzle-orm";
 
 // Zod schema for FieldConfigType validation
 const fieldConfigSchema: z.ZodType<FieldConfigType> = z.discriminatedUnion("type", [
@@ -97,6 +97,29 @@ export const formsRouter = createTRPCRouter({
       .from(form)
       .orderBy(desc(form.createdAt));
     return forms;
+  }),
+
+  // List all forms with user's submission status
+  listWithStatus: protectedProcedure.query(async ({ ctx }) => {
+    const forms = await ctx.db
+      .select()
+      .from(form)
+      .orderBy(desc(form.createdAt));
+
+    // Get all user's form submissions
+    const userForms = await ctx.db
+      .select()
+      .from(user_form)
+      .where(eq(user_form.user_id, ctx.session.user.id));
+
+    // Map forms with their submission status
+    return forms.map((formItem) => {
+      const userFormEntry = userForms.find((uf) => uf.form_id === formItem.id);
+      return {
+        ...formItem,
+        submissionStatus: userFormEntry?.submission_status || null,
+      };
+    });
   }),
 
   // Get a single form by ID
@@ -400,5 +423,182 @@ export const formsRouter = createTRPCRouter({
       }
 
       return updatedFormField[0];
+    }),
+
+  // ============================================================
+  // FORM SUBMISSIONS (User)
+  // ============================================================
+
+  // Get user's submission for a form
+  getUserSubmission: protectedProcedure
+    .input(z.object({ formId: z.string().uuid() }))
+    .query(async ({ ctx, input }) => {
+      // Find user_form entry
+      const userFormEntry = await ctx.db
+        .select()
+        .from(user_form)
+        .where(
+          and(
+            eq(user_form.form_id, input.formId),
+            eq(user_form.user_id, ctx.session.user.id)
+          )
+        )
+        .limit(1);
+
+      if (!userFormEntry[0]) {
+        return null;
+      }
+
+      // Get the submission data
+      const submissionData = await ctx.db
+        .select()
+        .from(form_field_data)
+        .where(eq(form_field_data.user_form_id, userFormEntry[0].id))
+        .limit(1);
+
+      return {
+        userForm: userFormEntry[0],
+        submission: submissionData[0] || null,
+      };
+    }),
+
+  // Save form as draft
+  saveDraft: protectedProcedure
+    .input(
+      z.object({
+        formId: z.string().uuid(),
+        data: z.record(z.any()),
+      })
+    )
+    .mutation(async ({ ctx, input }) => {
+      // Find or create user_form entry
+      let userFormEntry = await ctx.db
+        .select()
+        .from(user_form)
+        .where(
+          and(
+            eq(user_form.form_id, input.formId),
+            eq(user_form.user_id, ctx.session.user.id)
+          )
+        )
+        .limit(1);
+
+      if (!userFormEntry[0]) {
+        // Create user_form entry
+        const newUserForm = await ctx.db
+          .insert(user_form)
+          .values({
+            form_id: input.formId,
+            user_id: ctx.session.user.id,
+            submission_status: "draft",
+          })
+          .returning();
+        userFormEntry = newUserForm;
+      }
+
+      // Find existing submission data
+      const existingData = await ctx.db
+        .select()
+        .from(form_field_data)
+        .where(eq(form_field_data.user_form_id, userFormEntry[0]!.id))
+        .limit(1);
+
+      if (existingData[0]) {
+        // Update existing
+        const updated = await ctx.db
+          .update(form_field_data)
+          .set({
+            data: input.data,
+            state: "draft",
+          })
+          .where(eq(form_field_data.id, existingData[0].id))
+          .returning();
+        return updated[0];
+      } else {
+        // Create new
+        const newData = await ctx.db
+          .insert(form_field_data)
+          .values({
+            form_id: input.formId,
+            user_form_id: userFormEntry[0]!.id,
+            state: "draft",
+            data: input.data,
+          })
+          .returning();
+        return newData[0];
+      }
+    }),
+
+  // Submit form
+  submitForm: protectedProcedure
+    .input(
+      z.object({
+        formId: z.string().uuid(),
+        data: z.record(z.any()),
+      })
+    )
+    .mutation(async ({ ctx, input }) => {
+      // Find or create user_form entry
+      let userFormEntry = await ctx.db
+        .select()
+        .from(user_form)
+        .where(
+          and(
+            eq(user_form.form_id, input.formId),
+            eq(user_form.user_id, ctx.session.user.id)
+          )
+        )
+        .limit(1);
+
+      if (!userFormEntry[0]) {
+        // Create user_form entry
+        const newUserForm = await ctx.db
+          .insert(user_form)
+          .values({
+            form_id: input.formId,
+            user_id: ctx.session.user.id,
+            submission_status: "submitted",
+          })
+          .returning();
+        userFormEntry = newUserForm;
+      } else {
+        // Update status to submitted
+        await ctx.db
+          .update(user_form)
+          .set({ submission_status: "submitted" })
+          .where(eq(user_form.id, userFormEntry[0].id));
+      }
+
+      // Find existing submission data
+      const existingData = await ctx.db
+        .select()
+        .from(form_field_data)
+        .where(eq(form_field_data.user_form_id, userFormEntry[0]!.id))
+        .limit(1);
+
+      if (existingData[0]) {
+        // Update existing
+        const updated = await ctx.db
+          .update(form_field_data)
+          .set({
+            data: input.data,
+            state: "submitted",
+          })
+          .where(eq(form_field_data.id, existingData[0].id))
+          .returning();
+        return updated[0];
+      } else {
+        // Create new
+        const newData = await ctx.db
+          .insert(form_field_data)
+          .values({
+            form_id: input.formId,
+            user_form_id: userFormEntry[0]!.id,
+            state: "submitted",
+            data: input.data,
+          })
+          .returning();
+        return newData[0];
+      }
     }),
 });

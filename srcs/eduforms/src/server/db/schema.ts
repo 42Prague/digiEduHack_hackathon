@@ -227,7 +227,13 @@ export const form_field_data = pgTable("form_field_data", {
   id: uuid().primaryKey().defaultRandom(),
   form_id: uuid().references(()=>form.id).notNull(),
   user_form_id: uuid().references(()=>user_form.id),
-  state: formState(), 
+  state: formState(),
+  data: json().$type<Record<string, any>>(), // Stores field_id -> value mapping
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at")
+    .defaultNow()
+    .$onUpdate(() => /* @__PURE__ */ new Date())
+    .notNull(),
 })
 
 export const form_field = pgTable("form_field", {

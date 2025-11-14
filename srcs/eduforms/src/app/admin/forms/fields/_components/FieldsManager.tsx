@@ -84,7 +84,15 @@ export function FieldsManager() {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    const fieldConfig = { ...config, type: formData.type } as FieldConfigType;
+    let fieldConfig = { ...config, type: formData.type } as FieldConfigType;
+    
+    // Clean up options for select, radio, and multiselect fields
+    if (['select', 'radio', 'multiselect'].includes(formData.type) && (fieldConfig as any).options) {
+      fieldConfig = {
+        ...fieldConfig,
+        options: (fieldConfig as any).options.filter((o: string) => o.trim())
+      };
+    }
 
     if (editingId) {
       updateMutation.mutate({
@@ -210,9 +218,14 @@ export function FieldsManager() {
               onChange={(e) =>
                 setConfig({
                   ...config,
-                  options: e.target.value.split("\n").filter((o) => o.trim()),
+                  options: e.target.value.split("\n"),
                 })
               }
+              onKeyDown={(e) => {
+                if (e.key === "Enter") {
+                  e.stopPropagation();
+                }
+              }}
               rows={5}
               required
             />
@@ -269,16 +282,21 @@ export function FieldsManager() {
             onChange={(e) => {
               const options = e.target.value
                 .split("\n")
-                .filter((line) => line.trim())
                 .map((line) => {
+                  if (!line.trim()) return null;
                   const [value, label] = line.split(":");
                   return {
                     value: parseInt(value?.trim() || "0"),
                     label: label?.trim() || "",
                   };
                 })
-                .filter((o) => !isNaN(o.value) && o.label);
+                .filter((o): o is { value: number; label: string } => o !== null && !isNaN(o.value) && !!o.label);
               setConfig({ ...config, options });
+            }}
+            onKeyDown={(e) => {
+              if (e.key === "Enter") {
+                e.stopPropagation();
+              }
             }}
             rows={5}
             placeholder="1:Very Low&#10;2:Low&#10;3:Medium&#10;4:High&#10;5:Very High"
@@ -439,6 +457,11 @@ export function FieldsManager() {
               onChange={(e) =>
                 setFormData({ ...formData, description: e.target.value })
               }
+              onKeyDown={(e) => {
+                if (e.key === "Enter") {
+                  e.stopPropagation();
+                }
+              }}
               rows={2}
             />
 
