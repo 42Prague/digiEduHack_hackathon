@@ -56,6 +56,7 @@ jobs:
           sed -i "s|PROJECT_ID_PLACEHOLDER|${{ env.PROJECT_ID }}|g" infra/cloud-run-config.yaml
           sed -i "s|BUCKET_NAME_PLACEHOLDER|${{ env.PROJECT_ID }}-eduscale-uploads|g" infra/cloud-run-config.yaml
           sed -i "s|SERVICE_ACCOUNT_PLACEHOLDER|cloud-run-engine@${{ env.PROJECT_ID }}.iam.gserviceaccount.com|g" infra/cloud-run-config.yaml
+          sed -i "s|FEATHERLESS_API_KEY_PLACEHOLDER|${{ secrets.FEATHERLESS_API_KEY }}|g" infra/cloud-run-config.yaml
       
       - name: Deploy to Cloud Run
         run: |
