@@ -1,0 +1,201 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <title>Upload Assignment - School</title>
+    <style>
+      :root{--accent:#357266}
+      html,body{height:100%;margin:0}
+      body{font-family:system-ui,Segoe UI,Roboto,Arial,sans-serif;background:#08221a;color:#fff;display:flex;flex-direction:column;min-height:100vh}
+      header{background:rgba(0,0,0,0.3);padding:20px;border-bottom:1px solid rgba(255,255,255,0.1);display:flex;justify-content:space-between;align-items:center}
+      header h1{margin:0;font-size:24px;color:#fff}
+      .container{flex:1;padding:40px 20px;max-width:1200px;margin:0 auto;width:100%}
+      .card{background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.06);border-radius:12px;padding:30px;margin-bottom:20px}
+      .card h2{margin-top:0;color:var(--accent)}
+      .form-group{margin-bottom:20px}
+      label{display:block;font-size:14px;margin-bottom:8px;color:rgba(255,255,255,0.9);font-weight:600}
+      input[type="text"],input[type="email"],textarea,select{width:100%;padding:12px;border-radius:8px;border:1px solid rgba(255,255,255,0.08);background:rgba(255,255,255,0.03);color:#fff;font-family:inherit;font-size:14px;box-sizing:border-box}
+      /* Make the region dropdown options display their numbers in black */
+      #region{color:#000;background:#fff}
+      #region option{color:#000;background:#fff}
+      input[type="text"]::placeholder,textarea::placeholder{color:rgba(255,255,255,0.5)}
+      textarea{resize:vertical;min-height:100px}
+      .file-upload{position:relative;display:inline-block;width:100%;margin-bottom:12px}
+      .file-upload input[type="file"]{display:none}
+      .file-upload-label{display:block;padding:24px;background:rgba(255,255,255,0.03);border:2px dashed rgba(255,255,255,0.2);border-radius:8px;text-align:center;cursor:pointer;transition:all 0.3s}
+      .file-upload-label:hover{background:rgba(255,255,255,0.05);border-color:var(--accent)}
+      .file-upload-label.active{background:rgba(255,255,255,0.08);border-color:var(--accent)}
+      .file-name{font-size:13px;color:rgba(255,255,255,0.7);margin-top:8px}
+      .button-group{display:flex;gap:12px;margin-top:24px}
+      .btn{padding:12px 24px;border-radius:8px;border:0;font-weight:700;cursor:pointer;transition:all 0.3s;font-size:16px}
+      .btn-primary{background:var(--accent);color:#fff}
+      .btn-primary:hover{opacity:0.9;transform:translateY(-2px)}
+      .btn-secondary{background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.1);color:#fff}
+      .btn-secondary:hover{background:rgba(255,255,255,0.1)}
+      .back-link{display:inline-block;margin-bottom:20px;color:rgba(255,255,255,0.8);text-decoration:none;font-size:14px}
+      .back-link:hover{color:var(--accent)}
+      .user-menu{position:relative}
+      .user-icon{width:40px;height:40px;background:rgba(255,255,255,0.1);border:2px solid var(--accent);border-radius:50%;display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:24px;transition:all 0.3s}
+      .user-icon:hover{background:rgba(255,255,255,0.15)}
+      .dropdown{position:absolute;top:100%;right:0;background:#0b0b0b;border:1px solid rgba(255,255,255,0.1);border-radius:8px;min-width:150px;margin-top:8px;display:none;flex-direction:column;z-index:1000;box-shadow:0 8px 24px rgba(0,0,0,0.5)}
+      .dropdown.active{display:flex}
+      .dropdown a{padding:12px 16px;color:#fff;text-decoration:none;font-size:14px;display:flex;align-items:center;border-bottom:1px solid rgba(255,255,255,0.05);transition:all 0.3s}
+      .dropdown a:last-child{border-bottom:none}
+      .dropdown a:hover{background:var(--accent);color:#fff}
+    </style>
+  </head>
+  <body>
+    <header>
+      <h1 id="headerTitle">Upload </h1>
+      <div class="user-menu">
+        <div class="user-icon" id="userIconSchool">👤</div>
+        <div class="dropdown" id="dropdownSchool">
+          <a href="#">Info</a>
+          <a href="#">Profile</a>
+          <a href="index.html">Logout</a>
+        </div>
+      </div>
+    </header>
+    <div class="container">
+      <a class="back-link" href="school-dashboard.html">← Back to Dashboard</a>
+      
+      <div class="card">
+        <h2>Submit </h2>
+        <form onsubmit="handleUpload(event);">
+
+          <div class="form-group inline-row" style="display:flex;gap:12px;align-items:flex-start;">
+            <div style="flex:0 0 160px;">
+              <label for="region">Region</label>
+              <select id="region" required>
+                <option value="">Select region</option>
+                <option value="1">1</option>
+                <option value="2">2</option>
+                <option value="3">3</option>
+                <option value="4">4</option>
+                <option value="5">5</option>
+                <option value="6">6</option>
+                <option value="7">7</option>
+                <option value="8">8</option>
+                <option value="9">9</option>
+                <option value="10">10</option>
+                <option value="11">11</option>
+                <option value="12">12</option>
+                <option value="13">13</option>
+              </select>
+            </div>
+            <div style="flex:1;">
+              <label for="schoolName">School Name</label>
+              <input id="schoolName" type="text" placeholder="Enter school name" required>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label>Upload File *</label>
+            <div class="file-upload">
+              <input id="fileInput" type="file" accept=".pdf,.doc,.docx,.txt,.jpg,.png" required>
+              <label class="file-upload-label" for="fileInput">
+                <div>📁 Click to select or drag and drop</div>
+                <div style="font-size:12px;color:rgba(255,255,255,0.6);margin-top:6px">Supported: PDF, DOC, TXT, PNG, MP3, MP4</div>
+              </label>
+              <div class="file-name" id="fileName"></div>
+            </div>
+          </div>
+
+          <div class="button-group">
+            <button type="submit" class="btn btn-primary">Upload Assignment</button>
+            <a href="school-dashboard.html" class="btn btn-secondary" style="text-decoration:none;text-align:center">Cancel</a>
+          </div>
+        </form>
+      </div>
+    </div>
+  </body>
+
+  <script>
+    const userIcon = document.getElementById('userIconSchool');
+    const dropdown = document.getElementById('dropdownSchool');
+    const fileInput = document.getElementById('fileInput');
+    const fileUploadLabel = document.querySelector('.file-upload-label');
+    const fileName = document.getElementById('fileName');
+
+    userIcon.addEventListener('click', function(e){
+      e.stopPropagation();
+      dropdown.classList.toggle('active');
+    });
+
+    document.addEventListener('click', function(){
+      dropdown.classList.remove('active');
+    });
+
+    dropdown.addEventListener('click', function(e){
+      e.stopPropagation();
+    });
+
+    // File upload handling
+    fileInput.addEventListener('change', function(){
+      if(this.files.length > 0){
+        fileName.textContent = '✓ ' + this.files[0].name;
+        fileUploadLabel.classList.add('active');
+      }
+    });
+
+    // Drag and drop
+    fileUploadLabel.addEventListener('dragover', function(e){
+      e.preventDefault();
+      this.classList.add('active');
+    });
+
+    fileUploadLabel.addEventListener('dragleave', function(){
+      this.classList.remove('active');
+    });
+
+    fileUploadLabel.addEventListener('drop', function(e){
+      e.preventDefault();
+      fileInput.files = e.dataTransfer.files;
+      if(fileInput.files.length > 0){
+        fileName.textContent = '✓ ' + fileInput.files[0].name;
+        this.classList.add('active');
+      }
+    });
+
+    // Load and display username
+    const username = localStorage.getItem('username');
+    if(username){
+      document.getElementById('headerTitle').textContent = `${username} - Upload Assignment`;
+    }
+
+    function handleUpload(event){
+      event.preventDefault();
+      const region = document.getElementById('region').value;
+      const schoolName = document.getElementById('schoolName').value.trim();
+      const file = fileInput.files[0];
+
+      if(!region){ alert('Please select a region.'); return; }
+      if(!schoolName){ alert('Please enter the school name.'); document.getElementById('schoolName').focus(); return; }
+      if(!file){ alert('Please select a file to upload.'); return; }
+
+      // Create FormData and POST to server
+      const formData = new FormData();
+      formData.append('region', region);
+      formData.append('school', schoolName);
+      formData.append('file', file);
+
+      fetch('http://localhost:8000/upload', {
+        method: 'POST',
+        body: formData
+      })
+      .then(resp => resp.json())
+      .then(data => {
+        if(data.ok){
+          alert('✓ File uploaded and processed successfully!');
+          window.location.href = 'school-dashboard.html';
+        } else {
+          alert('Error: ' + (data.error || 'Unknown error'));
+        }
+      })
+      .catch(err => {
+        alert('Upload failed: ' + err.message);
+      });
+    }
+  </script>
+</html>

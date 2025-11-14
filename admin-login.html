@@ -1,0 +1,137 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <title>Admin Login</title>
+    <style>
+      :root{--accent:#941C2F}
+      html,body{height:100%;margin:0}
+      body{font-family:system-ui,Segoe UI,Roboto,Arial,sans-serif;background:linear-gradient(180deg,rgba(90,18,30,0.95),#2a0709);color:#fff;display:flex;align-items:center;justify-content:center}
+      .card{width:420px;max-width:94vw;padding:30px;border-radius:12px;background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.06);box-shadow:0 12px 44px rgba(0,0,0,0.65);backdrop-filter: blur(6px)}
+      h1{margin:0 0 8px 0;font-size:20px}
+      p.sub{margin:0 0 18px 0;color:rgba(255,255,255,0.95)}
+      label{display:block;font-size:13px;margin-top:12px;margin-bottom:6px}
+      input[type="text"],input[type="password"]{width:100%;padding:12px 10px;border-radius:8px;border:1px solid rgba(255,255,255,0.08);background:rgba(255,255,255,0.03);color:#fff;height:48px;box-sizing:border-box;font-size:14px}
+      .password-wrapper{position:relative;display:flex;align-items:center;height:48px}
+      .password-wrapper input{flex:1;padding-right:44px;height:100%}
+      .toggle-password{position:absolute;right:10px;background:none;border:none;cursor:pointer;padding:4px;transition:opacity 0.2s;display:flex;align-items:center;justify-content:center;width:32px;height:32px}
+      .toggle-password:hover{opacity:0.8}
+      .actions{display:flex;gap:12px;align-items:center;margin-top:18px}
+      button{flex:1;padding:12px;border-radius:10px;border:0;background:var(--accent);color:#fff;font-weight:700;cursor:pointer}
+      a.back{display:inline-block;margin-top:14px;color:rgba(255,255,255,0.9);text-decoration:none;font-size:14px}
+      .note{font-size:13px;color:rgba(255,255,255,0.8);margin-top:8px}
+      .forgot-link{display:inline-block;margin-top:10px;color:rgba(255,255,255,0.9);text-decoration:underline;cursor:pointer;font-size:14px}
+
+      /* Modal for password reset */
+      .modal{position:fixed;inset:0;display:none;align-items:center;justify-content:center;background:rgba(0,0,0,0.7);z-index:9999}
+      .modal.active{display:flex}
+      .modal-content{background:rgba(90,18,30,0.95);padding:28px;border-radius:12px;width:380px;max-width:92vw;border:1px solid rgba(255,255,255,0.1);box-shadow:0 12px 44px rgba(0,0,0,0.65)}
+      .modal-content h3{margin:0 0 12px 0;color:#fff;font-size:18px}
+      .modal-content p{margin:0 0 16px 0;color:rgba(255,255,255,0.85);font-size:14px}
+      .modal-content input[type="email"]{width:100%;padding:12px 10px;border-radius:8px;border:1px solid rgba(255,255,255,0.08);background:rgba(255,255,255,0.03);color:#fff;font-size:14px;box-sizing:border-box}
+      .modal-content input[type="email"]::placeholder{color:rgba(255,255,255,0.5)}
+      .modal-content input[type="email"]:focus{outline:none;border-color:rgba(255,255,255,0.2);background:rgba(255,255,255,0.06)}
+      .modal-actions{display:flex;gap:10px;margin-top:18px}
+      .modal-actions button{padding:11px 16px;border-radius:8px;border:0;font-weight:600;cursor:pointer;font-size:14px}
+      #resetSend{background:var(--accent);color:#fff;flex:1;transition:opacity 0.2s}
+      #resetSend:hover{opacity:0.9}
+      .modal-close{background:transparent;color:rgba(255,255,255,0.7);padding:8px 12px;border:0;cursor:pointer;font-size:14px;transition:color 0.2s}
+      .modal-close:hover{color:#fff}
+    </style>
+  </head>
+  <body>
+    <form class="card" onsubmit="handleAdminLogin(event);">
+      <h1>Admin Login</h1>
+      <p class="sub">Sign in with your administrator credentials.</p>
+      <label for="user">Username</label>
+      <input id="user" type="text" placeholder="admin" required>
+      <label for="pass">Password</label>
+      <div class="password-wrapper">
+        <input id="pass" type="password" placeholder="••••••••" required>
+        <button type="button" class="toggle-password" id="togglePass" aria-label="Toggle password visibility"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" stroke="rgba(255,255,255,0.6)"></path><circle cx="12" cy="12" r="3" stroke="rgba(255,255,255,0.6)"></circle></svg></button>
+      </div>
+      <div class="actions">
+        <button type="submit">Sign In</button>
+      </div>
+
+      <div style="display:flex;justify-content:space-between;align-items:center;gap:12px;margin-top:8px;flex-wrap:wrap;">
+        <a class="forgot-link" id="forgotBtn" href="#" role="button" aria-haspopup="dialog">Forgot your password?</a>
+        <a class="back" href="index.html">← Back</a>
+      </div>
+    </form>
+
+    <!-- Forgot-password modal -->
+    <div class="modal" id="forgotModal" role="dialog" aria-modal="true" aria-hidden="true">
+      <div class="modal-content" role="document">
+        <h3>Reset Password</h3>
+        <p>Enter the admin email and we'll send reset instructions.</p>
+        <input id="reset-email" type="email" placeholder="admin@example.com" required>
+        <div class="modal-actions">
+          <button id="resetSend" style="background:var(--accent);color:#fff;padding:10px;border-radius:8px;border:0;cursor:pointer">Send</button>
+          <button class="modal-close" id="resetCancel">Cancel</button>
+        </div>
+      </div>
+    </div>
+
+    <script>
+      function handleAdminLogin(event){
+        event.preventDefault();
+        const username = document.getElementById('user').value;
+        localStorage.setItem('username', username);
+        localStorage.setItem('userType', 'admin');
+        window.location.href = 'admin-dashboard.html';
+      }
+
+      // Password visibility toggle
+      const toggleBtn = document.getElementById('togglePass');
+      const passInput = document.getElementById('pass');
+      if(toggleBtn && passInput){
+        toggleBtn.addEventListener('click', function(e){
+          e.preventDefault();
+          const isPassword = passInput.type === 'password';
+          passInput.type = isPassword ? 'text' : 'password';
+          const svg = toggleBtn.querySelector('svg');
+          if(svg){
+            const circles = svg.querySelectorAll('circle');
+            if(isPassword){
+              circles.forEach(c => c.style.display = 'none');
+            } else {
+              circles.forEach(c => c.style.display = '');
+            }
+          }
+        });
+      }
+
+      (function(){
+        const forgotBtn = document.getElementById('forgotBtn');
+        const modal = document.getElementById('forgotModal');
+        const resetCancel = document.getElementById('resetCancel');
+        const resetSend = document.getElementById('resetSend');
+        const resetEmail = document.getElementById('reset-email');
+
+        function openModal(){
+          modal.classList.add('active');
+          modal.setAttribute('aria-hidden','false');
+          if(resetEmail) resetEmail.focus();
+        }
+        function closeModal(){
+          modal.classList.remove('active');
+          modal.setAttribute('aria-hidden','true');
+          if(forgotBtn) forgotBtn.focus();
+        }
+
+        forgotBtn && forgotBtn.addEventListener('click', function(e){ e.preventDefault(); openModal(); });
+        resetCancel && resetCancel.addEventListener('click', function(e){ e.preventDefault(); closeModal(); });
+        modal && modal.addEventListener('click', function(e){ if(e.target === modal) closeModal(); });
+        resetSend && resetSend.addEventListener('click', function(){
+          const email = resetEmail.value.trim();
+          if(!email){ alert('Please enter your email.'); resetEmail.focus(); return; }
+          alert('Demo: password reset sent to ' + email);
+          closeModal();
+        });
+        document.addEventListener('keydown', function(e){ if(e.key === 'Escape') closeModal(); });
+      })();
+    </script>
+  </body>
+</html>

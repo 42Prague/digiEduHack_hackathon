@@ -1,0 +1,109 @@
+/* Minimal stylesheet for the school website landing page */
+
+/* Basic reset */
+html, body {
+  height: 100%;
+  margin: 0;
+  overflow-x: hidden;
+}
+
+body {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Arial, sans-serif;
+  color: #fff;
+  background: #000;
+}
+
+/* Full-screen slide background */
+.slide {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  background-image: url('school.jpg');
+  background-size: cover;
+  background-position: center center;
+}
+
+.slide::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: rgba(0,0,0,0.35);
+}
+
+.content {
+  position: relative;
+  z-index: 1;
+  text-align: center;
+  padding: 2rem;
+}
+
+.content h1 {
+  font-size: clamp(28px, 6vw, 72px);
+  margin: 0;
+}
+
+.content .subtitle {
+  margin-top: 0.6rem;
+  font-size: clamp(14px, 2.5vw, 22px);
+  opacity: 0.95;
+}
+
+/* Buttons */
+.buttons {
+  display: flex;
+  gap: 32px;
+  justify-content: center;
+  align-items: center;
+  margin-top: 1.2rem;
+}
+
+.button {
+  display: inline-block;
+  padding: 18px 44px;
+  color: #fff;
+  border-radius: 14px;
+  text-decoration: none;
+  font-weight: 700;
+  font-size: clamp(16px, 2vw, 20px);
+  min-width: 220px;
+  text-align: center;
+  transition: transform 160ms ease;
+}
+
+.button.school {
+  background: #357266;
+  box-shadow: 0 6px 18px rgba(53,114,102,0.22);
+}
+
+.button.admin {
+  background: #941C2F;
+  box-shadow: 0 6px 18px rgba(148,28,47,0.22);
+}
+
+.button:hover {
+  transform: translateY(-3px);
+}
+
+.button:focus {
+  outline: 3px solid rgba(255,255,255,0.12);
+  outline-offset: 4px;
+}
+
+/* Responsive: stack buttons on small screens */
+@media (max-width: 640px) {
+  .buttons {
+    flex-direction: column;
+    gap: 18px;
+    width: 100%;
+    padding: 0 16px;
+    box-sizing: border-box;
+  }
+  .button {
+    width: 100%;
+    min-width: unset;
+    padding: 14px 18px;
+    border-radius: 10px;
+  }
+}
