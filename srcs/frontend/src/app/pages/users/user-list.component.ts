@@ -3,11 +3,12 @@ import { CommonModule } from '@angular/common';
 import { RouterLink } from '@angular/router';
 import { UserService } from '../../services/user.service';
 import { User } from '../../models/user';
+import { TranslateModule } from '@ngx-translate/core';
 
 @Component({
 	selector: 'app-user-list',
 	standalone: true,
-	imports: [CommonModule, RouterLink],
+	imports: [CommonModule, RouterLink, TranslateModule],
 	templateUrl: './user-list.component.html',
 	styleUrls: ['./user-list.component.css'],
 	changeDetection: ChangeDetectionStrategy.OnPush

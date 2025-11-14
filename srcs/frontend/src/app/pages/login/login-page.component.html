@@ -1,9 +1,9 @@
 <div class="card" style="max-width:640px;margin:40px auto">
-	<h2 style="margin-top:0">Login</h2>
-	<p style="color:var(--muted)">Mock login. Choose a demo user or enter email/password.</p>
+	<h2 style="margin-top:0">{{ 'login.title' | translate }}</h2>
+	<p style="color:var(--muted)">{{ 'login.subtitle' | translate }}</p>
 	<div class="grid">
 		<label>
-			<div>Demo users</div>
+			<div>{{ 'login.demoUsers' | translate }}</div>
 			<select class="input" [(ngModel)]="email">
 				<option *ngFor="let u of users" [ngValue]="u.email">
 					{{u.name}} {{u.surname}} — {{u.email}}
@@ -11,14 +11,14 @@
 			</select>
 		</label>
 		<label>
-			<div>Email</div>
-			<input class="input" [(ngModel)]="email" placeholder="email@example.com">
+			<div>{{ 'login.email' | translate }}</div>
+			<input class="input" [(ngModel)]="email" [placeholder]="'login.emailPlaceholder' | translate">
 		</label>
 		<label>
-			<div>Password</div>
-			<input class="input" [(ngModel)]="password" type="password" placeholder="Password">
+			<div>{{ 'login.password' | translate }}</div>
+			<input class="input" [(ngModel)]="password" type="password" [placeholder]="'login.passwordPlaceholder' | translate">
 		</label>
-		<button class="btn" (click)="login()">Continue</button>
+		<button class="btn" (click)="login()">{{ 'login.continue' | translate }}</button>
 	</div>
 </div>
 

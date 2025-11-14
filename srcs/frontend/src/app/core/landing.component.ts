@@ -3,12 +3,13 @@ import { Router } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { AuthService } from './auth.service';
 import { AccessLevel } from '../models/access-level';
+import { TranslateModule } from '@ngx-translate/core';
 
 @Component({
 	selector: 'app-landing',
 	standalone: true,
-	imports: [CommonModule],
-	template: '<div>Redirecting…</div>',
+	imports: [CommonModule, TranslateModule],
+	template: '<div>{{ "common.redirecting" | translate }}</div>',
 	changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class LandingComponent implements OnInit {

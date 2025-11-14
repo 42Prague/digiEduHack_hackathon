@@ -3,11 +3,40 @@
 	flex-direction: column;
 	gap: 8px;
 	max-height: 320px;
+	transition: max-height 250ms ease, transform 200ms ease;
+	transform: scale(0.995);
 	overflow: auto;
 	border: 1px solid var(--border);
 	border-radius: calc(var(--radius) - 4px);
 	padding: 10px;
 	background: #f8fafc;
+}
+.card {
+	transition: box-shadow 220ms ease, border-radius 220ms ease, opacity 220ms ease, transform 220ms ease;
+	transform: scale(0.995);
+}
+.card.fullscreen {
+	position: fixed;
+	inset: 0;
+	z-index: 1000;
+	border-radius: 0;
+	display: flex;
+	flex-direction: column;
+	background: #fff;
+	transform: scale(1);
+	box-shadow: 0 12px 32px rgba(2,6,23,.18);
+}
+.card.fullscreen .chat-window {
+	max-height: calc(100vh - 160px);
+	flex: 1 1 auto;
+	min-height: 0;
+	transform: scale(1);
+}
+.card-header {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	gap: 8px;
 }
 .msg {
 	display: flex;
@@ -22,6 +51,12 @@
 	padding: 8px 12px;
 	border-radius: 14px;
 	box-shadow: 0 1px 1px rgba(2,6,23,.04);
+	position: relative;
+}
+.bubble-footer {
+	margin-top: 8px;
+	display: flex;
+	justify-content: flex-end;
 }
 .msg.me .bubble {
 	background: #e8f0ff;
@@ -30,6 +65,55 @@
 .bubble.typing {
 	font-style: italic;
 	color: var(--muted);
+}
+.text {
+	white-space: pre-wrap;
+}
+.plot-wrap {
+	margin-top: 10px;
+	border: 1px solid var(--border);
+	border-radius: 12px;
+	padding: 8px;
+	background: #f6faff;
+}
+.plot-header {
+	margin-bottom: 8px;
+}
+.plot-title {
+	font-size: 14px;
+	font-weight: 700;
+	color: var(--text);
+}
+.plot-meta {
+	font-size: 12px;
+	color: var(--muted);
+}
+.plot-meta.axes span {
+	margin-right: 6px;
+}
+.export-btn {
+	position: static;
+	background: transparent;
+	border: none;
+	color: var(--muted);
+	font-size: 12px;
+	padding: 0;
+	cursor: pointer;
+}
+.export-btn:hover { text-decoration: underline; }
+.text table {
+	width: 100%;
+	border-collapse: collapse;
+	margin: 8px 0;
+}
+.text th, .text td {
+	border: 1px solid var(--border);
+	padding: 6px 8px;
+	font-size: 13px;
+}
+.text thead th {
+	background: #f8fafc;
+	color: var(--text);
 }
 .typing-gif {
 	display: block;
@@ -40,6 +124,10 @@
 	display: flex;
 	gap: 8px;
 	margin-top: 10px;
+}
+
+p {
+	margin: 1px 0;
 }
 
 

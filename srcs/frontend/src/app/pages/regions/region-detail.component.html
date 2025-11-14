@@ -1,20 +1,20 @@
-<a routerLink="/regions" class="btn secondary" title="Back to Regions" style="margin-bottom:16px">← Back to Regions</a>
-<div *ngIf="isLoading">Loading…</div>
+<a routerLink="/regions" class="btn secondary" [attr.title]="'region.back' | translate" style="margin-bottom:16px">← {{ 'region.back' | translate }}</a>
+<div *ngIf="isLoading">{{ 'common.loading' | translate }}</div>
 <div *ngIf="error" style="color:var(--danger)">{{ error }}</div>
 <div *ngIf="region" class="card">
 	<div class="card-header">
 		<div>
 			<div class="card-title">{{ region.name }}</div>
-			<div class="card-subtitle">Region details</div>
+			<div class="card-subtitle">{{ 'region.details' | translate }}</div>
 		</div>
 		<div>
-			<button class="btn secondary" *ngIf="isGlobal() && !isEditing" (click)="enableEditing()" style="margin-right:8px">✏️ Edit</button>
-			<button class="btn secondary" *ngIf="isGlobal() && !isEditing" (click)="viewAsRegion()" title="View as Region">👁 View as</button>
+			<button class="btn secondary" *ngIf="isGlobal() && !isEditing" (click)="enableEditing()" style="margin-right:8px">✏️ {{ 'common.edit' | translate }}</button>
+			<button class="btn secondary" *ngIf="isGlobal() && !isEditing" (click)="viewAsRegion()" [attr.title]="'common.viewAsRegion' | translate">👁 {{ 'common.viewAs' | translate }}</button>
 			<div *ngIf="isEditing" class="grid" style="grid-template-columns:auto auto; gap:8px">
 				<button class="btn" [disabled]="form?.invalid || isSaving" (click)="save()">
-					{{ isSaving ? 'Saving…' : 'Save changes' }}
+					{{ isSaving ? ('common.saving' | translate) : ('common.saveChanges' | translate) }}
 				</button>
-				<button class="btn outline" [disabled]="isSaving" (click)="cancelEditing()">Cancel</button>
+				<button class="btn outline" [disabled]="isSaving" (click)="cancelEditing()">{{ 'common.cancel' | translate }}</button>
 			</div>
 		</div>
 	</div>
@@ -22,12 +22,12 @@
 	<!-- Meta -->
 	<div class="grid cols-3">
 		<div>
-			<div class="muted">Region ID</div>
+			<div class="muted">{{ 'region.id' | translate }}</div>
 			<div><code>{{ region.id }}</code></div>
 		</div>
 		<div>
-			<div class="muted">Mode</div>
-			<div><span class="badge" [class.primary]="isEditing">{{ isEditing ? 'Editing' : 'View' }}</span></div>
+			<div class="muted">{{ 'common.mode' | translate }}</div>
+			<div><span class="badge" [class.primary]="isEditing">{{ isEditing ? ('common.editing' | translate) : ('common.view' | translate) }}</span></div>
 		</div>
 	</div>
 	<div class="spacer"></div>
@@ -36,35 +36,35 @@
 	<form *ngIf="form" [formGroup]="form" (ngSubmit)="save()">
 		<div class="grid cols-2">
 			<div>
-				<h3>Basic Info</h3>
+				<h3>{{ 'common.basicInfo' | translate }}</h3>
 				<div class="grid">
 					<label>
-						<div class="muted">Name</div>
-						<input class="input" formControlName="name" [readonly]="!isEditing" placeholder="Region name" />
+						<div class="muted">{{ 'common.name' | translate }}</div>
+						<input class="input" formControlName="name" [readonly]="!isEditing" [placeholder]="'region.namePlaceholder' | translate" />
 					</label>
 					<label>
-						<div class="muted">Address</div>
-						<input class="input" formControlName="address" [readonly]="!isEditing" placeholder="Address" />
+						<div class="muted">{{ 'common.address' | translate }}</div>
+						<input class="input" formControlName="address" [readonly]="!isEditing" [placeholder]="'common.address' | translate" />
 					</label>
 				</div>
 			</div>
 			<div>
-				<h3>Contacts</h3>
+				<h3>{{ 'common.contacts' | translate }}</h3>
 				<div class="grid">
 					<label>
-						<div class="muted">Email</div>
-						<input class="input" formControlName="contactEmail" [readonly]="!isEditing" placeholder="email@example.com" />
+						<div class="muted">{{ 'common.email' | translate }}</div>
+						<input class="input" formControlName="contactEmail" [readonly]="!isEditing" [placeholder]="'login.emailPlaceholder' | translate" />
 					</label>
 					<label>
-						<div class="muted">Phone</div>
+						<div class="muted">{{ 'common.phone' | translate }}</div>
 						<input class="input" formControlName="contactPhone" [readonly]="!isEditing" placeholder="+1 555 0100" />
 					</label>
 				</div>
 			</div>
 		</div>
 		<div *ngIf="isEditing" style="margin-top:12px">
-			<button class="btn" type="submit" [disabled]="form?.invalid || isSaving">{{ isSaving ? 'Saving…' : 'Save changes' }}</button>
-			<button class="btn ghost" type="button" [disabled]="isSaving" (click)="cancelEditing()">Cancel</button>
+			<button class="btn" type="submit" [disabled]="form?.invalid || isSaving">{{ isSaving ? ('common.saving' | translate) : ('common.saveChanges' | translate) }}</button>
+			<button class="btn ghost" type="button" [disabled]="isSaving" (click)="cancelEditing()">{{ 'common.cancel' | translate }}</button>
 		</div>
 	</form>
 </div>

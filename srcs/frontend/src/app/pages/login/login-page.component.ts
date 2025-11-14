@@ -6,11 +6,12 @@ import { AuthService } from '../../core/auth.service';
 import { AccessLevel } from '../../models/access-level';
 import { UserService } from '../../services/user.service';
 import { User } from '../../models/user';
+import { TranslateModule } from '@ngx-translate/core';
 
 @Component({
 	selector: 'app-login-page',
 	standalone: true,
-	imports: [CommonModule, FormsModule, RouterLink],
+	imports: [CommonModule, FormsModule, RouterLink, TranslateModule],
 	templateUrl: './login-page.component.html',
 	styleUrls: ['./login-page.component.css'],
 	changeDetection: ChangeDetectionStrategy.OnPush

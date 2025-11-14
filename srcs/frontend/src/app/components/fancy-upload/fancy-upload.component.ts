@@ -2,6 +2,8 @@ import { ChangeDetectionStrategy, Component, Input, inject } from '@angular/core
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { DataService } from '../../services/data.service';
+import { TranslateModule, TranslateService } from '@ngx-translate/core';
+import { HttpEvent, HttpEventType } from '@angular/common/http';
 
 type UploadScope = 'region' | 'school';
 type UploadStatus = 'idle' | 'validating' | 'uploading' | 'success' | 'error';
@@ -9,7 +11,7 @@ type UploadStatus = 'idle' | 'validating' | 'uploading' | 'success' | 'error';
 @Component({
 	selector: 'app-fancy-upload',
 	standalone: true,
-	imports: [CommonModule, FormsModule],
+	imports: [CommonModule, FormsModule, TranslateModule],
 	templateUrl: './fancy-upload.component.html',
 	styleUrls: ['./fancy-upload.component.css'],
 	changeDetection: ChangeDetectionStrategy.OnPush
@@ -29,6 +31,7 @@ export class FancyUploadComponent {
 
 	// #region Private Properties
 	private readonly dataService: DataService = inject(DataService);
+	private readonly translate: TranslateService = inject(TranslateService);
 	// #endregion
 
 	// #region Public Methods
@@ -65,20 +68,17 @@ export class FancyUploadComponent {
 	public startUpload(): void {
 		if (!this.scopeId || !this.selectedFile) {
 			this.status = 'error';
-			this.errors = ['Please provide an ID and choose a CSV file.'];
+			this.errors = [this.translate.instant('upload.provideIdAndFile')];
 			return;
 		}
 		this.errors = [];
 		this.status = 'validating';
 
-		// Quick validations
+		// Quick validations (size only; accept any file type)
 		const errs: string[] = [];
-		if (!this.selectedFile.name.toLowerCase().endsWith('.csv')) {
-			errs.push('File must be a .csv');
-		}
-		const maxBytes = 5 * 1024 * 1024; // 5MB demo limit
+		const maxBytes = 500 * 1024 * 1024; // 500MB limit (matches proxy)
 		if (this.selectedFile.size > maxBytes) {
-			errs.push('File size must be less than 5MB');
+			errs.push(this.translate.instant('upload.fileTooLarge'));
 		}
 		if (errs.length > 0) {
 			this.status = 'error';
@@ -86,24 +86,28 @@ export class FancyUploadComponent {
 			return;
 		}
 
-		// Simulate progress
+		// Real upload with progress
 		this.status = 'uploading';
 		this.progress = 0;
-		const step = () => {
-			if (this.progress < 90) {
-				this.progress += Math.max(5, Math.floor(Math.random() * 15));
-				this.progress = Math.min(this.progress, 90);
-				setTimeout(step, 120);
-			} else {
-				// "Complete" with service call
-				this.dataService.upload(this.scope, this.scopeId, this.selectedFile as File).subscribe(res => {
+		this.dataService.uploadWithProgress(this.scope, this.scopeId, this.selectedFile as File).subscribe({
+			next: (event: HttpEvent<unknown>) => {
+				if (event.type === HttpEventType.UploadProgress) {
+					const total = (event.total ?? (this.selectedFile as File).size) || 1;
+					this.progress = Math.max(1, Math.min(99, Math.round((event.loaded / total) * 95)));
+				} else if (event.type === HttpEventType.Response) {
 					this.progress = 100;
 					this.status = 'success';
-					this.message = `Uploaded dataset ${res.id} for ${res.scopeId}`;
-				});
+					// Response body comes from ingest RawIngestResult
+					const body: any = event.body || {};
+					const id = body.raw_id || '';
+					this.message = this.translate.instant('upload.successMessage', { id, scopeId: this.scopeId });
+				}
+			},
+			error: () => {
+				this.status = 'error';
+				this.errors = [this.translate.instant('common.errorTryAgain')];
 			}
-		};
-		setTimeout(step, 200);
+		});
 	}
 
 	public reset(): void {

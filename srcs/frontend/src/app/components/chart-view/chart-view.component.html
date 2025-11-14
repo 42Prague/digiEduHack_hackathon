@@ -1,0 +1,96 @@
+<div class="chart-card">
+	<div class="chart-title">{{ spec?.title }}</div>
+
+	<!-- Histogram -->
+	<svg *ngIf="isHistogram()" viewBox="0 0 320 190" width="100%" height="190" aria-hidden="true">
+		<g transform="translate(12,8)">
+			<rect width="296" height="144" fill="#ffffff" stroke="var(--border)"></rect>
+			<!-- grid + y ticks -->
+			<g *ngFor="let t of histogramYTicks()">
+				<line x1="0" [attr.y1]="t.y" x2="296" [attr.y2]="t.y" stroke="#eef2f7" stroke-width="1"></line>
+				<text x="2" [attr.y]="t.y - 2" font-size="10" fill="var(--muted)">{{ t.value }}</text>
+			</g>
+			<g class="bars" *ngIf="histogramBars().length > 0">
+				<ng-container *ngFor="let b of histogramBars(); let i = index">
+					<rect
+						[attr.x]="barX(i)"
+						[attr.y]="144 - barHeight(b.value)"
+						[attr.width]="barWidth()"
+						[attr.height]="barHeight(b.value)"
+						[attr.fill]="barColor(i)"
+						stroke="var(--border)"/>
+				</ng-container>
+			</g>
+			<!-- x labels -->
+			<g *ngFor="let xt of histogramXTicks()">
+				<text [attr.x]="xt.x" y="176" text-anchor="middle" font-size="10" fill="var(--muted)">{{ xt.label }}</text>
+			</g>
+			<!-- y-axis label -->
+			<text *ngIf="spec?.type==='histogram' && spec?.y_axis_label" x="-10" y="72" transform="rotate(-90 -10,72)" font-size="11" fill="var(--muted)">
+				{{ spec?.y_axis_label }}
+			</text>
+		</g>
+	</svg>
+	<ul *ngIf="isHistogram()" class="legend">
+		<li *ngFor="let b of histogramBars(); let i = index">
+			<span class="swatch" [style.background]="barColor(i)"></span>
+			<span class="label">{{ b.label }}</span>
+			<span class="value">{{ b.value }}</span>
+		</li>
+	</ul>
+
+	<!-- Pie -->
+	<div *ngIf="isPie()" class="pie-wrap">
+		<svg viewBox="0 0 120 120" width="120" height="120" aria-hidden="true">
+			<circle cx="60" cy="60" r="48" stroke="#e5e7eb" stroke-width="24" fill="none"></circle>
+			<ng-container *ngFor="let seg of pieSegments()">
+				<circle
+					cx="60" cy="60" r="48"
+					[attr.stroke]="seg.color"
+					stroke-width="24"
+					fill="none"
+					[style.strokeDasharray]="seg.length + ', 9999'"
+					[style.strokeDashoffset]="-seg.offset"
+					transform="rotate(-90 60 60)"></circle>
+			</ng-container>
+		</svg>
+		<ul class="legend">
+			<li *ngFor="let seg of pieSegments()">
+				<span class="swatch" [style.background]="seg.color"></span>
+				<span class="label">{{ seg.label }}</span>
+				<span class="value">{{ seg.value }}</span>
+			</li>
+		</ul>
+	</div>
+
+	<!-- Line -->
+	<svg *ngIf="isLine()" viewBox="0 0 320 190" width="100%" height="190" aria-hidden="true">
+		<g transform="translate(12,8)">
+			<rect width="296" height="144" fill="#ffffff" stroke="var(--border)"></rect>
+			<!-- grid + y ticks -->
+			<g *ngFor="let t of lineYTicks()">
+				<line x1="0" [attr.y1]="t.y" x2="296" [attr.y2]="t.y" stroke="#eef2f7" stroke-width="1"></line>
+				<text x="2" [attr.y]="t.y - 2" font-size="10" fill="var(--muted)">{{ t.value }}</text>
+			</g>
+			<ng-container *ngFor="let s of linePaths()">
+				<path [attr.d]="s.d" [attr.stroke]="s.color" stroke-width="2" fill="none"/>
+			</ng-container>
+			<!-- x labels -->
+			<g *ngFor="let xt of lineXTicks()">
+				<text [attr.x]="xt.x" y="176" text-anchor="middle" font-size="10" fill="var(--muted)">{{ xt.label }}</text>
+			</g>
+			<!-- y-axis label -->
+			<text *ngIf="spec?.type==='line' && spec?.y_axis_label" x="-10" y="72" transform="rotate(-90 -10,72)" font-size="11" fill="var(--muted)">
+				{{ spec?.y_axis_label }}
+			</text>
+		</g>
+	</svg>
+	<ul *ngIf="isLine()" class="legend">
+		<li *ngFor="let s of linePaths()">
+			<span class="swatch" [style.background]="s.color"></span>
+			<span class="label">{{ s.name }}</span>
+		</li>
+	</ul>
+</div>
+
+

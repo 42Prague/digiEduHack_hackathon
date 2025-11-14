@@ -1,10 +1,10 @@
-<h2 style="margin-top:0">Users</h2>
-<div *ngIf="isLoading">Loading…</div>
+<h2 style="margin-top:0">{{ 'nav.users' | translate }}</h2>
+<div *ngIf="isLoading">{{ 'common.loading' | translate }}</div>
 <div class="grid" *ngIf="!isLoading">
 	<a class="card" *ngFor="let u of users" [routerLink]="['/users', u.id]">
 		<div style="font-weight:600">{{ u.name }} {{ u.surname }}</div>
 		<div class="note">{{ u.email }}</div>
-		<div class="note">Role: {{ u.accessLevel }}</div>
+		<div class="note">{{ 'user.role' | translate }}: {{ u.accessLevel }}</div>
 	</a>
 </div>
 

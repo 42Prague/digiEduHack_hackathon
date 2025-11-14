@@ -6,11 +6,12 @@ import { RegionService } from '../../services/region.service';
 import { Region } from '../../models/region';
 import { AuthService } from '../../core/auth.service';
 import { AccessLevel } from '../../models/access-level';
+import { TranslateModule } from '@ngx-translate/core';
 
 @Component({
 	selector: 'app-region-detail',
 	standalone: true,
-	imports: [CommonModule, RouterLink, ReactiveFormsModule],
+	imports: [CommonModule, RouterLink, ReactiveFormsModule, TranslateModule],
 	templateUrl: './region-detail.component.html',
 	styleUrls: ['./region-detail.component.css'],
 	changeDetection: ChangeDetectionStrategy.OnPush

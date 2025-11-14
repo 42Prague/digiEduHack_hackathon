@@ -6,11 +6,12 @@ import { SchoolService } from '../../services/school.service';
 import { School } from '../../models/school';
 import { AuthService } from '../../core/auth.service';
 import { AccessLevel } from '../../models/access-level';
+import { TranslateModule } from '@ngx-translate/core';
 
 @Component({
 	selector: 'app-school-detail',
 	standalone: true,
-	imports: [CommonModule, RouterLink, ReactiveFormsModule],
+	imports: [CommonModule, RouterLink, ReactiveFormsModule, TranslateModule],
 	templateUrl: './school-detail.component.html',
 	styleUrls: ['./school-detail.component.css'],
 	changeDetection: ChangeDetectionStrategy.OnPush

@@ -4,11 +4,12 @@ import { FormsModule } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
 import { RegionService } from '../../services/region.service';
 import { Region } from '../../models/region';
+import { TranslateModule } from '@ngx-translate/core';
 
 @Component({
 	selector: 'app-region-create',
 	standalone: true,
-	imports: [CommonModule, FormsModule, RouterLink],
+	imports: [CommonModule, FormsModule, RouterLink, TranslateModule],
 	templateUrl: './region-create.component.html',
 	styleUrls: ['./region-create.component.css'],
 	changeDetection: ChangeDetectionStrategy.OnPush

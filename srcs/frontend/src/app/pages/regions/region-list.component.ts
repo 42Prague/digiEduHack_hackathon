@@ -2,6 +2,7 @@ import { ChangeDetectionStrategy, Component, OnInit, inject } from '@angular/cor
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { RouterLink } from '@angular/router';
+import { TranslateModule } from '@ngx-translate/core';
 import { RegionService } from '../../services/region.service';
 import { Region } from '../../models/region';
 import { AuthService } from '../../core/auth.service';
@@ -10,7 +11,7 @@ import { AccessLevel } from '../../models/access-level';
 @Component({
 	selector: 'app-region-list',
 	standalone: true,
-	imports: [CommonModule, FormsModule, RouterLink],
+	imports: [CommonModule, FormsModule, RouterLink, TranslateModule],
 	templateUrl: './region-list.component.html',
 	styleUrls: ['./region-list.component.css'],
 	changeDetection: ChangeDetectionStrategy.OnPush
