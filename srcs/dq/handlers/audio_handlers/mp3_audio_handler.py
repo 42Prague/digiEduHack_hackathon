@@ -1,4 +1,5 @@
-from handlers.audio_handlers.abstract_audio_handler import AbstractAudioHandler
+from srcs.dq.handlers.audio_handlers.abstract_audio_handler import AbstractAudioHandler
+
 
 class Mp3AudioHandler(AbstractAudioHandler):
     def handle(self, file_path: str) -> str:

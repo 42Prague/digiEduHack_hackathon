@@ -1,5 +1,5 @@
 from PyPDF2 import PdfReader
-from handlers.text_handlers.abstract_text_handler import AbstractTextHandler
+from srcs.dq.handlers.text_handlers.abstract_text_handler import AbstractTextHandler
 
 
 class PDFTextHandler(AbstractTextHandler):

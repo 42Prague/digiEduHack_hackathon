@@ -1,5 +1,6 @@
-from handlers.audio_handlers.abstract_audio_handler import AbstractAudioHandler
-from summarize_mp3 import transform_to_summary
+from srcs.dq.handlers.audio_handlers.abstract_audio_handler import AbstractAudioHandler
+from srcs.dq.summarize_mp3 import transform_to_summary
+
 
 class GenericAudioHandler(AbstractAudioHandler):
     def handle(self, file_path: str) -> str:

@@ -1,4 +1,5 @@
-from handlers.text_handlers.abstract_text_handler import AbstractTextHandler
+from srcs.dq.handlers.text_handlers.abstract_text_handler import AbstractTextHandler
+
 
 class TxtTextHandler(AbstractTextHandler):
     def handle(self, file_path: str) -> str:

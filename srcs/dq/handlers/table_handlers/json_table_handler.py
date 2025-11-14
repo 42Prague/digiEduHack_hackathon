@@ -1,5 +1,6 @@
 import pandas as pd
-from handlers.table_handlers.abstract_table_handler import AbstractTableHandler
+from srcs.dq.handlers.table_handlers.abstract_table_handler import AbstractTableHandler
+
 
 class JSONTableHandler(AbstractTableHandler):
     def handle(self, file_path: str) -> pd.DataFrame:

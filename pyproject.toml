@@ -15,7 +15,9 @@ dependencies = [
     "pandas (>=2.3.3,<3.0.0)",
     "vosk @ https://github.com/alphacep/vosk-api/releases/download/v0.3.42/vosk-0.3.42-py3-none-macosx_10_6_universal2.whl",
     "unicorn (>=2.1.4,<3.0.0)",
-    "uvicorn (>=0.38.0,<0.39.0)"
+    "uvicorn (>=0.38.0,<0.39.0)",
+    "pypdf2 (>=3.0.1,<4.0.0)",
+    "python-docx (>=1.2.0,<2.0.0)"
 ]
 
 
