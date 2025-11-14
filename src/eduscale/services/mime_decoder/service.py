@@ -16,7 +16,7 @@ from pathlib import Path
 from typing import Dict, Any
 
 from eduscale.services.mime_decoder.classifier import classify_mime_type
-from eduscale.services.mime_decoder.models import CloudEvent, StorageObjectData, ProcessingRequest
+from eduscale.services.mime_decoder.models import CloudEvent, StorageObjectData, ProcessingRequest, FileSkippedException
 from eduscale.services.mime_decoder.clients import call_transformer, update_backend_status
 from eduscale.services.mime_decoder.gcs_client import GCSClient
 from eduscale.services.mime_decoder.archive_extractor import ArchiveExtractor
@@ -453,6 +453,22 @@ async def process_cloud_event(event_data: Dict[str, Any]) -> Dict[str, Any]:
             "processing_time_ms": processing_time_ms,
             "transformer_status": transformer_response.get("status"),
             "message": "Event processed successfully",
+        }
+
+    except FileSkippedException as e:
+        # File is outside the expected directory - return success without processing
+        processing_time_ms = int((time.time() - start_time) * 1000)
+
+        # Extract event metadata for response
+        event_id = event_data.get("id", "unknown")
+        object_name = event_data.get("data", {}).get("name", event_data.get("name", "unknown"))
+
+        return {
+            "status": "skipped",
+            "event_id": event_id,
+            "object_name": object_name,
+            "processing_time_ms": processing_time_ms,
+            "message": "File skipped: outside expected directory pattern",
         }
 
     except ValueError as e:

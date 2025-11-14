@@ -56,6 +56,33 @@ def test_convert_gcs_notification_missing_fields():
         _convert_gcs_notification_to_cloud_event(invalid_notification)
 
 
+@pytest.mark.asyncio
+async def test_process_cloud_event_skips_files_outside_directory():
+    """Test that files outside the expected directory are skipped with 200 response."""
+    # GCS notification for file outside uploads/ directory
+    gcs_notification = {
+        "kind": "storage#object",
+        "id": "test-bucket/some/random/path/file.txt/1234567890",
+        "bucket": "test-bucket",
+        "name": "some/random/path/file.txt",
+        "contentType": "text/plain",
+        "size": "1024",
+        "timeCreated": "2025-11-13T20:23:47.000Z",
+        "updated": "2025-11-13T20:23:47.000Z",
+        "generation": "1234567890",
+        "metageneration": "1",
+    }
+
+    # Process the event
+    result = await process_cloud_event(gcs_notification)
+
+    # Verify successful skip response (not an error)
+    assert result["status"] == "skipped"
+    assert "outside expected directory pattern" in result["message"]
+    assert result["object_name"] == "some/random/path/file.txt"
+    assert "processing_time_ms" in result
+
+
 def test_process_cloud_event_with_gcs_notification():
     """Test processing a raw GCS notification with new path format."""
     gcs_notification = {

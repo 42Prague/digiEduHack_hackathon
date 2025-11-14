@@ -15,6 +15,16 @@ from pydantic import BaseModel, Field
 logger = logging.getLogger(__name__)
 
 
+class FileSkippedException(Exception):
+    """
+    Exception raised when a file should be skipped (not an error).
+
+    This is used for files that are outside the expected directory
+    or don't match the expected naming pattern.
+    """
+    pass
+
+
 class StorageObjectData(BaseModel):
     """
     Cloud Storage object metadata from OBJECT_FINALIZE event.
@@ -123,19 +133,18 @@ class ProcessingRequest(BaseModel):
                 }
             )
         else:
-            # Reject invalid paths immediately
-            logger.error(
-                "Object path does not match expected pattern",
+            # File is outside the expected directory - skip it (not an error)
+            logger.debug(
+                "File skipped: path does not match expected pattern",
                 extra={
                     "event_id": event.id,
                     "object_path": object_path,
                     "expected_pattern": "uploads/{region_id}/{file_id}_{filename}",
-                    "outcome": "invalid_path"
+                    "outcome": "skipped"
                 }
             )
-            raise ValueError(
-                f"Invalid object path: {object_path}. "
-                f"Expected pattern: uploads/{{region_id}}/{{file_id}}_{{filename}}"
+            raise FileSkippedException(
+                f"File skipped: {object_path} does not match expected pattern"
             )
 
         return cls(

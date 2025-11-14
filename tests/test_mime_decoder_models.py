@@ -8,6 +8,7 @@ from eduscale.services.mime_decoder.models import (
     CloudEvent,
     StorageObjectData,
     ProcessingRequest,
+    FileSkippedException,
 )
 
 
@@ -80,7 +81,7 @@ def test_processing_request_from_cloud_event_with_complex_filename():
 
 
 def test_processing_request_fallback_for_invalid_path():
-    """Test fallback behavior when path doesn't match expected pattern."""
+    """Test that FileSkippedException is raised when path doesn't match expected pattern."""
     storage_data = StorageObjectData(
         bucket="test-bucket",
         name="some/random/path/file.txt",
@@ -101,9 +102,8 @@ def test_processing_request_fallback_for_invalid_path():
         data=storage_data,
     )
 
-    processing_req = ProcessingRequest.from_cloud_event(cloud_event, "text")
+    # Verify that FileSkippedException is raised for files outside expected directory
+    with pytest.raises(FileSkippedException) as exc_info:
+        ProcessingRequest.from_cloud_event(cloud_event, "text")
 
-    # Verify fallback behavior
-    assert processing_req.file_id == "file"  # Extracted from filename
-    assert processing_req.region_id == "unknown"  # Fallback value
-    assert processing_req.file_category == "text"
+    assert "does not match expected pattern" in str(exc_info.value)
