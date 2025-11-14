@@ -1,0 +1,79 @@
+services:
+
+  minio:
+    image: minio/minio:latest
+    container_name: minio
+    ports:
+      - "9000:9000"
+      - "9001:9001"
+    environment:
+      MINIO_ROOT_USER: minioadmin
+      MINIO_ROOT_PASSWORD: minioadmin
+    command: server /data --console-address ":9001"
+    volumes:
+      - minio_data:/data
+
+  duckdb:
+    build:
+      context: ./duckDB
+      dockerfile: Dockerfile
+    container_name: duckdb
+    working_dir: /app
+    env_file:
+      - .env
+    depends_on:
+      minio:
+        condition: service_started
+    volumes:
+      - ./duckDB/app:/app
+      - ./data:/app/data
+
+  fastapi-backend:
+    build:
+      context: ./fastapi
+      dockerfile: Dockerfile
+    container_name: fastapi-bi-backend
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./fastapi/src/app:/app/src/app
+      - ./data:/app/data
+    env_file:
+      - .env
+    restart: unless-stopped
+    depends_on:
+      minio:
+        condition: service_started
+  streamlit:
+    build:
+      context: ./streamlit
+      dockerfile: Dockerfile
+    container_name: streamlit
+    ports:
+      - "8501:8501"
+    volumes:
+      - ./streamlit/src/app:/app/src/app
+      - ./data:/app/data
+    env_file:
+      - .env
+    depends_on:
+      minio:
+        condition: service_started
+      fastapi-backend:
+        condition: service_started
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: frontend
+    ports:
+      - "3000:3000"
+    env_file:
+      - .env
+    restart: unless-stopped
+    depends_on:
+      - fastapi-backend
+
+volumes:
+  minio_data:

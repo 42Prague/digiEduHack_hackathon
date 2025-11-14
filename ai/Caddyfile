@@ -1,0 +1,36 @@
+http://:8085 {
+  # Ollama/GPT-OSS service
+  @ollama path /ollama/*
+  handle @ollama {
+    uri strip_prefix /ollama
+    reverse_proxy 192.168.191.189:11434
+  }
+
+  # Whisper transcription service (port 8000)
+  @transcription path /transcription/*
+  handle @transcription {
+    uri strip_prefix /transcription
+    reverse_proxy 192.168.191.189:8000
+  }
+
+  # NLLB translation service (port 8002)
+  @translation path /translation/*
+  handle @translation {
+    uri strip_prefix /translation
+    reverse_proxy 192.168.191.189:8002
+  }
+
+  # Tesseract OCR service (port 8003)
+  @ocr path /ocr/*
+  handle @ocr {
+    uri strip_prefix /ocr
+    reverse_proxy 192.168.191.189:8003
+  }
+
+  # Schema Matcher service (port 8005)
+  @schema path /schema/*
+  handle @schema {
+    uri strip_prefix /schema
+    reverse_proxy 192.168.191.189:8005
+  }
+}
