@@ -1,0 +1,590 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ title }}</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            width: 100%;
+            margin: 0 auto;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+            display: flex;
+            flex-direction: column;
+            height: calc(100vh - 40px);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 20px 30px;
+            border-radius: 12px 12px 0 0;
+        }
+
+        .header h1 {
+            font-size: 24px;
+            font-weight: 600;
+        }
+
+        .header p {
+            font-size: 14px;
+            opacity: 0.9;
+            margin-top: 5px;
+        }
+
+        .chat-history {
+            flex: 1;
+            overflow-y: auto;
+            padding: 30px;
+            background: #f8f9fa;
+        }
+
+        .message {
+            margin-bottom: 20px;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .message.user {
+            align-items: flex-end;
+        }
+
+        .message.assistant {
+            align-items: flex-start;
+        }
+
+        .message-bubble {
+            max-width: 70%;
+            padding: 12px 18px;
+            border-radius: 18px;
+            word-wrap: break-word;
+        }
+
+        .message.user .message-bubble {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        .message.assistant .message-bubble {
+            background: white;
+            color: #333;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        .message-role {
+            font-size: 12px;
+            font-weight: 600;
+            margin-bottom: 5px;
+            color: #666;
+            text-transform: uppercase;
+        }
+
+        .results-container {
+            margin-top: 15px;
+        }
+
+        .sql-block {
+            margin-top: 10px;
+            background: #f5f5f5;
+            border-radius: 8px;
+            overflow: hidden;
+        }
+
+        .sql-header {
+            background: #e0e0e0;
+            padding: 8px 12px;
+            font-size: 12px;
+            font-weight: 600;
+            color: #555;
+            cursor: pointer;
+            user-select: none;
+        }
+
+        .sql-header:hover {
+            background: #d5d5d5;
+        }
+
+        .sql-content {
+            padding: 12px;
+            font-family: 'Courier New', monospace;
+            font-size: 13px;
+            white-space: pre-wrap;
+            word-break: break-all;
+            display: none;
+        }
+
+        .sql-content.expanded {
+            display: block;
+        }
+
+        .results-table {
+            width: 100%;
+            margin-top: 10px;
+            border-collapse: collapse;
+            font-size: 13px;
+            background: white;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        .results-table th {
+            background: #667eea;
+            color: white;
+            padding: 10px;
+            text-align: left;
+            font-weight: 600;
+        }
+
+        .results-table td {
+            padding: 10px;
+            border-bottom: 1px solid #e0e0e0;
+        }
+
+        .results-table tr:last-child td {
+            border-bottom: none;
+        }
+
+        .results-table tr:nth-child(even) {
+            background: #f8f9fa;
+        }
+
+        .results-info {
+            font-size: 12px;
+            color: #666;
+            margin-top: 5px;
+            font-style: italic;
+        }
+
+        .error-message {
+            background: #fee;
+            color: #c33;
+            padding: 12px;
+            border-radius: 8px;
+            border-left: 4px solid #c33;
+            margin-top: 10px;
+            font-size: 14px;
+        }
+
+        .input-container {
+            padding: 20px 30px;
+            background: white;
+            border-top: 1px solid #e0e0e0;
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+
+        .input-wrapper {
+            flex: 1;
+            display: flex;
+            gap: 10px;
+        }
+
+        #user-input {
+            flex: 1;
+            padding: 12px 18px;
+            border: 2px solid #e0e0e0;
+            border-radius: 24px;
+            font-size: 15px;
+            outline: none;
+            transition: border-color 0.3s;
+        }
+
+        #user-input:focus {
+            border-color: #667eea;
+        }
+
+        #send-btn {
+            padding: 12px 30px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 24px;
+            font-size: 15px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        #send-btn:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+        }
+
+        #send-btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+
+        .loading {
+            display: none;
+            margin: 20px auto;
+            text-align: center;
+        }
+
+        .loading.active {
+            display: block;
+        }
+
+        .spinner {
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid #667eea;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .examples {
+            padding: 20px;
+            background: #fff9e6;
+            border-left: 4px solid #ffc107;
+            margin: 20px 30px;
+            border-radius: 8px;
+        }
+
+        .examples h3 {
+            font-size: 14px;
+            font-weight: 600;
+            margin-bottom: 10px;
+            color: #333;
+        }
+
+        .examples ul {
+            list-style: none;
+            font-size: 13px;
+        }
+
+        .examples li {
+            margin: 5px 0;
+            cursor: pointer;
+            color: #667eea;
+            transition: color 0.2s;
+        }
+
+        .examples li:hover {
+            color: #764ba2;
+            text-decoration: underline;
+        }
+
+        @media (max-width: 768px) {
+            body {
+                padding: 0;
+            }
+
+            .container {
+                height: 100vh;
+                border-radius: 0;
+            }
+
+            .header {
+                border-radius: 0;
+            }
+
+            .message-bubble {
+                max-width: 85%;
+            }
+
+            .input-wrapper {
+                flex-direction: column;
+            }
+
+            #send-btn {
+                width: 100%;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>EduScale Analytics Chat</h1>
+            <p>Ask questions about your educational data in plain language</p>
+        </div>
+
+        <div class="examples">
+            <h3>Try asking:</h3>
+            <ul>
+                <li onclick="askExample('Show me average test scores by region')">Show me average test scores by region</li>
+                <li onclick="askExample('List interventions in the last 30 days')">List interventions in the last 30 days</li>
+                <li onclick="askExample('Find feedback mentioning teachers')">Find feedback mentioning teachers</li>
+                <li onclick="askExample('What are the top performing schools?')">What are the top performing schools?</li>
+                <li onclick="askExample('Show intervention participation trends by month')">Show intervention participation trends by month</li>
+            </ul>
+        </div>
+
+        <div class="chat-history" id="chat-history">
+            <!-- Messages will be appended here -->
+        </div>
+
+        <div class="loading" id="loading">
+            <div class="spinner"></div>
+            <p style="margin-top: 10px; color: #666;">Processing your query...</p>
+        </div>
+
+        <div class="input-container">
+            <div class="input-wrapper">
+                <input 
+                    type="text" 
+                    id="user-input" 
+                    placeholder="Type your question here..."
+                    autocomplete="off"
+                >
+                <button id="send-btn">Send</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // State management
+        let messages = [];
+        let isProcessing = false;
+
+        // DOM elements
+        const chatHistory = document.getElementById('chat-history');
+        const userInput = document.getElementById('user-input');
+        const sendBtn = document.getElementById('send-btn');
+        const loading = document.getElementById('loading');
+
+        // Event listeners
+        sendBtn.addEventListener('click', sendMessage);
+        userInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter' && !isProcessing) {
+                sendMessage();
+            }
+        });
+
+        // Send message function
+        async function sendMessage() {
+            const query = userInput.value.trim();
+            
+            if (!query || isProcessing) {
+                return;
+            }
+
+            // Add user message to state
+            messages.push({ role: 'user', content: query });
+
+            // Render user message
+            renderMessage({ role: 'user', content: query });
+
+            // Clear input
+            userInput.value = '';
+
+            // Set processing state
+            isProcessing = true;
+            sendBtn.disabled = true;
+            loading.classList.add('active');
+
+            try {
+                // Call API
+                const response = await fetch('/api/v1/nlq/chat', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ messages }),
+                });
+
+                if (!response.ok) {
+                    throw new Error(`API error: ${response.status} ${response.statusText}`);
+                }
+
+                const data = await response.json();
+
+                // Update messages from response
+                messages = data.messages;
+
+                // Get latest assistant message
+                const assistantMessages = messages.filter(m => m.role === 'assistant');
+                const latestAssistant = assistantMessages[assistantMessages.length - 1];
+
+                // Render assistant message with results
+                renderMessage(
+                    latestAssistant,
+                    data.sql,
+                    data.explanation,
+                    data.rows,
+                    data.total_rows,
+                    data.error
+                );
+
+            } catch (error) {
+                console.error('Error sending message:', error);
+                
+                // Render error message
+                renderMessage(
+                    { role: 'assistant', content: 'Sorry, something went wrong.' },
+                    null,
+                    null,
+                    null,
+                    null,
+                    error.message
+                );
+            } finally {
+                // Reset processing state
+                isProcessing = false;
+                sendBtn.disabled = false;
+                loading.classList.remove('active');
+
+                // Scroll to bottom
+                scrollToBottom();
+            }
+        }
+
+        // Render message function
+        function renderMessage(message, sql = null, explanation = null, rows = null, totalRows = null, error = null) {
+            const messageDiv = document.createElement('div');
+            messageDiv.className = `message ${message.role}`;
+
+            const roleLabel = document.createElement('div');
+            roleLabel.className = 'message-role';
+            roleLabel.textContent = message.role === 'user' ? 'You' : 'Assistant';
+            messageDiv.appendChild(roleLabel);
+
+            const bubble = document.createElement('div');
+            bubble.className = 'message-bubble';
+            bubble.textContent = message.content;
+            messageDiv.appendChild(bubble);
+
+            // Add results container for assistant messages
+            if (message.role === 'assistant' && (sql || rows || error)) {
+                const resultsContainer = document.createElement('div');
+                resultsContainer.className = 'results-container';
+
+                // Add error if present
+                if (error) {
+                    const errorDiv = document.createElement('div');
+                    errorDiv.className = 'error-message';
+                    errorDiv.textContent = error;
+                    resultsContainer.appendChild(errorDiv);
+                }
+
+                // Add SQL block
+                if (sql) {
+                    const sqlBlock = document.createElement('div');
+                    sqlBlock.className = 'sql-block';
+
+                    const sqlHeader = document.createElement('div');
+                    sqlHeader.className = 'sql-header';
+                    sqlHeader.textContent = 'Show SQL';
+                    sqlHeader.onclick = () => {
+                        sqlContent.classList.toggle('expanded');
+                        sqlHeader.textContent = sqlContent.classList.contains('expanded') ? 'Hide SQL' : 'Show SQL';
+                    };
+
+                    const sqlContent = document.createElement('div');
+                    sqlContent.className = 'sql-content';
+                    sqlContent.textContent = sql;
+
+                    sqlBlock.appendChild(sqlHeader);
+                    sqlBlock.appendChild(sqlContent);
+                    resultsContainer.appendChild(sqlBlock);
+                }
+
+                // Add results table
+                if (rows && rows.length > 0) {
+                    const table = document.createElement('table');
+                    table.className = 'results-table';
+
+                    // Table header
+                    const thead = document.createElement('thead');
+                    const headerRow = document.createElement('tr');
+                    const columns = Object.keys(rows[0]);
+                    
+                    columns.forEach(col => {
+                        const th = document.createElement('th');
+                        th.textContent = col;
+                        headerRow.appendChild(th);
+                    });
+                    
+                    thead.appendChild(headerRow);
+                    table.appendChild(thead);
+
+                    // Table body (limit to 10 rows for display)
+                    const tbody = document.createElement('tbody');
+                    const displayRows = rows.slice(0, 10);
+                    
+                    displayRows.forEach(row => {
+                        const tr = document.createElement('tr');
+                        columns.forEach(col => {
+                            const td = document.createElement('td');
+                            const value = row[col];
+                            
+                            // Format value
+                            if (value === null || value === undefined) {
+                                td.textContent = 'null';
+                                td.style.color = '#999';
+                            } else if (typeof value === 'object') {
+                                td.textContent = JSON.stringify(value);
+                            } else {
+                                td.textContent = value;
+                            }
+                            
+                            tr.appendChild(td);
+                        });
+                        tbody.appendChild(tr);
+                    });
+                    
+                    table.appendChild(tbody);
+                    resultsContainer.appendChild(table);
+
+                    // Add info about more rows
+                    if (totalRows > 10) {
+                        const info = document.createElement('div');
+                        info.className = 'results-info';
+                        info.textContent = `Showing first 10 of ${totalRows} results`;
+                        resultsContainer.appendChild(info);
+                    }
+                }
+
+                messageDiv.appendChild(resultsContainer);
+            }
+
+            chatHistory.appendChild(messageDiv);
+            scrollToBottom();
+        }
+
+        // Scroll to bottom function
+        function scrollToBottom() {
+            chatHistory.scrollTop = chatHistory.scrollHeight;
+        }
+
+        // Example question function
+        function askExample(question) {
+            userInput.value = question;
+            sendMessage();
+        }
+
+        // Initial focus
+        userInput.focus();
+    </script>
+</body>
+</html>
+

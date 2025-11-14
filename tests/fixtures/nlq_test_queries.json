@@ -1,0 +1,312 @@
+{
+  "test_queries": [
+    {
+      "name": "Average test scores by region",
+      "user_query": "Show me average test scores by region",
+      "expected_sql_patterns": [
+        "SELECT",
+        "AVG",
+        "test_score",
+        "fact_assessment",
+        "region_id",
+        "GROUP BY",
+        "LIMIT"
+      ],
+      "expected_tables": ["fact_assessment"],
+      "description": "Aggregation query calculating average scores per region"
+    },
+    {
+      "name": "Recent interventions",
+      "user_query": "List interventions in the last 30 days",
+      "expected_sql_patterns": [
+        "SELECT",
+        "fact_intervention",
+        "date",
+        "DATE_SUB",
+        "LIMIT"
+      ],
+      "expected_tables": ["fact_intervention"],
+      "description": "Date filtering query for recent interventions"
+    },
+    {
+      "name": "Feedback mentioning teachers",
+      "user_query": "Find feedback mentioning teachers",
+      "expected_sql_patterns": [
+        "SELECT",
+        "observations",
+        "observation_targets",
+        "teacher",
+        "JOIN",
+        "LIMIT"
+      ],
+      "expected_tables": ["observations", "observation_targets"],
+      "description": "Join query filtering by target type"
+    },
+    {
+      "name": "Top performing schools",
+      "user_query": "What are the top performing schools?",
+      "expected_sql_patterns": [
+        "SELECT",
+        "school_name",
+        "AVG",
+        "test_score",
+        "fact_assessment",
+        "ORDER BY",
+        "DESC",
+        "LIMIT"
+      ],
+      "expected_tables": ["fact_assessment"],
+      "description": "Ranking query with aggregation and ordering"
+    },
+    {
+      "name": "Intervention participation trends",
+      "user_query": "Show intervention participation trends by month",
+      "expected_sql_patterns": [
+        "SELECT",
+        "fact_intervention",
+        "dim_time",
+        "participants_count",
+        "month",
+        "year",
+        "JOIN",
+        "GROUP BY",
+        "LIMIT"
+      ],
+      "expected_tables": ["fact_intervention", "dim_time"],
+      "description": "Time series query with dimension join"
+    },
+    {
+      "name": "Student count by region",
+      "user_query": "How many students are in each region?",
+      "expected_sql_patterns": [
+        "SELECT",
+        "COUNT",
+        "region_id",
+        "fact_assessment",
+        "GROUP BY",
+        "LIMIT"
+      ],
+      "expected_tables": ["fact_assessment"],
+      "description": "Simple count aggregation query"
+    },
+    {
+      "name": "Scores above threshold",
+      "user_query": "Show me test scores above 90",
+      "expected_sql_patterns": [
+        "SELECT",
+        "test_score",
+        "fact_assessment",
+        "WHERE",
+        "90",
+        "LIMIT"
+      ],
+      "expected_tables": ["fact_assessment"],
+      "description": "Filtering query with numeric comparison"
+    },
+    {
+      "name": "Observations with sentiment",
+      "user_query": "Find observations with positive sentiment",
+      "expected_sql_patterns": [
+        "SELECT",
+        "observations",
+        "sentiment_score",
+        "WHERE",
+        "LIMIT"
+      ],
+      "expected_tables": ["observations"],
+      "description": "Filtering on sentiment score field"
+    },
+    {
+      "name": "Math assessments",
+      "user_query": "Show me math test results",
+      "expected_sql_patterns": [
+        "SELECT",
+        "fact_assessment",
+        "subject",
+        "WHERE",
+        "Math",
+        "LIMIT"
+      ],
+      "expected_tables": ["fact_assessment"],
+      "description": "Subject filtering query"
+    },
+    {
+      "name": "Regional comparison",
+      "user_query": "Compare test scores between regions A and B",
+      "expected_sql_patterns": [
+        "SELECT",
+        "region_id",
+        "AVG",
+        "test_score",
+        "fact_assessment",
+        "WHERE",
+        "GROUP BY",
+        "LIMIT"
+      ],
+      "expected_tables": ["fact_assessment"],
+      "description": "Multi-region comparison query"
+    }
+  ],
+  "edge_case_queries": [
+    {
+      "name": "Query without LIMIT (should be added)",
+      "user_query": "Show all assessments",
+      "expected_sql_patterns": [
+        "SELECT",
+        "fact_assessment",
+        "LIMIT"
+      ],
+      "description": "Verify LIMIT clause is automatically added"
+    },
+    {
+      "name": "Query with forbidden INSERT keyword",
+      "user_query": "Insert test scores into the database",
+      "expected_error": "SqlSafetyError",
+      "description": "Should reject INSERT statements"
+    },
+    {
+      "name": "Query with forbidden DELETE keyword",
+      "user_query": "Delete old records from assessments",
+      "expected_error": "SqlSafetyError",
+      "description": "Should reject DELETE statements"
+    },
+    {
+      "name": "Query with forbidden UPDATE keyword",
+      "user_query": "Update the test scores",
+      "expected_error": "SqlSafetyError",
+      "description": "Should reject UPDATE statements"
+    },
+    {
+      "name": "Query with forbidden DROP keyword",
+      "user_query": "Drop the assessment table",
+      "expected_error": "SqlSafetyError",
+      "description": "Should reject DROP statements"
+    },
+    {
+      "name": "Ambiguous query",
+      "user_query": "Show me data",
+      "expected_sql_patterns": [
+        "SELECT",
+        "LIMIT"
+      ],
+      "description": "LLM should generate reasonable query even with vague request"
+    },
+    {
+      "name": "Complex multi-join query",
+      "user_query": "Show me assessment scores with school regions and time information",
+      "expected_sql_patterns": [
+        "SELECT",
+        "fact_assessment",
+        "JOIN",
+        "LIMIT"
+      ],
+      "expected_tables": ["fact_assessment"],
+      "description": "Should handle complex multi-table queries"
+    },
+    {
+      "name": "NULL value handling",
+      "user_query": "Find assessments with missing scores",
+      "expected_sql_patterns": [
+        "SELECT",
+        "fact_assessment",
+        "test_score",
+        "IS NULL",
+        "LIMIT"
+      ],
+      "description": "Should handle NULL checking queries"
+    },
+    {
+      "name": "Date range query",
+      "user_query": "Show assessments between January 2023 and June 2023",
+      "expected_sql_patterns": [
+        "SELECT",
+        "fact_assessment",
+        "date",
+        "WHERE",
+        "BETWEEN",
+        "LIMIT"
+      ],
+      "description": "Should handle date range queries"
+    },
+    {
+      "name": "HAVING clause query",
+      "user_query": "Show regions with more than 100 students",
+      "expected_sql_patterns": [
+        "SELECT",
+        "region_id",
+        "COUNT",
+        "fact_assessment",
+        "GROUP BY",
+        "HAVING",
+        "LIMIT"
+      ],
+      "description": "Should generate HAVING clause for post-aggregation filtering"
+    }
+  ],
+  "demo_queries": [
+    {
+      "name": "Demo 1: Regional performance overview",
+      "user_query": "Show me average test scores by region",
+      "talking_points": [
+        "Natural language to SQL translation",
+        "Automatic aggregation and grouping",
+        "Read-only safety validation",
+        "Fast execution with BigQuery"
+      ]
+    },
+    {
+      "name": "Demo 2: Recent activity",
+      "user_query": "List interventions in the last 30 days",
+      "talking_points": [
+        "Date filtering with relative dates",
+        "BigQuery Standard SQL functions",
+        "Automatic LIMIT clause application"
+      ]
+    },
+    {
+      "name": "Demo 3: Unstructured data search",
+      "user_query": "Find feedback mentioning teachers",
+      "talking_points": [
+        "Join across multiple tables",
+        "Searching observations table",
+        "Entity target filtering"
+      ]
+    },
+    {
+      "name": "Demo 4: Ranking and ordering",
+      "user_query": "What are the top performing schools?",
+      "talking_points": [
+        "Ranking with ORDER BY DESC",
+        "Aggregation across schools",
+        "Filtering out low sample sizes with HAVING"
+      ]
+    },
+    {
+      "name": "Demo 5: Time series analysis",
+      "user_query": "Show intervention participation trends by month",
+      "talking_points": [
+        "Dimension table join (dim_time)",
+        "Time-based aggregation",
+        "Trend analysis support"
+      ]
+    }
+  ],
+  "expected_dataset_id": "jedouscale_core",
+  "available_tables": [
+    "dim_region",
+    "dim_school",
+    "dim_time",
+    "fact_assessment",
+    "fact_intervention",
+    "observations",
+    "observation_targets",
+    "ingest_runs"
+  ],
+  "metadata": {
+    "version": "1.0.0",
+    "created": "2025-01-01",
+    "description": "Test fixtures for NLQ (Natural Language Query) feature",
+    "usage": "Used in unit tests and integration tests for validating SQL generation"
+  }
+}
+

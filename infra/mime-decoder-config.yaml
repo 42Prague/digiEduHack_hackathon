@@ -1,0 +1,57 @@
+apiVersion: serving.knative.dev/v1
+kind: Service
+metadata:
+  name: mime-decoder
+spec:
+  template:
+    metadata:
+      annotations:
+        autoscaling.knative.dev/minScale: '0'
+        autoscaling.knative.dev/maxScale: '10'
+    spec:
+      serviceAccountName: cloud-run-engine@PROJECT_ID_PLACEHOLDER.iam.gserviceaccount.com
+      containerConcurrency: 80
+      timeoutSeconds: 300
+      containers:
+      - image: IMAGE_URL_PLACEHOLDER
+        ports:
+        - name: http1
+          containerPort: 8080
+        env:
+        - name: ENV
+          value: prod
+        - name: SERVICE_NAME
+          value: mime-decoder
+        - name: SERVICE_VERSION
+          value: '0.1.0'
+        - name: GCP_PROJECT_ID
+          value: PROJECT_ID_PLACEHOLDER
+        - name: GCP_REGION
+          value: europe-west1
+        - name: UPLOADS_BUCKET
+          value: BUCKET_NAME_PLACEHOLDER
+        - name: ENVIRONMENT
+          value: prod
+        - name: TRANSFORMER_SERVICE_URL
+          value: TRANSFORMER_SERVICE_URL_PLACEHOLDER
+        - name: BACKEND_SERVICE_URL
+          value: BACKEND_SERVICE_URL_PLACEHOLDER
+        - name: REQUEST_TIMEOUT
+          value: '300'
+        - name: BACKEND_UPDATE_TIMEOUT
+          value: '5'
+        - name: LOG_LEVEL
+          value: INFO
+        # Archive Extraction Configuration
+        - name: ENABLE_ARCHIVE_EXTRACTION
+          value: 'true'
+        - name: MAX_ARCHIVE_SIZE_MB
+          value: '1024'
+        - name: MAX_FILES_PER_ARCHIVE
+          value: '100'
+        - name: MAX_EXTRACTED_FILE_SIZE_MB
+          value: '500'
+        resources:
+          limits:
+            cpu: '2'
+            memory: 2Gi

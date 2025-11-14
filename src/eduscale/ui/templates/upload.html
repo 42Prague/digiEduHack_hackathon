@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>EduScale File Upload</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 600px;
+            margin: 50px auto;
+            padding: 20px;
+        }
+        h1 {
+            color: #333;
+        }
+        .form-group {
+            margin-bottom: 15px;
+        }
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+        input, select {
+            width: 100%;
+            padding: 8px;
+            box-sizing: border-box;
+        }
+        button {
+            padding: 10px 20px;
+            background: #007bff;
+            color: white;
+            border: none;
+            cursor: pointer;
+            font-size: 16px;
+        }
+        button:hover {
+            background: #0056b3;
+        }
+        button:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+        }
+        #status {
+            margin-top: 20px;
+            padding: 10px;
+            border: 1px solid #ddd;
+            min-height: 100px;
+            background: #f9f9f9;
+        }
+        .info {
+            color: #666;
+            font-size: 0.9em;
+            margin-top: 5px;
+        }
+        .success {
+            color: green;
+        }
+        .error {
+            color: red;
+        }
+    </style>
+</head>
+<body>
+    <h1>Upload File</h1>
+    <form id="uploadForm">
+        <div class="form-group">
+            <label for="regionId">Region ID:</label>
+            <input type="text" id="regionId" placeholder="e.g., school-123, city-paris, etc." required />
+        </div>
+        <div class="form-group">
+            <label for="fileInput">File(s):</label>
+            <input type="file" id="fileInput" multiple required />
+            <div class="info" id="fileInfo"></div>
+        </div>
+        <button type="submit">Upload</button>
+    </form>
+    <div id="status"></div>
+    
+    <script>
+        const DIRECT_UPLOAD_THRESHOLD = 31 * 1024 * 1024; // 31 MB
+        const fileInput = document.getElementById('fileInput');
+        const fileInfo = document.getElementById('fileInfo');
+        const statusDiv = document.getElementById('status');
+        
+        // Show file size info
+        fileInput.addEventListener('change', (e) => {
+            const files = Array.from(e.target.files);
+            if (files.length > 0) {
+                const totalSizeMB = files.reduce((sum, f) => sum + f.size, 0) / (1024 * 1024);
+                fileInfo.textContent = `${files.length} file(s) selected, Total: ${totalSizeMB.toFixed(2)} MB`;
+            }
+        });
+        
+        // Handle form submission with automatic routing
+        document.getElementById('uploadForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const files = Array.from(fileInput.files);
+            const regionId = document.getElementById('regionId').value;
+            
+            if (files.length === 0) {
+                statusDiv.textContent = 'Please select at least one file';
+                return;
+            }
+            
+            statusDiv.innerHTML = `<strong>Uploading ${files.length} file(s)...</strong><br>`;
+            
+            const results = [];
+            const errors = [];
+            
+            for (let i = 0; i < files.length; i++) {
+                const file = files[i];
+                try {
+                    statusDiv.innerHTML += `<br>[${i + 1}/${files.length}] Uploading ${file.name}...`;
+                    
+                    // Automatic routing based on file size
+                    if (file.size <= DIRECT_UPLOAD_THRESHOLD) {
+                        const result = await directUpload(file, regionId);
+                        results.push({file: file.name, ...result});
+                    } else {
+                        const result = await signedUrlUpload(file, regionId);
+                        results.push({file: file.name, ...result});
+                    }
+                    
+                    statusDiv.innerHTML += ` <span class="success">✓</span>`;
+                } catch (error) {
+                    errors.push({file: file.name, error: error.message});
+                    statusDiv.innerHTML += ` <span class="error">✗ ${error.message}</span>`;
+                }
+            }
+            
+            // Show summary
+            statusDiv.innerHTML += `<br><br><strong>Summary:</strong><br>`;
+            statusDiv.innerHTML += `<span class="success">Successful: ${results.length}</span><br>`;
+            if (errors.length > 0) {
+                statusDiv.innerHTML += `<span class="error">Failed: ${errors.length}</span><br>`;
+            }
+        });
+        
+        // Direct upload for small files
+        async function directUpload(file, regionId) {
+            const formData = new FormData();
+            formData.append('file', file);
+            formData.append('region_id', regionId);
+            
+            const response = await fetch('/api/v1/upload', {
+                method: 'POST',
+                body: formData
+            });
+            
+            if (!response.ok) {
+                const error = await response.json();
+                throw new Error(error.detail || 'Upload failed');
+            }
+            
+            return await response.json();
+        }
+        
+        // Signed URL upload for large files
+        async function signedUrlUpload(file, regionId) {
+            // Step 1: Create upload session
+            const sessionResponse = await fetch('/api/v1/upload/sessions', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({
+                    region_id: regionId,
+                    file_name: file.name,
+                    file_size_bytes: file.size,
+                    content_type: file.type || 'application/octet-stream'
+                })
+            });
+            
+            if (!sessionResponse.ok) {
+                const error = await sessionResponse.json();
+                throw new Error(error.detail || 'Session creation failed');
+            }
+            
+            const session = await sessionResponse.json();
+            
+            // Step 2: Upload directly to GCS
+            const uploadResponse = await fetch(session.signed_url, {
+                method: 'PUT',
+                headers: {'Content-Type': file.type || 'application/octet-stream'},
+                body: file
+            });
+            
+            if (!uploadResponse.ok) {
+                throw new Error('Upload to storage failed');
+            }
+            
+            // Step 3: Complete upload
+            const completeResponse = await fetch('/api/v1/upload/complete', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({file_id: session.file_id})
+            });
+            
+            if (!completeResponse.ok) {
+                const error = await completeResponse.json();
+                throw new Error(error.detail || 'Upload completion failed');
+            }
+            
+            return await completeResponse.json();
+        }
+    </script>
+</body>
+</html>

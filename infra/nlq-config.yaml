@@ -1,0 +1,187 @@
+# Cloud Run service configuration for NLQ (Natural Language Query) feature
+# This config uses STANDARD Cloud Run resources (not specialized like Ollama configs)
+
+apiVersion: serving.knative.dev/v1
+kind: Service
+metadata:
+  name: eduscale-nlq
+  annotations:
+    run.googleapis.com/ingress: all
+    run.googleapis.com/launch-stage: BETA
+spec:
+  template:
+    metadata:
+      annotations:
+        autoscaling.knative.dev/minScale: "0"
+        autoscaling.knative.dev/maxScale: "10"
+        run.googleapis.com/cpu-throttling: "true"
+        run.googleapis.com/startup-cpu-boost: "true"
+    spec:
+      # Standard resource limits (NOT specialized for LLM)
+      containerConcurrency: 80  # Standard concurrency
+      timeoutSeconds: 60  # Standard timeout
+      
+      containers:
+      - image: gcr.io/PROJECT_ID/eduscale-nlq:latest  # Update PROJECT_ID before deploying
+        
+        resources:
+          limits:
+            cpu: "1"  # Standard CPU
+            memory: "2Gi"  # Standard memory
+        
+        ports:
+        - name: http1
+          containerPort: 8080
+        
+        env:
+        # Environment
+        - name: ENV
+          value: "production"
+        
+        # Service info
+        - name: SERVICE_NAME
+          value: "eduscale-nlq"
+        - name: SERVICE_VERSION
+          value: "1.0.0"
+        
+        # GCP Configuration
+        - name: GCP_PROJECT_ID
+          value: "PROJECT_ID"  # Update before deploying
+        - name: GCP_REGION
+          value: "europe-west1"
+        
+        # BigQuery Configuration
+        - name: BIGQUERY_DATASET_ID
+          value: "jedouscale_core"
+        - name: BIGQUERY_STAGING_DATASET_ID
+          value: "jedouscale_staging"
+        
+        # NLQ Configuration
+        - name: NLQ_MAX_RESULTS
+          value: "100"
+        - name: NLQ_QUERY_TIMEOUT_SECONDS
+          value: "60"
+        - name: BQ_MAX_BYTES_BILLED
+          value: "1000000000"  # 1GB limit (optional)
+        
+        # LLM Configuration (Featherless.ai API)
+        - name: LLM_ENABLED
+          value: "true"
+        - name: FEATHERLESS_BASE_URL
+          value: "https://api.featherless.ai/v1"
+        - name: FEATHERLESS_LLM_MODEL
+          value: "meta-llama/Meta-Llama-3.1-8B-Instruct"
+        
+        # Featherless API Key from Secret Manager
+        - name: FEATHERLESS_API_KEY
+          valueFrom:
+            secretKeyRef:
+              name: featherless-api-key
+              key: latest
+        
+        # Storage Configuration (if needed)
+        - name: STORAGE_BACKEND
+          value: "gcs"
+        - name: GCS_BUCKET_NAME
+          value: "PROJECT_ID-uploads"  # Update before deploying
+        
+        # Logging
+        - name: LOG_LEVEL
+          value: "INFO"
+
+---
+# Cloud Run service for backend (main service with NLQ integrated)
+# This is the primary deployment configuration
+apiVersion: serving.knative.dev/v1
+kind: Service
+metadata:
+  name: eduscale-engine
+  annotations:
+    run.googleapis.com/ingress: all
+    run.googleapis.com/launch-stage: BETA
+spec:
+  template:
+    metadata:
+      annotations:
+        autoscaling.knative.dev/minScale: "0"
+        autoscaling.knative.dev/maxScale: "10"
+        run.googleapis.com/cpu-throttling: "true"
+        run.googleapis.com/startup-cpu-boost: "true"
+    spec:
+      containerConcurrency: 80
+      timeoutSeconds: 60
+      
+      containers:
+      - image: gcr.io/PROJECT_ID/eduscale-engine:latest  # Update PROJECT_ID before deploying
+        
+        resources:
+          limits:
+            cpu: "1"
+            memory: "2Gi"
+        
+        ports:
+        - name: http1
+          containerPort: 8080
+        
+        env:
+        # Environment
+        - name: ENV
+          value: "production"
+        
+        # Service info
+        - name: SERVICE_NAME
+          value: "eduscale-engine"
+        - name: SERVICE_VERSION
+          value: "1.0.0"
+        
+        # GCP Configuration
+        - name: GCP_PROJECT_ID
+          value: "PROJECT_ID"  # Update before deploying
+        - name: GCP_REGION
+          value: "europe-west1"
+        
+        # BigQuery Configuration
+        - name: BIGQUERY_DATASET_ID
+          value: "jedouscale_core"
+        - name: BIGQUERY_STAGING_DATASET_ID
+          value: "jedouscale_staging"
+        
+        # NLQ Configuration
+        - name: NLQ_MAX_RESULTS
+          value: "100"
+        - name: NLQ_QUERY_TIMEOUT_SECONDS
+          value: "60"
+        - name: BQ_MAX_BYTES_BILLED
+          value: "1000000000"  # 1GB limit
+        
+        # LLM Configuration (Featherless.ai API)
+        - name: LLM_ENABLED
+          value: "true"
+        - name: FEATHERLESS_BASE_URL
+          value: "https://api.featherless.ai/v1"
+        - name: FEATHERLESS_LLM_MODEL
+          value: "meta-llama/Meta-Llama-3.1-8B-Instruct"
+        
+        # Featherless API Key from Secret Manager
+        - name: FEATHERLESS_API_KEY
+          valueFrom:
+            secretKeyRef:
+              name: featherless-api-key
+              key: latest
+        
+        # Storage Configuration
+        - name: STORAGE_BACKEND
+          value: "gcs"
+        - name: GCS_BUCKET_NAME
+          value: "PROJECT_ID-uploads"  # Update before deploying
+        
+        # Tabular Service Configuration
+        - name: CONCEPT_CATALOG_PATH
+          value: "/app/config/concepts.yaml"
+        - name: FEEDBACK_ANALYSIS_ENABLED
+          value: "true"
+        
+        # Logging
+        - name: LOG_LEVEL
+          value: "INFO"
+

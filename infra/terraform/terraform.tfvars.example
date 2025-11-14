@@ -1,0 +1,43 @@
+# Example Terraform Variables Configuration
+# Copy this file to terraform.tfvars and update with your values
+
+# Required: Your GCP Project ID
+project_id = "your-gcp-project-id"
+
+# Optional: Override defaults if needed
+region              = "europe-west1"
+service_name        = "jedouscale-engine"
+repository_id       = "jedouscale-engine-repo"
+image_tag           = "latest"
+service_version     = "0.1.0"
+environment         = "prod"
+min_instance_count  = 0
+max_instance_count  = 10
+cpu                 = "1"
+memory              = "512Mi"
+container_port      = 8080
+allow_unauthenticated = true
+
+# Storage Configuration
+uploads_bucket_lifecycle_days = 90
+
+# Eventarc Configuration
+# Set to false on first run, then true after deploying mime-decoder via GitHub Actions
+enable_eventarc = false
+mime_decoder_service_name = "mime-decoder"
+transformer_service_name = "transformer"
+eventarc_trigger_name = "storage-upload-trigger"
+event_filter_prefix = ""
+
+# Monitoring Configuration
+enable_monitoring_alerts = false
+alert_email = ""
+enable_monitoring_dashboard = false
+
+# BigQuery Configuration
+bigquery_dataset_id = "jedouscale_core"
+bigquery_staging_dataset_id = "jedouscale_staging"
+bigquery_staging_table_expiration_days = 7
+
+# Tabular Service Configuration
+tabular_service_name = "tabular-service"

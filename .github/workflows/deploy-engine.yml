@@ -1,0 +1,70 @@
+name: Build and Deploy Engine to Cloud Run
+
+on:
+  workflow_dispatch:
+    inputs:
+      image_tag:
+        description: 'Docker image tag'
+        required: false
+        default: 'latest'
+
+env:
+  PROJECT_ID: ${{ secrets.GCP_PROJECT_ID }}
+  REGION: europe-west1
+  SERVICE_NAME: jedouscale-engine
+  REPOSITORY: jedouscale-engine-repo
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    
+    permissions:
+      contents: read
+      id-token: write
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      
+      - name: Authenticate to Google Cloud
+        uses: google-github-actions/auth@v2
+        with:
+          credentials_json: ${{ secrets.GCP_SA_KEY }}
+      
+      - name: Set up Cloud SDK
+        uses: google-github-actions/setup-gcloud@v2
+      
+      - name: Configure Docker for Artifact Registry
+        run: |
+          gcloud auth configure-docker ${{ env.REGION }}-docker.pkg.dev
+      
+      - name: Build Docker image
+        run: |
+          docker build -f docker/Dockerfile \
+            -t ${{ env.REGION }}-docker.pkg.dev/${{ env.PROJECT_ID }}/${{ env.REPOSITORY }}/${{ env.SERVICE_NAME }}:${{ github.sha }} \
+            -t ${{ env.REGION }}-docker.pkg.dev/${{ env.PROJECT_ID }}/${{ env.REPOSITORY }}/${{ env.SERVICE_NAME }}:latest \
+            .
+      
+      - name: Push Docker image
+        run: |
+          docker push ${{ env.REGION }}-docker.pkg.dev/${{ env.PROJECT_ID }}/${{ env.REPOSITORY }}/${{ env.SERVICE_NAME }}:${{ github.sha }}
+          docker push ${{ env.REGION }}-docker.pkg.dev/${{ env.PROJECT_ID }}/${{ env.REPOSITORY }}/${{ env.SERVICE_NAME }}:latest
+      
+      - name: Prepare Cloud Run configuration
+        run: |
+          sed -i "s|IMAGE_URL_PLACEHOLDER|${{ env.REGION }}-docker.pkg.dev/${{ env.PROJECT_ID }}/${{ env.REPOSITORY }}/${{ env.SERVICE_NAME }}:${{ github.sha }}|g" infra/cloud-run-config.yaml
+          sed -i "s|PROJECT_ID_PLACEHOLDER|${{ env.PROJECT_ID }}|g" infra/cloud-run-config.yaml
+          sed -i "s|BUCKET_NAME_PLACEHOLDER|${{ env.PROJECT_ID }}-eduscale-uploads|g" infra/cloud-run-config.yaml
+          sed -i "s|SERVICE_ACCOUNT_PLACEHOLDER|cloud-run-engine@${{ env.PROJECT_ID }}.iam.gserviceaccount.com|g" infra/cloud-run-config.yaml
+          sed -i "s|FEATHERLESS_API_KEY_PLACEHOLDER|${{ secrets.FEATHERLESS_API_KEY }}|g" infra/cloud-run-config.yaml
+      
+      - name: Deploy to Cloud Run
+        run: |
+          gcloud run services replace infra/cloud-run-config.yaml \
+            --region ${{ env.REGION }} \
+            --platform managed
+          
+          gcloud run services add-iam-policy-binding ${{ env.SERVICE_NAME }} \
+            --region ${{ env.REGION }} \
+            --member="allUsers" \
+            --role="roles/run.invoker"

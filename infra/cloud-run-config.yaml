@@ -1,0 +1,91 @@
+apiVersion: serving.knative.dev/v1
+kind: Service
+metadata:
+  name: jedouscale-engine
+spec:
+  template:
+    metadata:
+      annotations:
+        autoscaling.knative.dev/minScale: '0'
+        autoscaling.knative.dev/maxScale: '10'
+    spec:
+      serviceAccountName: SERVICE_ACCOUNT_PLACEHOLDER
+      containerConcurrency: 80
+      timeoutSeconds: 300
+      containers:
+      - image: IMAGE_URL_PLACEHOLDER
+        ports:
+        - name: http1
+          containerPort: 8080
+        env:
+        - name: ENV
+          value: prod
+        - name: SERVICE_NAME
+          value: jedouscale-engine
+        - name: SERVICE_VERSION
+          value: '0.1.0'
+        - name: GCP_PROJECT_ID
+          value: PROJECT_ID_PLACEHOLDER
+        - name: GCP_REGION
+          value: europe-west1
+        - name: GCP_RUN_SERVICE
+          value: jedouscale-engine
+        - name: STORAGE_BACKEND
+          value: gcs
+        - name: GCS_BUCKET_NAME
+          value: BUCKET_NAME_PLACEHOLDER
+        - name: MAX_UPLOAD_MB
+          value: '500'
+        - name: ALLOWED_UPLOAD_MIME_TYPES
+          value: >-
+            text/plain,
+            text/markdown,
+            text/csv,
+            text/html,
+            application/json,
+            application/pdf,
+            application/octet-stream,
+            application/vnd.openxmlformats-officedocument.wordprocessingml.document,
+            application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,
+            audio/mpeg,
+            audio/mp4,
+            audio/x-m4a,
+            audio/m4a,
+            audio/wav,
+            audio/ogg,
+            audio/webm,
+            audio/flac,
+            application/zip,
+            application/x-zip-compressed,
+            application/x-tar,
+            application/gzip,
+            application/x-gzip,
+            application/x-bzip2,
+            application/x-7z-compressed,
+            application/x-rar-compressed
+        # BigQuery Configuration
+        - name: BIGQUERY_DATASET_ID
+          value: jedouscale_core
+        - name: BIGQUERY_STAGING_DATASET_ID
+          value: jedouscale_staging
+        
+        # NLQ (Natural Language Query) Configuration
+        - name: LLM_ENABLED
+          value: 'true'
+        - name: FEATHERLESS_API_KEY
+          value: FEATHERLESS_API_KEY_PLACEHOLDER  # Replace with actual API key or use Secret Manager
+        - name: FEATHERLESS_BASE_URL
+          value: https://api.featherless.ai/v1
+        - name: FEATHERLESS_LLM_MODEL
+          value: meta-llama/Meta-Llama-3.1-8B-Instruct
+        - name: NLQ_MAX_RESULTS
+          value: '100'
+        - name: NLQ_QUERY_TIMEOUT_SECONDS
+          value: '60'
+        - name: BQ_MAX_BYTES_BILLED
+          value: '1000000000'  # Optional: 1GB limit
+        
+        resources:
+          limits:
+            cpu: '2'
+            memory: 2Gi

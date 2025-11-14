@@ -1,0 +1,36 @@
+# Minimal concepts catalog for testing
+
+table_types:
+  - name: ASSESSMENT
+    anchors:
+      - "test scores and grades"
+      - "student performance evaluation"
+  
+  - name: ATTENDANCE
+    anchors:
+      - "student attendance records"
+      - "presence tracking"
+
+concepts:
+  - key: student_id
+    description: "Unique student identifier"
+    expected_type: string
+    synonyms:
+      - "Student ID"
+      - "StudentID"
+      - "ID žáka"
+  
+  - key: test_score
+    description: "Numeric test score"
+    expected_type: number
+    synonyms:
+      - "Score"
+      - "Test Score"
+      - "Grade"
+  
+  - key: date
+    description: "Date of the event"
+    expected_type: date
+    synonyms:
+      - "Date"
+      - "Datum"

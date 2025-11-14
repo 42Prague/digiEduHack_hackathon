@@ -1,0 +1,45 @@
+version: '3.8'
+
+services:
+  api:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile
+    ports:
+      - "8000:8000"
+    volumes:
+      - ../src:/app/src
+      - ../uploads:/app/uploads
+    env_file:
+      - ../.env
+    command: uvicorn eduscale.main:app --reload --host 0.0.0.0 --port 8000
+    environment:
+      - PORT=8000
+      - STORAGE_BACKEND=local
+    networks:
+      - eduscale-network
+
+  mime-decoder:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile.mime-decoder
+    ports:
+      - "8001:8001"
+    volumes:
+      - ../src:/app/src
+      - ../uploads:/app/uploads
+    env_file:
+      - ../.env
+    command: uvicorn eduscale.services.mime_decoder.main:app --reload --host 0.0.0.0 --port 8001
+    environment:
+      - PORT=8001
+      - STORAGE_BACKEND=local
+      - ENVIRONMENT=development
+    networks:
+      - eduscale-network
+    depends_on:
+      - api
+
+networks:
+  eduscale-network:
+    driver: bridge

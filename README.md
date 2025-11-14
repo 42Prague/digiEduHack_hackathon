@@ -1,71 +1,166 @@
-# 42Prague DigiEduHack Hackathon
+# EduScale Engine
 
-> Welcome! This is the main repository for submitting your team's solution for the DigiEduHack Hackathon at 42Prague.
+A data ingestion and analytics platform designed to handle messy educational data with ML-based pipelines and natural language querying.
 
-## ⚠️ First Steps: Read the Guidelines & Get Data
+## Tech Stack
 
-Before you start, please **carefully read all documents** in the `resources/` folder. They contain the rules, guidelines, data samples, and the template you must fill out.
+- **Python 3.11**: Modern Python with performance improvements
+- **FastAPI**: High-performance async web framework
+- **Docker**: Containerization for consistent environments
+- **docker-compose**: Local development orchestration
+- **Google Cloud Run**: Serverless container deployment platform
 
-* `resources/DigiEduHack_solution_guidelines.pdf`: Contains all rules, guidelines, and judging criteria.
-* `resources/Digi_Edu_Hack_Solution_Canvas_2025.pdf`: This is the **mandatory template** you must fill out and send to the [DigiEduHack submission platform](https://digieduhack.com/host/submit-solution?relatedChallenge=106879). Only 1 team member is submitting the solution.
-* **[Download Data Samples](https://drive.google.com/drive/folders/1KVzBOg1ktjgJd16rlyVDPniwRMDWNYYt?usp=sharing)**: Contains data samples provided for the challenge.
+## Architecture
 
----
+This is the foundational infrastructure skeleton for EduScale Engine. The current implementation provides:
 
-## 🚀 How to Submit Your Solution
+- FastAPI application with health check endpoint
+- Environment-based configuration management
+- Structured logging for Cloud Run
+- Docker containerization with multi-stage builds
+- Local development environment with hot reload
 
-We use the standard GitHub **Fork & Pull Request** workflow. This is the only way to submit your project. Follow these steps carefully.
+### Implemented Features
 
+- File upload API for educational data
+- ML-based data ingestion pipelines
+- BigQuery integration for data warehousing
+- **Natural language to SQL query interface** (NLQ Chat) - [Documentation](docs/NLQ_FEATURE.md)
+- Data quality validation and cleaning
 
+#### Natural Language Query (NLQ) Chat
 
-### Step 1: Fork This Repository
+Ask questions about your educational data in plain English:
+- **Chat UI**: Access at `/nlq/chat` for interactive querying
+- **REST API**: POST to `/api/v1/nlq/chat` for programmatic access
+- **Powered by**: Llama 3.1 8B Instruct via Featherless.ai API
+- **Safe & Validated**: Read-only queries with multi-layer safety checks
+- **Demo Ready**: 5 pre-tested queries for presentations
 
-Click the **"Fork"** button at the top-right corner of this page. This will create a complete copy of this repository under your personal GitHub account.
+See [NLQ Feature Documentation](docs/NLQ_FEATURE.md) for detailed setup and usage.
 
-### Step 2: Create Your Branch
+## Getting Started
 
-On **your forked repository**, create a new branch to hold your work. **Please name this branch after your team.**
+### Prerequisites
 
-You can do this locally on your computer after cloning your fork:
+- Python 3.11+
+- Docker and docker-compose (for containerized development)
+- Google Cloud SDK (for deployment)
+
+### Configuration
+
+1. Copy the example environment file:
+   ```bash
+   cp .env.example .env
+   ```
+
+2. Edit `.env` and configure your environment variables:
+   - `ENV`: Environment name (local, dev, prod)
+   - `SERVICE_NAME`: Service name (default: eduscale-engine)
+   - `SERVICE_VERSION`: Version number (default: 0.1.0)
+   - `GCP_PROJECT_ID`: Your Google Cloud project ID
+   - `GCP_REGION`: Deployment region (default: europe-west1)
+
+### Running Locally (Without Docker)
+
+1. Create a virtual environment:
+   ```bash
+   python -m venv .venv
+   source .venv/bin/activate  # On Windows: .venv\Scripts\activate
+   ```
+
+2. Install dependencies:
+   ```bash
+   pip install -r requirements.txt
+   ```
+
+3. Run the application:
+   ```bash
+   uvicorn eduscale.main:app --reload --host 0.0.0.0 --port 8000
+   ```
+
+4. Access the application:
+   - Health check: http://localhost:8000/health
+   - API docs: http://localhost:8000/docs
+
+### Running with Docker Compose
+
+1. Start the development environment:
+   ```bash
+   docker compose -f docker/docker-compose.dev.yml up --build
+   ```
+
+2. The application will be available at http://localhost:8000
+
+3. Code changes will automatically reload the application
+
+4. Stop the environment:
+   ```bash
+   docker compose -f docker/docker-compose.dev.yml down
+   ```
+
+## Testing
+
+Run tests with pytest:
 
 ```bash
-# Clone your fork (replace YOUR-USERNAME)
-git clone [https://github.com/YOUR-USERNAME/42Prague_digiEduHack_hackathon.git](https://github.com/YOUR-USERNAME/42Prague_digiEduHack_hackathon.git)
-cd 42Prague_digiEduHack_hackathon
-
-# Create and switch to your new branch (replace with your team name)
-git checkout -b your-team-name
+pytest
 ```
 
-### Step 3: Add Your Project Files
+## Deployment to Google Cloud Run
 
-Now it's time to build! Add all your project components to your branch:
-
-1.  **Your Solution:** Add all your source code, folders, dependencies (e.g., `requirements.txt`, `package.json`), and any files needed to run your solution. You can use the `srcs/` folder or create your own structure.
-2.  **Solution Canvas:** Fill out the `Digi_Edu_Hack_Solution_Canvas_2025.pdf` template. Add the completed PDF to the root of your branch.
-3.  **Pitch Deck:** Add your final pitch (PDF or PPTX format) to the `pitch/` folder.
-
-### Step 4: Commit & Push Your Work
-
-As you work, commit your changes and push them to your fork on GitHub.
+### Build and Push Container Image
 
 ```bash
-# After making your changes
-git add .
-git commit -m "Add project files and solution canvas"
+# Set your GCP project ID
+export GCP_PROJECT_ID=your-project-id
 
-# Push your branch to your fork (replace with your team name)
-git push origin your-team-name
+# Build the Docker image
+docker build -f docker/Dockerfile -t gcr.io/$GCP_PROJECT_ID/eduscale-engine:latest .
+
+# Push to Google Container Registry
+docker push gcr.io/$GCP_PROJECT_ID/eduscale-engine:latest
 ```
 
-### Step 5: Open a Pull Request
+### Deploy to Cloud Run
 
-When your submission is complete, it's time to create the Pull Request.
+```bash
+gcloud run deploy eduscale-engine \
+  --image=gcr.io/$GCP_PROJECT_ID/eduscale-engine:latest \
+  --region=europe-west1 \
+  --platform=managed \
+  --allow-unauthenticated \
+  --port=8080 \
+  --set-env-vars ENV=prod,SERVICE_VERSION=0.1.0
+```
 
-1.  Go to your forked repository on GitHub.
-2.  You will see a green button that says **"Compare & pull request"**. Click it.
-3.  **Important:** Make sure the "base repository" is `42Prague/42Prague_digiEduHack_hackathon` and the "head repository" is `YOUR-USERNAME/42Prague_digiEduHack_hackathon` (from your team branch).
-4.  Use your **Team Name** as the title for the Pull Request.
-5.  Click **"Create pull request"**.
+**Note**: This is a manual deployment example. For production use, implement a CI/CD pipeline with automated testing and deployment.
 
-That's it! Your submission is now in the queue for review.
+## Project Structure
+
+```
+.
+├── src/
+│   └── eduscale/
+│       ├── __init__.py
+│       ├── main.py              # Application entrypoint
+│       ├── api/                 # API routes
+│       │   └── v1/
+│       │       └── routes_health.py
+│       ├── core/                # Core utilities
+│       │   ├── config.py        # Configuration management
+│       │   └── logging.py       # Logging setup
+│       ├── models/              # Data models (placeholder)
+│       └── ingest/              # Ingestion logic (placeholder)
+├── tests/                       # Test files
+├── docker/
+│   ├── Dockerfile              # Multi-stage production build
+│   └── docker-compose.dev.yml  # Local development setup
+├── requirements.txt            # Python dependencies
+├── .env.example               # Environment template
+└── README.md                  # This file
+```
+
+## License
+
+[Add your license here]

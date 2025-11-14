@@ -1,0 +1,32 @@
+---
+file_id: "sample-csv-001"
+region_id: "region-cz-01"
+text_uri: "gs://test-bucket/text/sample-csv-001.txt"
+event_id: "event-csv-001"
+file_category: "csv"
+
+original:
+  filename: "assessment_data.csv"
+  content_type: "text/csv"
+  size_bytes: 1234
+  bucket: "test-bucket"
+  object_path: "uploads/region-cz-01/sample-csv-001_assessment_data.csv"
+  uploaded_at: "2025-01-14T10:30:00Z"
+
+extraction:
+  method: "csv_parser"
+  timestamp: "2025-01-14T10:30:10Z"
+  success: true
+  duration_ms: 50
+
+content:
+  text_length: 500
+  word_count: 80
+  character_count: 500
+---
+student_id,student_name,test_score,date,subject
+S001,Jan Novák,85,2025-01-10,Matematika
+S002,Petra Svobodová,92,2025-01-10,Matematika
+S003,Tomáš Dvořák,78,2025-01-10,Matematika
+S004,Marie Černá,88,2025-01-10,Matematika
+S005,Pavel Procházka,95,2025-01-10,Matematika
