@@ -22,20 +22,15 @@ WORKDIR /app
 
 ENV NODE_ENV=production
 
+# Copy standalone output (includes server.js and node_modules)
+COPY --from=builder /app/.next/standalone ./
 
-COPY --from=builder /app/next.config.js ./
-COPY --from=builder /app/public ./public
-COPY --from=builder /app/public ./srcs/eduforms/public
-COPY --from=builder /app/package.json ./package.json
-
-# Add this line to copy the drizzle migration files
-COPY --from=builder /app/drizzle ./srcs/eduforms/drizzle
-
-# COPY --from=builder /app/.next/standalone ./
+# Copy static files
 COPY --from=builder /app/.next/static ./.next/static
-COPY --from=builder /app/.next/static ./srcs/eduforms/.next/static
+COPY --from=builder /app/public ./public
 
-
+# Copy drizzle migration files
+COPY --from=builder /app/drizzle ./drizzle
 
 EXPOSE 3000
 ENV PORT=3000
