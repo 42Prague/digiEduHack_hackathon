@@ -95,7 +95,7 @@ export async function runDocumentProcessing() {
     });
     console.log("Agent setup complete.");
 
-    const query = { rawData: { $exists: true } };
+    const query = { rawData: { $exists: true }, processedData: { $exists: false } };
     const count = await collection.countDocuments(query);
     console.log(`Number of documents to process: ${count}`);
 
