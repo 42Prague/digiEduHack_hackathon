@@ -15,6 +15,7 @@ from pydantic import BaseModel, Field
 from eduscale.services.transformer.orchestrator import transform_file
 from eduscale.services.transformer.exceptions import FileTooLargeError, TransformationError
 from eduscale.services.transformer.storage import StorageClient
+from eduscale.services.transformer.middleware import HTTPErrorLoggingMiddleware
 from eduscale.core.config import settings
 
 # Configure JSON logging for Cloud Run
@@ -44,6 +45,9 @@ app = FastAPI(
     description="Extracts text from documents and audio files",
     version="0.1.0",
 )
+
+# Add middleware
+app.add_middleware(HTTPErrorLoggingMiddleware)
 
 
 class TransformRequest(BaseModel):

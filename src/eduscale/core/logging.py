@@ -1,11 +1,15 @@
 """Logging configuration for EduScale Engine."""
 
+import contextvars
 import json
 import logging
 import sys
 import traceback
 from datetime import datetime
 from typing import Any, Dict
+
+# Context variable for storing GCS URI in request scope
+gcs_uri_context: contextvars.ContextVar[str | None] = contextvars.ContextVar("gcs_uri", default=None)
 
 
 class CloudLoggingFormatter(logging.Formatter):
@@ -44,6 +48,11 @@ class CloudLoggingFormatter(logging.Formatter):
             "function": record.funcName,
             "line": record.lineno,
         }
+
+        # Add GCS URI from context if available
+        gcs_uri = gcs_uri_context.get()
+        if gcs_uri:
+            log_entry["gcs_uri"] = gcs_uri
 
         # Add extra fields from logger.info(..., extra={...})
         if hasattr(record, "__dict__"):
