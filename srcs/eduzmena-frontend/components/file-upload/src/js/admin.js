@@ -176,6 +176,35 @@ function renderSchoolFilterSelect() {
     select.value = optionExists ? prevValue : ''
 }
 
+function getDocumentTypeInfo(file) {
+    const raw = file.llm_summary
+    if (!raw) {
+        return { type: null, icon: '📄', label: 'Unknown document type' }
+    }
+
+    let obj = raw
+    if (typeof raw === 'string') {
+        try {
+            obj = JSON.parse(raw)
+        } catch (e) {
+            return { type: null, icon: '📄', label: 'Unknown document type' }
+        }
+    }
+
+    const detectedType = obj?.data?.type || obj?.type || null
+
+    switch (detectedType) {
+        case 'attendance_checklist':
+            return { type: detectedType, icon: '📋', label: 'Attendance checklist' }
+        case 'feedback_form':
+            return { type: detectedType, icon: '📝', label: 'Feedback form' }
+        case 'record':
+            return { type: detectedType, icon: '📄', label: 'Record' }
+        default:
+            return { type: detectedType, icon: '❔', label: 'Unknown document type' }
+    }
+}
+
 function renderFiles() {
     const container = document.getElementById('files-list')
     if (!container) return
@@ -236,6 +265,9 @@ function renderFiles() {
             failed: 'badge-danger',
         }[status] || 'badge-secondary'
 
+        const { type: docType, icon: docIcon, label: docLabel } = getDocumentTypeInfo(file)
+        const docTypeLabel = docType ? `${docLabel} (${docType})` : docLabel
+
         const basicStatsPreview = file.basic_stats
             ? `<pre class="file-json-preview">${JSON.stringify(file.basic_stats, null, 2)}</pre>`
             : '<span class="text-muted">No basic stats</span>'
@@ -255,17 +287,21 @@ function renderFiles() {
             `
             : ''
 
-        return `
+                return `
             <div class="list-item">
                 <div class="list-item-info">
                     <div class="list-item-name">
+                        <span class="file-type-icon" title="${escapeHtml(docLabel)}" style="margin-right: 4px;">
+                            ${docIcon}
+                        </span>
                         ${file.filename}
                         <span class="badge ${statusBadgeClass}" style="margin-left: 8px;">
                             ${status}
                         </span>
                     </div>
                     <div class="list-item-meta">
-                        File ID: ${file.id ?? '–'} | TUS ID: ${file.tus_id}
+                        File ID: ${file.id ?? '–'} | TUS ID: ${file.tus_id} |
+                        Type: ${escapeHtml(docTypeLabel)}
                     </div>
                     <div class="list-item-meta">
                         School: ${school ? school.name : 'Unknown'}${region ? ` (Region: ${region.name})` : ''} |

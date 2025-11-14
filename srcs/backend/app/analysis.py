@@ -54,31 +54,98 @@ Rules:
 - Do not include backticks.
 - Do not include explanations before or after the JSON.
 - Do not include multiple JSON objects.
-- Prefer short, machine-friendly keys in English using snake_case
-  (e.g. "student_name", "school_year", "math_grade", "attendance_percentage").
-- Preserve original Czech text in values where appropriate (teacher comments, subject names, etc.).
-- Use numbers for anything that looks numeric (grades, counts, percentages, points, years, hours, etc.).
-- If you are unsure about a value, either omit the field or add a boolean flag like "<field>_uncertain": true.
+- Prefer short, machine-friendly keys in English using snake_case.
+- Preserve original Czech text where appropriate.
+- Use numbers where applicable.
+- If uncertain, either omit the field or add "<field>_uncertain": true.
 
-Required structure:
+Required top-level structure:
 - The top-level JSON MUST contain:
-  - "summary": short natural-language summary of the document (2–4 sentences).
-  - "data": an object that groups all other extracted fields.
+  - "summary": 2–4 sentence natural-language summary.
+  - "data": an object containing all extracted structured information.
+  - "data.type": one of:
+      - "attendance_checklist"
+      - "feedback_form"
+      - "record"
 
-Inside "data":
-- You are free to create any keys and nested objects that best represent the information in the document.
-- Group related fields into nested objects (for example: "student", "school", "class", "grades", "behavior", "attendance", "evaluation", "meta").
-- Use arrays when there are repeated elements (for example: list of subjects, list of semesters/terms, list of teacher comments).
-- For arrays, each item should be an object with consistent fields
-  (for example: subjects might have "name", "area", "grade", "comment", "is_core_subject").
+All documents:
+- "data" MUST include **all core fields**, even if empty or null.
+
+============
+ATTENDANCE CHECKLIST SCHEMA
+============
+If the document appears to be an attendance checklist (sign-in sheets, lists of participants, presence marks, checkboxes, etc.),
+set:
+  data.type = "attendance_checklist"
+
+Then include every one of these fields exactly with the shown types (empty if missing):
+
+  "school_year": list
+  "date": string (ISO-like or original)
+  "year": list
+  "month": list
+  "semester": list
+  "intervention": list
+  "intervention_type": list
+  "intervention_detail": string
+  "target_group": list
+  "participant_name": string
+  "organization_school": list
+  "school_grade": list
+  "school_type": list
+  "region": list
+  "feedback": string
+
+Example notes:
+- A list means: [] if missing
+- A string means: "" if missing
+
+============
+FEEDBACK FORM SCHEMA
+============
+If the document appears to be a feedback form (evaluations, satisfaction surveys, session feedback),
+set:
+  data.type = "feedback_form"
+
+Then include every one of these fields exactly with the shown types (empty if missing):
+
+  "school_year": list
+  "date": string
+  "year": list
+  "month": list
+  "semester": list
+  "participant_name": string
+  "organization_school": list
+  "school_grade": list
+  "school_type": list
+  "region": list
+  "intervention": list
+  "intervention_type": list
+  "intervention_detail": string
+  "target_group": list
+  "overall_satisfaction": list
+  "lecturer_performance_and_skills": list
+  "planned_goals": list
+  "gained_professional_development": list
+  "open_feedback": string
+
+============
+GENERIC RECORD SCHEMA
+============
+If the document does NOT clearly match attendance_checklist or feedback_form,
+then:
+  data.type = "record"
+
+Add any additional structure relevant for the record (student, school, evaluations, behaviors, recommendations, grades, events, etc.).
 
 Focus on extracting:
-- All explicit identifiers (student name, school, class, academic year, term, document type).
-- All explicit or implicit metrics (grades, points, percentages, rankings, levels, counts of absences, etc.).
-- Any temporal information (dates, school year, term/semester, period).
-- Any categorical labels (subject names, behavior categories, assessment labels, pass/fail, etc.).
-- Any free-text comments or evaluations from teachers.
-- Any information about performance trends, strengths, weaknesses, recommendations.
+- Identifiers (student, school, academic year, class, region)
+- Metrics (grades, points, absences, percentages, ratings)
+- Temporal info (dates, periods, semesters)
+- Categories (type of document, intervention type)
+- Teacher/student comments
+- Trends, strengths, weaknesses
+- Recommendations
 
 Document content (possibly truncated):
 
