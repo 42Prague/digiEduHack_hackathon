@@ -3,7 +3,9 @@ import mammoth
 import markdown
 import requests
 from bs4 import BeautifulSoup
+import openpyxl
 from .audio_transcription import transcribe_audio
+
 
 
 def convert_to_text(input_path):
@@ -47,6 +49,16 @@ def convert_to_text(input_path):
         # Call your transcription function with the uploaded URL
         text = transcribe_audio(audio_url)
         print(text)
+    elif ext == "xlsx":
+        wb = openpyxl.load_workbook(input_path, data_only=True)
+        out = []
+        for sheet in wb.sheetnames:
+            ws = wb[sheet]
+            out.append(f"\n=== Sheet: {sheet} ===\n")
+            for row in ws.iter_rows(values_only=True):
+                row_text = "\t".join("" if v is None else str(v) for v in row)
+                out.append(row_text)
+        text = "\n".join(out)
 
     else:
         raise ValueError("Unsupported file type. Use PDF, DOCX, MD, or MP3.")

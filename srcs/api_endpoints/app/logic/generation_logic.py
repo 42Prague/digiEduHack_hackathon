@@ -49,4 +49,42 @@ def generate_answer(question: str, context_chunks: List[str]) -> str:
 
     return response.choices[0].message.content
 
+def build_data_prompt(question: str, context_chunks: List[str]) -> (str, str):
+    context_text = "\n\n---\n\n".join(context_chunks)
+    system_text = (
+        "You are a data-generation assistant. "
+        "Using ONLY the provided context, generate a dataset formatted STRICTLY as JSON. "
+        "The JSON must contain a list of objects, each representing a row. "
+        "Do not add explanations, comments, or extra text. "
+        "If data cannot be extracted, return exactly: []"
+    )
+
+    user_text = f"Context:\n{context_text}\n\nQuestion: {question}\n\nReturn ONLY valid JSON:"
+    return system_text, user_text
+
+
+def generate_structured_data(question: str, context_chunks: List[str]):
+    system_text, user_text = build_data_prompt(question, context_chunks)
+
+    response = client.chat.completions.create(
+        model=MODEL_NAME,
+        messages=[
+            {"role": "system", "content": system_text},
+            {"role": "user", "content": user_text},
+        ],
+        max_tokens=500,
+        temperature=0.0,
+    )
+
+    raw = response.choices[0].message.content.strip()
+
+    # Parse JSON safely
+    import json
+    try:
+        data = json.loads(raw)
+        if isinstance(data, list):
+            return data
+        return []
+    except json.JSONDecodeError:
+        return []
 
