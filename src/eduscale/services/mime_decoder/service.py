@@ -25,6 +25,62 @@ from eduscale.core.config import settings
 # Configure structured logging for Cloud Logging
 logger = logging.getLogger(__name__)
 
+# In-memory cache for deduplicating events by generation
+# Key: (bucket, object_name, generation) -> Value: timestamp
+# This prevents processing the same file version multiple times
+# Note: This cache is per-instance. For multi-instance deployments,
+# consider using Redis or Firestore for distributed deduplication.
+_processed_events_cache: Dict[tuple, float] = {}
+_CACHE_TTL_SECONDS = 3600  # 1 hour cache TTL
+
+
+def _is_event_already_processed(bucket: str, object_name: str, generation: str | None) -> bool:
+    """
+    Check if an event with the same generation has already been processed.
+
+    This prevents duplicate processing when GCS sends multiple finalized events
+    for the same file (e.g., during chunk upload of large files).
+
+    Args:
+        bucket: Cloud Storage bucket name
+        object_name: Object path in bucket
+        generation: Object generation ID (unique per file version)
+
+    Returns:
+        True if event was already processed, False otherwise
+    """
+    if not generation:
+        # If no generation ID, cannot deduplicate - process anyway
+        return False
+
+    current_time = time.time()
+    cache_key = (bucket, object_name, generation)
+
+    # Clean up expired cache entries
+    expired_keys = [
+        key for key, timestamp in _processed_events_cache.items()
+        if current_time - timestamp > _CACHE_TTL_SECONDS
+    ]
+    for key in expired_keys:
+        del _processed_events_cache[key]
+
+    # Check if already processed
+    if cache_key in _processed_events_cache:
+        logger.info(
+            "Event already processed (duplicate), skipping",
+            extra={
+                "bucket": bucket,
+                "object_name": object_name,
+                "generation": generation,
+                "first_processed_at": _processed_events_cache[cache_key],
+            }
+        )
+        return True
+
+    # Mark as processed
+    _processed_events_cache[cache_key] = current_time
+    return False
+
 
 def _convert_gcs_notification_to_cloud_event(gcs_data: Dict[str, Any]) -> CloudEvent:
     """
@@ -375,9 +431,27 @@ async def process_cloud_event(event_data: Dict[str, Any]) -> Dict[str, Any]:
                 "object_name": cloud_event.data.name,
                 "content_type": cloud_event.data.contentType,
                 "size_bytes": cloud_event.data.size,
+                "generation": cloud_event.data.generation,
                 "timestamp": cloud_event.time.isoformat(),
             },
         )
+
+        # Check for duplicate events (same generation already processed)
+        if _is_event_already_processed(
+            bucket=cloud_event.data.bucket,
+            object_name=cloud_event.data.name,
+            generation=cloud_event.data.generation
+        ):
+            processing_time_ms = int((time.time() - start_time) * 1000)
+            return {
+                "status": "skipped",
+                "reason": "duplicate_event",
+                "event_id": cloud_event.id,
+                "object_name": cloud_event.data.name,
+                "generation": cloud_event.data.generation,
+                "processing_time_ms": processing_time_ms,
+                "message": "Event already processed (duplicate generation)",
+            }
 
         # Classify file type
         file_category = classify_mime_type(cloud_event.data.contentType)
