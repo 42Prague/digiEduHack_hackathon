@@ -41,12 +41,15 @@ export class RegionCreateComponent {
 			contactEmail: this.contactEmail?.trim() || undefined,
 			contactPhone: this.contactPhone?.trim() || undefined
 		}).subscribe({
-			next: (created: Region) => {
+			next: () => {
 				this.isSaving = false;
-				void this.router.navigate(['/regions', created.id]);
+				void this.router.navigate(['/regions']);
 			},
 			error: () => {
 				this.error = 'Failed to create region';
+				// Best-effort console visibility for debugging
+				// eslint-disable-next-line no-console
+				console.error('Region creation failed');
 				this.isSaving = false;
 			}
 		});

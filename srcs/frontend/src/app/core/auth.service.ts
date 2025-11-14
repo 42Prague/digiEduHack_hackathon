@@ -32,9 +32,9 @@ export class AuthService {
 		};
 	}
 
-	public login(params: { email: string; name: string; surname: string; accessLevel: AccessLevel; regionId?: string; schoolId?: string }): void {
+	public login(params: { id?: string; email: string; name: string; surname: string; accessLevel: AccessLevel; regionId?: string; schoolId?: string }): void {
 		const user: User = {
-			id: crypto.randomUUID(),
+			id: params.id ?? crypto.randomUUID(),
 			email: params.email,
 			name: params.name,
 			surname: params.surname,

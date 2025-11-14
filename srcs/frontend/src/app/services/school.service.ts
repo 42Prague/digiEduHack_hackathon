@@ -1,42 +1,53 @@
 import { Injectable } from '@angular/core';
-import { Observable, of } from 'rxjs';
+import { HttpClient } from '@angular/common/http';
+import { map, Observable, of } from 'rxjs';
 import { School } from '../models/school';
 
 @Injectable({ providedIn: 'root' })
 export class SchoolService {
 	// #region Private Properties
-	private readonly schools: School[] = [
-		{ id: 's-1', regionId: 'r-1', name: 'North High', address: '1 Elm St', headmasterName: 'Alice Brown' },
-		{ id: 's-2', regionId: 'r-1', name: 'North Prep', address: '2 Oak St', headmasterName: 'Bob Clark' },
-		{ id: 's-3', regionId: 'r-2', name: 'South Academy', address: '3 Pine St', headmasterName: 'Chloe Davis' }
-	];
+	private readonly apiBase: string = '/api/schools';
 	// #endregion
 
 	// #region Public Methods
+	public constructor(private readonly http: HttpClient) {}
+
 	public list(regionId?: string): Observable<School[]> {
-		const list = regionId ? this.schools.filter(s => s.regionId === regionId) : this.schools;
-		return of(list);
+		return this.http.get<unknown[]>(this.apiBase).pipe(
+			map((items: unknown[]) => items.map((i: unknown) => this.mapApiSchool(i))),
+			map((schools: School[]) => regionId ? schools.filter(s => s.regionId === regionId) : schools)
+		);
 	}
 
 	public getById(id: string): Observable<School | undefined> {
-		return of(this.schools.find(s => s.id === id));
+		return this.http.get<unknown>(`${this.apiBase}/${encodeURIComponent(id)}`).pipe(
+			map((i: unknown) => this.mapApiSchool(i))
+		);
 	}
 
 	public create(payload: Omit<School, 'id'>): Observable<School> {
-		const created: School = {
-			id: `s-${this.schools.length + 1}`,
-			...payload
-		};
-		this.schools.push(created);
-		return of(created);
+		// Not supported by backend yet
+		return of({ ...payload, id: '' } as School);
 	}
 
 	public update(id: string, update: Partial<School>): Observable<School | undefined> {
-		const idx = this.schools.findIndex(s => s.id === id);
-		if (idx === -1) return of(undefined);
-		const updated: School = { ...this.schools[idx], ...update, id };
-		this.schools[idx] = updated;
-		return of(updated);
+		// Not supported by backend yet
+		return of(undefined);
+	}
+	// #endregion
+
+	// #region Private Methods
+	private mapApiSchool(raw: unknown): School {
+		const o = raw as Record<string, unknown>;
+		return {
+			id: String(o['id'] ?? ''),
+			regionId: String(o['region'] ?? ''),
+			name: String(o['name'] ?? ''),
+			address: String(o['address'] ?? ''),
+			headmasterName: undefined,
+			contactEmail: undefined,
+			contactPhone: undefined
+		};
 	}
 	// #endregion
 }
