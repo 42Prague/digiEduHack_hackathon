@@ -1,7 +1,3 @@
-import os
-
-from fastapi.staticfiles import StaticFiles
-from pathlib import Path
 
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
@@ -23,9 +19,6 @@ app.include_router(chat.router)
 app.include_router(regions.router)
 app.include_router(schools.router)
 app.include_router(files.router)
-
-static_path = os.path.join(os.path.dirname(__file__), "static")
-app.mount("/static", StaticFiles(directory=static_path), name="static")
 
 @app.on_event("startup")
 def on_startup():

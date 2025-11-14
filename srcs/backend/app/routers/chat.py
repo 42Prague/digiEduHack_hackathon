@@ -36,9 +36,3 @@ async def websocket_endpoint(websocket: WebSocket):
 
     except WebSocketDisconnect:
         pass
-
-@router.get("/file")
-async def add_file():
-    file_path = "/app/app/static/student1.txt"
-    # file_path = "/app/src/static/test.docx"
-    rag.add_document(file_path)

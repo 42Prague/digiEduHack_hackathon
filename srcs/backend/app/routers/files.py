@@ -3,6 +3,7 @@ from fastapi import APIRouter, Depends, HTTPException
 from sqlmodel import Session, select, SQLModel
 from ..db import get_session
 from ..models import FileMeta, School
+from ..chat.RAG import RAG
 
 router = APIRouter(prefix="/files", tags=["files"])
 
@@ -31,6 +32,10 @@ def create_file(
     session.add(file_meta)
     session.commit()
     session.refresh(file_meta)
+
+    rag = RAG()
+    rag.add_document(f"/data/uploads/{payload.tus_id}", payload.filename)
+
     return file_meta
 
 

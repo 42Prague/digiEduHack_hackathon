@@ -16,3 +16,4 @@ unstructured
 python-docx
 uvicorn[standard]
 sqlmodel
+unstructured[all-docs]

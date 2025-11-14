@@ -1,10 +1,12 @@
 import os
 from dataclasses import dataclass
+from pathlib import Path
 
 import anyio
 import chromadb
 from langchain.agents import create_agent
-from langchain_community.document_loaders import UnstructuredWordDocumentLoader
+from langchain_community.document_loaders import UnstructuredWordDocumentLoader, UnstructuredPDFLoader, \
+    UnstructuredExcelLoader, UnstructuredMarkdownLoader, TextLoader, UnstructuredFileLoader
 from langchain_ollama import ChatOllama
 from langchain_ollama import OllamaEmbeddings
 from langchain_text_splitters import RecursiveCharacterTextSplitter
@@ -36,22 +38,40 @@ class RAG:
         self.vector_store = Chroma(
             collection_name="example_collection",
             embedding_function=self.embeddings,
-            persist_directory="/app/src/chromdb_dir"
-
-            # client=chromadb.HttpClient(host="http://localhost:8000"),
-            # client_settings=chromadb.Settings(chroma_api_impl="chromadb.api.fastapi.FastAPI")
+            client=chromadb.HttpClient(host="http://chromadb:8000"),
+            client_settings=chromadb.Settings(chroma_api_impl="chromadb.api.fastapi.FastAPI")
         )
-        # self.vector_store = Chroma(
-        #     collection_name="example_collection",
-        #     embedding_function=self.embeddings,
-        #     persist_directory="./chroma_langchain_db",  # Where to save data locally, remove if not necessary
-        # )
         print(f"Current documents in ChromaDb: # {self.vector_store._collection.count()}")
 
-    def add_document(self, path: str):
-        loader = UnstructuredWordDocumentLoader(file_path=path)
-        docs = loader.load()
+    def load_any_document(self, path: str, filename: str):
+        ext = Path(filename).suffix.lower()
+        print(f"Loading {ext} from {path}")
+
+        loader_map = {
+            ".pdf": UnstructuredPDFLoader,
+            ".docx": UnstructuredWordDocumentLoader,
+            ".doc": UnstructuredWordDocumentLoader,
+            ".xlsx": UnstructuredExcelLoader,
+            ".xls": UnstructuredExcelLoader,
+            ".md": UnstructuredMarkdownLoader,
+            ".txt": TextLoader,
+        }
+
+        loader_cls = loader_map.get(ext)
+        if loader_cls is None:
+            return None
+
+        loader = loader_cls(path)
+        return loader.load()
+
+    def add_document(self, path: str, filename: str):
+        print(f"Adding document: {path}")
+        docs = self.load_any_document(path, filename)
+        if docs is None:
+            print("Error, not supported file type")
+            return None
         assert len(docs) == 1
+        print(docs[0].metadata)
         print(f"Total characters: {len(docs[0].page_content)}")
 
         text_splitter = RecursiveCharacterTextSplitter(
