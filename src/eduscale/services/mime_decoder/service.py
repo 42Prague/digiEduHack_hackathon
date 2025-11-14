@@ -412,48 +412,90 @@ async def process_cloud_event(event_data: Dict[str, Any]) -> Dict[str, Any]:
             return await process_archive(cloud_event, processing_req)
 
         # Call Transformer service for non-archive files
-        transformer_response = await call_transformer(
-            request=processing_req,
-            transformer_url=settings.TRANSFORMER_SERVICE_URL,
-            timeout=settings.REQUEST_TIMEOUT
-        )
-        
-        # Fire-and-forget Backend status update (don't await)
-        asyncio.create_task(
-            update_backend_status(
-                file_id=processing_req.file_id,
-                region_id=processing_req.region_id,
-                status="PROCESSING",
-                backend_url=settings.BACKEND_SERVICE_URL,
-                timeout=settings.BACKEND_UPDATE_TIMEOUT
+        try:
+            transformer_response = await call_transformer(
+                request=processing_req,
+                transformer_url=settings.TRANSFORMER_SERVICE_URL,
+                timeout=settings.REQUEST_TIMEOUT
             )
-        )
-        
-        # Calculate processing time
-        processing_time_ms = int((time.time() - start_time) * 1000)
-        
-        logger.info(
-            "Event processed successfully",
-            extra={
+
+            # Fire-and-forget Backend status update (don't await)
+            asyncio.create_task(
+                update_backend_status(
+                    file_id=processing_req.file_id,
+                    region_id=processing_req.region_id,
+                    status="PROCESSING",
+                    backend_url=settings.BACKEND_SERVICE_URL,
+                    timeout=settings.BACKEND_UPDATE_TIMEOUT
+                )
+            )
+
+            # Calculate processing time
+            processing_time_ms = int((time.time() - start_time) * 1000)
+
+            logger.info(
+                "Event processed successfully",
+                extra={
+                    "event_id": cloud_event.id,
+                    "file_id": processing_req.file_id,
+                    "region_id": processing_req.region_id,
+                    "processing_time_ms": processing_time_ms,
+                    "transformer_status": transformer_response.get("status"),
+                    "outcome": "success"
+                }
+            )
+
+            return {
+                "status": "success",
                 "event_id": cloud_event.id,
                 "file_id": processing_req.file_id,
                 "region_id": processing_req.region_id,
+                "file_category": file_category.value,
                 "processing_time_ms": processing_time_ms,
                 "transformer_status": transformer_response.get("status"),
-                "outcome": "success"
+                "message": "Event processed successfully",
             }
-        )
 
-        return {
-            "status": "success",
-            "event_id": cloud_event.id,
-            "file_id": processing_req.file_id,
-            "region_id": processing_req.region_id,
-            "file_category": file_category.value,
-            "processing_time_ms": processing_time_ms,
-            "transformer_status": transformer_response.get("status"),
-            "message": "Event processed successfully",
-        }
+        except Exception as transformer_error:
+            # Transformer service failed - log error and return success to prevent Eventarc retry
+            processing_time_ms = int((time.time() - start_time) * 1000)
+
+            logger.error(
+                "Transformer service failed - returning success to prevent retry",
+                extra={
+                    "event_id": cloud_event.id,
+                    "file_id": processing_req.file_id,
+                    "region_id": processing_req.region_id,
+                    "file_category": file_category.value,
+                    "processing_time_ms": processing_time_ms,
+                    "error": str(transformer_error),
+                    "error_type": type(transformer_error).__name__,
+                    "outcome": "failed"
+                },
+                exc_info=True,
+            )
+
+            # Fire-and-forget Backend status update with FAILED status
+            asyncio.create_task(
+                update_backend_status(
+                    file_id=processing_req.file_id,
+                    region_id=processing_req.region_id,
+                    status="FAILED",
+                    backend_url=settings.BACKEND_SERVICE_URL,
+                    timeout=settings.BACKEND_UPDATE_TIMEOUT
+                )
+            )
+
+            return {
+                "status": "failed",
+                "event_id": cloud_event.id,
+                "file_id": processing_req.file_id,
+                "region_id": processing_req.region_id,
+                "file_category": file_category.value,
+                "processing_time_ms": processing_time_ms,
+                "error": str(transformer_error),
+                "message": "Transformer service failed - event will not be retried",
+            }
 
     except FileSkippedException as e:
         # File is outside the expected directory - return success without processing
