@@ -210,29 +210,30 @@ async def process_archive(
                 )
                 files_uploaded += 1
                 
+                # Classify extracted file
+                file_category = classify_mime_type(extracted_file.mime_type)
+                
                 logger.info(
                     "Processing extracted file",
                     extra={
                         "event_id": cloud_event.id,
-                        "filename": extracted_file.filename,
+                        "file_name": extracted_file.filename,
                         "mime_type": extracted_file.mime_type,
+                        "file_category": file_category.value,
                         "size_bytes": extracted_file.size_bytes
                     }
                 )
                 
-                # Classify extracted file
-                file_category = classify_mime_type(extracted_file.mime_type)
-                
-                # Skip nested archives (no recursive extraction)
+                # Don't recursively extract nested archives, but still process them
                 if file_category.value == "archive":
                     logger.info(
-                        "Skipping nested archive",
+                        "Found nested archive (will process but not extract)",
                         extra={
                             "event_id": cloud_event.id,
-                            "filename": extracted_file.filename
+                            "file_name": extracted_file.filename
                         }
                     )
-                    continue
+                    # Don't continue - let it be processed by Transformer
                 
                 # Create processing request for extracted file
                 extracted_processing_req = ProcessingRequest(
