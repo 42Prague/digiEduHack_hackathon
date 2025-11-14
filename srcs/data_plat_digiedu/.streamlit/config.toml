@@ -1,0 +1,13 @@
+[server]
+fileWatcherType = "poll"
+runOnSave = true
+
+[runner]
+fastReruns = true
+
+[browser]
+gatherUsageStats = false
+
+[client]
+showErrorDetails = true
+
