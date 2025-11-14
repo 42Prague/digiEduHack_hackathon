@@ -2,8 +2,6 @@ apiVersion: serving.knative.dev/v1
 kind: Service
 metadata:
   name: transformer
-  annotations:
-    run.googleapis.com/ingress: internal
 spec:
   template:
     metadata:
