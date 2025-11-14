@@ -16,17 +16,18 @@
                 <span>EduZměna</span>
             </a>
             <ul class="nav-links">
-                <li><a href="index.html" class="nav-link" data-id="home">Home</a></li>
+                <li><a href="index.html" class="nav-link" data-id="home">Přehled</a></li>
                 <li><a href="components/chatbot/chatbot.html" class="nav-link" data-id="chatbot">Chatbot</a></li>
-                <li><a href="components/file-upload/src/pages/upload.html" class="nav-link" data-id="upload">File Upload</a></li>
-                <li><a href="components/file-upload/src/pages/admin.html" class="nav-link" data-id="admin">Admin</a></li>
+                <li><a href="components/file-upload/src/pages/upload.html" class="nav-link" data-id="upload">Nahrát soubory</a></li>
+                <li><a href="components/file-upload/src/pages/admin.html" class="nav-link" data-id="admin">Administrace</a></li>
+                <li><a href="http://localhost:3000" class="nav-link" data-id="reporting" target="_blank">Reporting</a></li>
             </ul>
         </div>
     </nav>
     
     <div class="admin-container">
         <div class="admin-header">
-            <h1>Admin Panel - Schools & Regions</h1>
+            <h1>Administrace - Školy a regiony</h1>
         </div>
 
         <div id="alert-container"></div>
@@ -34,13 +35,13 @@
         <div class="admin-grid">
             <!-- Regions Section -->
             <div class="admin-section">
-                <h2>Regions</h2>
+                <h2>Regiony</h2>
                 <form id="region-form">
                     <div class="form-group">
-                        <label for="region-name">Region Name</label>
-                        <input type="text" id="region-name" required placeholder="Enter region name">
+                        <label for="region-name">Název regionu</label>
+                        <input type="text" id="region-name" required placeholder="Zadejte název regionu">
                     </div>
-                    <button type="submit" class="btn btn-primary">Add Region</button>
+                    <button type="submit" class="btn btn-primary">Přidat region</button>
                 </form>
                 <div class="admin-section-divider" aria-hidden="true"></div>
                 <div id="regions-list" style="margin-top: 1.5rem;"></div>
@@ -48,25 +49,25 @@
 
             <!-- Schools Section -->
             <div class="admin-section">
-                <h2>Schools</h2>
+                <h2>Školy</h2>
                 <form id="school-form">
                     <div class="form-group">
-                        <label for="school-name">School Name</label>
-                        <input type="text" id="school-name" required placeholder="Enter school name">
+                        <label for="school-name">Název školy</label>
+                        <input type="text" id="school-name" required placeholder="Zadejte název školy">
                     </div>
                     <div class="form-group">
-                        <label for="school-region">Region</label>
+                        <label for="school-region">Regiony</label>
                         <select id="school-region" required>
-                            <option value="">Select a region</option>
+                            <option value="">Vyberte region</option>
                         </select>
                     </div>
-                    <button type="submit" class="btn btn-primary">Add School</button>
+                    <button type="submit" class="btn btn-primary">Přidat školu</button>
                 </form>
                 <div class="admin-section-divider" aria-hidden="true"></div>
                 <div class="form-group" style="max-width: 260px;">
-                    <label for="schools-region-filter">Filter by region</label>
+                    <label for="schools-region-filter">Filtrovat podle regionu</label>
                     <select id="schools-region-filter">
-                        <option value="">All regions</option>
+                        <option value="">Všechny regiony</option>
                     </select>
                 </div>
                 <div id="schools-list" style="margin-top: 1.5rem;"></div>
@@ -75,46 +76,46 @@
             <!-- Files Section -->
             <div class="admin-section" style="grid-column: 1 / -1;">
                 <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
-                    <h2 style="margin: 0;">Uploaded Files</h2>
-                    <button onclick="refreshFiles()" class="btn btn-secondary">Refresh</button>
+                    <h2 style="margin: 0;">Nahrávané soubory</h2>
+                    <button onclick="refreshFiles()" class="btn btn-secondary">Obnovit</button>
                 </div>
                 <div class="form-group" style="display: flex; flex-wrap: wrap; gap: 1rem; margin-bottom: 1.5rem;">
                     <div style="flex: 1; min-width: 220px;">
-                        <label for="files-region-filter">Filter by region</label>
+                        <label for="files-region-filter">Filtrovat podle regionu</label>
                         <select id="files-region-filter">
-                            <option value="">All regions</option>
+                            <option value="">Všechny regiony</option>
                         </select>
                     </div>
                     <div style="flex: 1; min-width: 220px;">
-                        <label for="files-school-filter">Filter by school</label>
+                        <label for="files-school-filter">Filtrovat podle školy</label>
                         <select id="files-school-filter">
-                            <option value="">All schools</option>
+                            <option value="">Všechny školy</option>
                         </select>
                     </div>
                     <div style="flex: 1; min-width: 220px;">
-                        <label for="files-doc-type-filter">Filter by document type</label>
+                        <label for="files-doc-type-filter">Filtrovat podle typu dokumentu</label>
                         <select id="files-doc-type-filter">
-                            <option value="">All document types</option>
+                            <option value="">Všechny typy dokumentů</option>
                         </select>
                     </div>
                     <div style="flex: 1; min-width: 220px;">
-                        <label for="files-format-filter">Filter by document format</label>
+                        <label for="files-format-filter">Filtrovat podle formátu dokumentu</label>
                         <select id="files-format-filter">
-                            <option value="">All formats</option>
+                            <option value="">Všechny formáty</option>
                         </select>
                     </div>
                     <div style="flex: 1; min-width: 220px;">
-                        <label for="files-status-filter">Filter by status</label>
+                        <label for="files-status-filter">Filtrovat podle stavu</label>
                         <select id="files-status-filter">
-                            <option value="">All statuses</option>
-                            <option value="pending">Pending</option>
-                            <option value="processing">Processing</option>
-                            <option value="done">Done</option>
-                            <option value="failed">Failed</option>
+                            <option value="">Všechny stavy</option>
+                            <option value="pending">Čeká na zpracování</option>
+                            <option value="processing">Zpracovávání</option>
+                            <option value="done">Dokončeno</option>
+                            <option value="failed">Selhalo</option>
                         </select>
                     </div>
                     <div style="width: 160px; min-width: 140px;">
-                        <label for="files-page-size">Items per page</label>
+                        <label for="files-page-size">Počet souborů</label>
                         <select id="files-page-size">
                             <option value="10">10</option>
                             <option value="20">20</option>

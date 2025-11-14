@@ -69,7 +69,7 @@ function populateRegions() {
     const regionSelect = document.getElementById('region')
     if (!regionSelect) return
 
-    regionSelect.innerHTML = '<option value="">Select a region</option>'
+    regionSelect.innerHTML = '<option value="">Vyberte region</option>'
 
     regions.forEach(region => {
         const option = document.createElement('option')
@@ -88,7 +88,7 @@ function populateSchools(regionId = null) {
     if (!schoolSelect) return
 
     const currentSchoolId = schoolSelect.value // Preserve current selection if possible
-    schoolSelect.innerHTML = '<option value="">Select a school</option>'
+    schoolSelect.innerHTML = '<option value="">Vyberte školu</option>'
 
     const filteredSchools = regionId
         ? schools.filter(s => String(s.region_id) === String(regionId))

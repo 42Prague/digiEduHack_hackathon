@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>EduZměna - Home</title>
+    <title>EduZměna - Přehled</title>
     <base href="./" />
     <link rel="icon" type="image/png" href="icon.png">
     <link rel="stylesheet" href="css/global.css">
@@ -17,10 +17,11 @@
                 <span>EduZměna</span>
             </a>
             <ul class="nav-links">
-                <li><a href="index.html" class="nav-link" data-id="home">Home</a></li>
+                <li><a href="index.html" class="nav-link" data-id="home">Přehled</a></li>
                 <li><a href="components/chatbot/chatbot.html" class="nav-link" data-id="chatbot">Chatbot</a></li>
-                <li><a href="components/file-upload/src/pages/upload.html" class="nav-link" data-id="upload">File Upload</a></li>
-                <li><a href="components/file-upload/src/pages/admin.html" class="nav-link" data-id="admin">Admin</a></li>
+                <li><a href="components/file-upload/src/pages/upload.html" class="nav-link" data-id="upload">Nahrát soubory</a></li>
+                <li><a href="components/file-upload/src/pages/admin.html" class="nav-link" data-id="admin">Administrace</a></li>
+                <li><a href="http://localhost:3000" class="nav-link" data-id="reporting" target="_blank">Reporting</a></li>
             </ul>
         </div>
     </nav>
@@ -29,28 +30,35 @@
         <div class="landing-hero">
             <img src="icon.png" alt="EduZměna logo" class="landing-hero-logo">
             <h1>EduZměna</h1>
-            <p>Digital education platform with AI chatbot, file management, and administrative tools.</p>
+            <p>Nakopněte změnu</p>
         </div>
 
         <div class="landing-cards">
             <a href="components/chatbot/chatbot.html" class="landing-card">
                 <div class="landing-card-icon">💬</div>
                 <h2>Chatbot</h2>
-                <p>Interact with our AI assistant powered by your custom model. Ask questions and get intelligent responses in real-time via WebSocket.</p>
+                <p>Dotazujte se na interní model</p>
                 <div class="landing-card-arrow">→</div>
             </a>
 
             <a href="components/file-upload/src/pages/upload.html" class="landing-card">
                 <div class="landing-card-icon">📤</div>
-                <h2>File Upload</h2>
-                <p>Upload and manage files using the TUS protocol. Organize files by region and school with drag-and-drop support.</p>
+                <h2>Nahrát soubory</h2>
+                <p>Nahrání vstupních dokumentů</p>
                 <div class="landing-card-arrow">→</div>
             </a>
 
             <a href="components/file-upload/src/pages/admin.html" class="landing-card">
                 <div class="landing-card-icon">⚙️</div>
-                <h2>Admin Panel</h2>
-                <p>Manage regions, schools, and view uploaded files. Configure your system settings and monitor file uploads.</p>
+                <h2>Administrace</h2>
+                <p>Správa regionů, škol a nahrávaných souborů</p>
+                <div class="landing-card-arrow">→</div>
+            </a>
+
+            <a href="http://localhost:3000" class="landing-card" target="_blank">
+                <div class="landing-card-icon">📊</div>
+                <h2>Reporting</h2>
+                <p>Lokální instance Metabase</p>
                 <div class="landing-card-arrow">→</div>
             </a>
         </div>
