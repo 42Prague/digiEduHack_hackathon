@@ -1,0 +1,9 @@
+{
+    "chart_type": "scatter",
+    "title": "Correlation between Satisfaction and Score Improvement",
+    "x": "satisfaction",
+    "y": "score_improvement",
+    "data": "FILL_WITH_AGGREGATED_DATA",
+    "instruction": "5. Compare the correlation between satisfaction and score_improvement.",
+    "generated_code": "\nimport pandas as pd\nimport numpy as np\n\n# Assuming df is the full dataset\ndf = pd.DataFrame(df)\n\n# Calculate the correlation between satisfaction and score_improvement\ncorrelation = df['satisfaction'].corr(df['score_improvement'])\n\n# Create a dictionary to store the data\ndata = {\n    'satisfaction': df['satisfaction'].tolist(),\n    'score_improvement': df['score_improvement'].tolist()\n}\n\n# Fill the 'data' field in the chart template\nchart_data = [\n    {\n        'x': x,\n        'y': y\n    } for x, y in zip(data['satisfaction'], data['score_improvement'])\n]\n\n# Print the chart data\nprint(chart_data)\n\n# Print the correlation\nprint(\"Correlation between satisfaction and score_improvement: \", correlation)\n"
+}
