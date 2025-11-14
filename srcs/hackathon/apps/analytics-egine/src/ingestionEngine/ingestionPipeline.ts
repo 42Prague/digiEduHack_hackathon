@@ -1,50 +1,29 @@
-import { geminiFlash} from "../models/google/geminiModels.js";
-import { createAgent, tool} from "langchain";
-import * as readline from "node:readline";
-import { MemorySaver } from "@langchain/langgraph";
 import * as z from 'zod';
+import { createAgent, tool } from "langchain";
+import { geminiFlash, geminiPro } from "../models/google/geminiModels.js";
+import {teacherProgramFeedbackSchema} from "../schemas/teacherProgramFeedbackSchema.js";
+import * as hub from "langchain/hub";
+import {connectToHackathlonDB, CLOUD_COLLECTION_NAME } from "@repo/mongo-connector";
 
 
 
-const rl = readline.createInterface({
-  input: process.stdin,
-  output: process.stdout
-})
-
-// const search = tool( async ({query}) => {
-//   return await jobSearch(query)}, {
-//   name: "jobSearch",
-//   description: "Search for job information.",
-//   schema: z.object({query: z.string().describe("The search query. Be very specific as the fields accepts sematic meaning.")})
-// })
+const sysPrompt = await hub.pull("edu-zmena-intervention-system-prompt")
+const textSysPrompt = await sysPrompt.invoke("");
 
 const agent = createAgent({
-  model: geminiFlash,
-  systemPrompt: "You are a joker, you always make fun from the user question and somehow you twist it and make fun of it.",
-  checkpointer: new MemorySaver(),
-  tools: [],
-})
+  model: geminiPro,
+  systemPrompt: textSysPrompt.toString(),
+  responseFormat: teacherProgramFeedbackSchema,
+});
 
-const config = {
-  configurable: { thread_id: 1},
-  context: { user_id: "1"},
-}
+const result = await agent.invoke({
+  messages: [
+    {
+      role: "user",
+      content: "some content",
+    },
+  ],
+});
 
+console.log(result.structuredResponse);
 
-function prompt() {
-  rl.question("Enter your question: ", async (input) => {
-    if (input.trim().toUpperCase() === "/Q") {
-      console.log("Quitting!");
-      rl.close();
-      return;
-    }
-    const aiOutput = await agent.invoke({
-      messages: [{role: "user", content: input}]
-    }, config)
-    console.log(aiOutput.messages);
-    prompt();
-  });
-}
-
-
-prompt();

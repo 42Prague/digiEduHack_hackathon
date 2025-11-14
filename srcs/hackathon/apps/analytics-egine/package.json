@@ -18,6 +18,7 @@
   "license": "ISC",
   "packageManager": "pnpm@10.13.1",
   "dependencies": {
+    "@google-cloud/storage": "^7.17.3",
     "@langchain/core": "^1.0.4",
     "@langchain/google-genai": "^1.0.0",
     "@langchain/langgraph": "^1.0.2",
@@ -25,6 +26,7 @@
     "@repo/mongo-connector": "workspace:*",
     "dotenv": "^17.2.3",
     "langchain": "^1.0.4",
+    "mime-types": "^3.0.1",
     "mongodb": "^7.0.0",
     "mongodb,": "link:@langchain/mongodb,",
     "zod": "^4.1.12"
@@ -32,6 +34,7 @@
   "devDependencies": {
     "@repo/eslint-config": "workspace:*",
     "@repo/typescript-config": "workspace:*",
+    "@types/mime-types": "^3.0.1",
     "@types/node": "^24.2.1",
     "eslint": "^9.31.0",
     "tsx": "^4.20.3",
