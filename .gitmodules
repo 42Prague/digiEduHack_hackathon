@@ -1,0 +1,3 @@
+[submodule "srcs/hackathon_digiedu"]
+	path = srcs/hackathon_digiedu
+	url = git@github.com:artogahr/digiEduHack_hackathon.git
