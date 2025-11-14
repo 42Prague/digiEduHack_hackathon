@@ -3,15 +3,19 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>EduZmena - Home</title>
+    <title>EduZměna - Home</title>
     <base href="./" />
+    <link rel="icon" type="image/png" href="icon.png">
     <link rel="stylesheet" href="css/global.css">
     <link rel="stylesheet" href="css/landing-page.css">
 </head>
 <body data-page="home">
     <nav class="nav">
         <div class="nav-container">
-            <a href="index.html" class="nav-brand">EduZmena</a>
+            <a href="index.html" class="nav-brand">
+                <img src="icon.png" alt="EduZměna logo" class="nav-brand-logo">
+                <span>EduZměna</span>
+            </a>
             <ul class="nav-links">
                 <li><a href="index.html" class="nav-link" data-id="home">Home</a></li>
                 <li><a href="components/chatbot/chatbot.html" class="nav-link" data-id="chatbot">Chatbot</a></li>
@@ -23,7 +27,8 @@
     
     <div class="container">
         <div class="landing-hero">
-            <h1>EduZmena</h1>
+            <img src="icon.png" alt="EduZměna logo" class="landing-hero-logo">
+            <h1>EduZměna</h1>
             <p>Digital education platform with AI chatbot, file management, and administrative tools.</p>
         </div>
 
@@ -52,4 +57,3 @@
     </div>
 </body>
 </html>
-

@@ -89,6 +89,15 @@ body {
     font-weight: 600;
     color: var(--color-text);
     text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    gap: var(--spacing-sm);
+}
+
+.nav-brand-logo {
+    width: 32px;
+    height: 32px;
+    object-fit: contain;
 }
 
 .nav-links {
@@ -425,4 +434,3 @@ body {
         justify-content: flex-end;
     }
 }
-

@@ -11,12 +11,19 @@
             color: var(--color-text);
         }
 
-        .landing-hero p {
-            font-size: var(--font-size-lg);
-            color: var(--color-muted);
-            max-width: 600px;
-            margin: 0 auto;
-        }
+.landing-hero p {
+    font-size: var(--font-size-lg);
+    color: var(--color-muted);
+    max-width: 600px;
+    margin: 0 auto;
+}
+
+.landing-hero-logo {
+    width: 72px;
+    height: 72px;
+    object-fit: contain;
+    margin-bottom: var(--spacing-md);
+}
 
         .landing-cards {
             display: grid;
