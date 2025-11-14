@@ -48,7 +48,19 @@ class DwhClient:
             f"bigquery_project={settings.bigquery_project}"
         )
         
-        self.client = bigquery.Client(project=self.project_id)
+        # Initialize client - if project_id is empty, let it auto-detect
+        self.client = bigquery.Client(project=self.project_id if self.project_id else None)
+        
+        # If project_id was empty, try to get it from the client
+        if not self.project_id:
+            try:
+                self.project_id = self.client.project
+                logger.info(f"Auto-detected BigQuery project: {self.project_id}")
+            except Exception as e:
+                logger.error(f"Failed to auto-detect BigQuery project: {e}")
+                raise ValueError(
+                    "BigQuery project ID is required. Set GCP_PROJECT_ID environment variable."
+                )
 
         logger.info(
             f"Initialized DwhClient: project={self.project_id}, "

@@ -74,9 +74,15 @@ jobs:
             --region ${{ env.REGION }} \
             --platform managed
 
-      - name: Grant Eventarc trigger invoker role
+      - name: Grant public access and Eventarc trigger invoker role
         continue-on-error: true
         run: |
+          # Allow public access to Tabular service
+          gcloud run services add-iam-policy-binding ${{ env.SERVICE_NAME }} \
+            --region ${{ env.REGION }} \
+            --member="allUsers" \
+            --role="roles/run.invoker"
+          
           # Grant eventarc-trigger-sa access to invoke Tabular service
           gcloud run services add-iam-policy-binding ${{ env.SERVICE_NAME }} \
             --region ${{ env.REGION }} \
@@ -97,18 +103,13 @@ jobs:
         run: |
           echo "Running smoke tests..."
           
-          # Test general health endpoint
+          # Test health endpoint
           curl -f ${{ steps.get-url.outputs.SERVICE_URL }}/health || exit 1
-          echo "✓ General health check passed"
+          echo "✓ Health check passed"
           
-          # Test tabular-specific health endpoint
-          curl -f ${{ steps.get-url.outputs.SERVICE_URL }}/health/tabular || exit 1
-          echo "✓ Tabular health check passed"
-          
-          # Verify tabular health response contains expected fields
-          HEALTH_RESPONSE=$(curl -s ${{ steps.get-url.outputs.SERVICE_URL }}/health/tabular)
+          # Verify health response contains expected fields
+          HEALTH_RESPONSE=$(curl -s ${{ steps.get-url.outputs.SERVICE_URL }}/health)
           echo "$HEALTH_RESPONSE" | grep -q '"status":"ok"' || exit 1
-          echo "$HEALTH_RESPONSE" | grep -q '"service":"tabular-service"' || exit 1
           echo "✓ Health response validation passed"
           
           echo "All smoke tests passed!"

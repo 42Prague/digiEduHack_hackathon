@@ -8,8 +8,8 @@ metadata:
   labels:
     cloud.googleapis.com/location: europe-west1
   annotations:
-    run.googleapis.com/ingress: internal
-    run.googleapis.com/ingress-status: internal
+    run.googleapis.com/ingress: all
+    run.googleapis.com/ingress-status: all
 spec:
   template:
     metadata:
@@ -34,11 +34,11 @@ spec:
       timeoutSeconds: 300
       
       # Service account with BigQuery, GCS, and Vertex AI permissions
-      serviceAccountName: tabular-service@PROJECT_ID.iam.gserviceaccount.com
+      serviceAccountName: tabular-service@jedouedu.iam.gserviceaccount.com
       
       containers:
       - name: tabular-service
-        image: gcr.io/PROJECT_ID/tabular-service:latest
+        image: gcr.io/jedouedu/tabular-service:latest
         
         ports:
         - name: http1
@@ -66,7 +66,7 @@ spec:
         
         # GCP Configuration
         - name: GCP_PROJECT_ID
-          value: "PROJECT_ID"
+          value: "jedouedu"
         
         - name: GCP_REGION
           value: "europe-west1"
@@ -76,7 +76,7 @@ spec:
           value: "gcs"
         
         - name: GCS_BUCKET_NAME
-          value: "PROJECT_ID-eduscale-uploads"
+          value: "jedouedu-eduscale-uploads"
         
         # BigQuery Configuration
         - name: BIGQUERY_DATASET_ID
@@ -86,7 +86,7 @@ spec:
           value: "jedouscale_staging"
         
         - name: CLEAN_LAYER_BASE_PATH
-          value: "gs://BUCKET_NAME/clean"
+          value: "gs://jedouedu-eduscale-uploads/clean"
         
         - name: CONCEPT_CATALOG_PATH
           value: "/app/config/concepts.yaml"
