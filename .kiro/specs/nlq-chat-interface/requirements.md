@@ -226,13 +226,14 @@ The interface operates within the existing FastAPI application on Google Cloud R
 #### Acceptance Criteria
 
 1. THE Schema Context SHALL match the actual BigQuery tables provisioned by Terraform:
-   - fact_assessment (date, region_id, school_name, student_id, student_name, subject, test_score, file_id, ingest_timestamp)
-   - fact_intervention (date, region_id, school_name, intervention_type, participants_count, file_id, ingest_timestamp)
-   - observations (file_id, region_id, observation_text, source_table_type, ingest_timestamp)
-   - dim_region (region_id, region_name, from_date, to_date)
-   - dim_school (school_name, region_id, from_date, to_date)
-   - dim_time (date, year, month, day, quarter, day_of_week)
-   - ingest_runs (file_id, region_id, status, step, error_message, created_at, updated_at)
+   - **fact_assessment** (9 columns): date, region_id, school_name, student_id, student_name, subject, test_score (FLOAT), file_id, ingest_timestamp (TIMESTAMP)
+   - **fact_intervention** (7 columns): date, region_id, school_name, intervention_type, participants_count (INTEGER), file_id, ingest_timestamp (TIMESTAMP)
+   - **observations** (12 columns): file_id, region_id, text_content (STRING, NOT observation_text!), detected_entities (JSON), sentiment_score (FLOAT64), original_content_type, audio_duration_ms (INT64), audio_confidence (FLOAT64), audio_language, page_count (INT64), source_table_type, ingest_timestamp (TIMESTAMP)
+   - **dim_region** (4 columns): region_id, region_name, from_date, to_date
+   - **dim_school** (4 columns): school_name, region_id, from_date, to_date
+   - **dim_time** (6 columns): date, year (INTEGER), month (INTEGER), day (INTEGER), quarter (INTEGER), day_of_week (INTEGER)
+   - **ingest_runs** (7 columns): file_id, region_id, status, step, error_message, created_at (TIMESTAMP), updated_at (TIMESTAMP)
+   - **observation_targets** (6 columns): observation_id, target_type, target_id, relevance_score (FLOAT64), confidence, ingest_timestamp (TIMESTAMP)
 2. THE Schema Context SHALL document partition keys: fact_assessment/fact_intervention partitioned by date, observations/ingest_runs partitioned by timestamp
 3. THE Schema Context SHALL document clustering keys: all fact tables clustered by region_id
 4. THE Schema Context SHALL include example JOIN patterns (e.g., fact_assessment JOIN dim_region ON region_id)

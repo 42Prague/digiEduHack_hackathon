@@ -209,63 +209,88 @@ Your role: Generate safe, read-only SQL queries based on user questions.
 
 Available Tables (dataset: {dataset_id}):
 
-1. fact_assessment
-   - region_id (STRING): Region identifier
-   - student_id (STRING): Student identifier  
-   - date (DATE): Assessment date
-   - subject (STRING): Academic subject (math, reading, etc.)
-   - test_score (FLOAT64): Score 0-100
-   - file_id (STRING): Source file identifier
-   Partitioned by: date
-   Clustered by: region_id
+**NOTE: This schema MUST match infra/terraform/bigquery.tf exactly!**
 
-2. fact_intervention
-   - region_id (STRING): Region identifier
-   - intervention_id (STRING): Intervention identifier
-   - intervention_type (STRING): Type of intervention
-   - start_date (DATE): Start date
-   - end_date (DATE): End date
-   - participants_count (INT64): Number of participants
-   Partitioned by: start_date
-   Clustered by: region_id
-
-3. fact_attendance
-   - region_id (STRING): Region identifier
+1. fact_assessment (9 columns)
+   - date (DATE, REQUIRED): Assessment date
+   - region_id (STRING, REQUIRED): Region identifier
+   - school_name (STRING): School name
    - student_id (STRING): Student identifier
-   - date (DATE): Attendance date
-   - status (STRING): present, absent, late
-   Partitioned by: date
+   - student_name (STRING): Student name
+   - subject (STRING): Academic subject (math, reading, etc.)
+   - test_score (FLOAT): Score 0-100 (NOTE: FLOAT, not FLOAT64!)
+   - file_id (STRING, REQUIRED): Source file identifier
+   - ingest_timestamp (TIMESTAMP, REQUIRED): When data was ingested
+   Partitioned by: date (DAY)
    Clustered by: region_id
 
-4. dim_region
-   - region_id (STRING): Primary key
+2. fact_intervention (7 columns)
+   - date (DATE, REQUIRED): Intervention date
+   - region_id (STRING, REQUIRED): Region identifier
+   - school_name (STRING): School name
+   - intervention_type (STRING): Type of intervention (training, coaching, etc.)
+   - participants_count (INTEGER): Number of participants (NOTE: INTEGER, not INT64!)
+   - file_id (STRING, REQUIRED): Source file identifier
+   - ingest_timestamp (TIMESTAMP, REQUIRED): When data was ingested
+   Partitioned by: date (DAY)
+   Clustered by: region_id
+
+3. observations (12 columns) - Contains unstructured text from PDFs, audio, feedback
+   - file_id (STRING, REQUIRED): Source file identifier
+   - region_id (STRING, REQUIRED): Region identifier
+   - text_content (STRING): Free-form text (NOTE: text_content, NOT observation_text!)
+   - detected_entities (JSON): Extracted entities as JSON (NOTE: JSON, not ARRAY<STRING>!)
+   - sentiment_score (FLOAT64): Sentiment -1.0 to +1.0
+   - original_content_type (STRING): MIME type (audio/mpeg, application/pdf, etc.)
+   - audio_duration_ms (INT64): Audio duration in milliseconds
+   - audio_confidence (FLOAT64): Speech-to-text confidence
+   - audio_language (STRING): Detected language (en-US, cs-CZ, etc.)
+   - page_count (INT64): Number of pages (for PDFs)
+   - source_table_type (STRING): Table type hint (FEEDBACK, OBSERVATION, etc.)
+   - ingest_timestamp (TIMESTAMP, REQUIRED): When data was ingested
+   Partitioned by: ingest_timestamp (DAY)
+   Clustered by: region_id
+
+4. observation_targets (6 columns) - Links observations to entities
+   - observation_id (STRING, REQUIRED): Observation ID (SHA256 of file_id)
+   - target_type (STRING, REQUIRED): Entity type (teacher, student, parent, subject, region, school)
+   - target_id (STRING, REQUIRED): Entity canonical ID
+   - relevance_score (FLOAT64): Relevance 0-1
+   - confidence (STRING): HIGH, MEDIUM, LOW
+   - ingest_timestamp (TIMESTAMP, REQUIRED): When data was ingested
+   Partitioned by: ingest_timestamp (DAY)
+   Clustered by: observation_id, target_type
+
+5. dim_region (4 columns)
+   - region_id (STRING, REQUIRED): Primary key
    - region_name (STRING): Display name
    - from_date (DATE): Valid from
    - to_date (DATE): Valid to
 
-5. dim_school
-   - school_name (STRING): Primary key
+6. dim_school (4 columns)
+   - school_name (STRING, REQUIRED): Primary key
    - region_id (STRING): Parent region
    - from_date (DATE): Valid from
    - to_date (DATE): Valid to
 
-6. dim_time
-   - date (DATE): Primary key
-   - year (INT64): Year
-   - month (INT64): Month (1-12)
-   - quarter (INT64): Quarter (1-4)
-   - day_of_week (INT64): Day of week (1=Sunday)
+7. dim_time (6 columns)
+   - date (DATE, REQUIRED): Primary key
+   - year (INTEGER): Year (NOTE: INTEGER, not INT64!)
+   - month (INTEGER): Month (1-12)
+   - day (INTEGER): Day of month (1-31)
+   - quarter (INTEGER): Quarter (1-4)
+   - day_of_week (INTEGER): Day of week (1-7)
 
-7. observations
-   - observation_id (STRING): Primary key
-   - region_id (STRING): Region identifier
-   - file_id (STRING): Source file
-   - text_content (STRING): Free-form text (PDF content, audio transcripts, feedback)
-   - detected_entities (ARRAY<STRING>): Extracted entity mentions
-   - sentiment_score (FLOAT64): -1.0 to +1.0
-   - created_at (TIMESTAMP): Creation timestamp
-   Partitioned by: created_at
-   Clustered by: region_id
+8. ingest_runs (7 columns) - Audit trail for ingestion pipeline
+   - file_id (STRING, REQUIRED): File identifier
+   - region_id (STRING, REQUIRED): Region identifier
+   - status (STRING, REQUIRED): SUCCESS, FAILED, RUNNING
+   - step (STRING): Current/failed step name
+   - error_message (STRING): Error details if failed
+   - created_at (TIMESTAMP, REQUIRED): Run start time
+   - updated_at (TIMESTAMP, REQUIRED): Last update time
+   Partitioned by: created_at (DAY)
+   Clustered by: region_id, status
 
 STRICT RULES:
 1. ONLY generate SELECT statements

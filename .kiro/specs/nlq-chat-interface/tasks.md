@@ -54,12 +54,14 @@ This plan breaks the NL→SQL Chat Interface project into incremental, testable 
   - Create `src/eduscale/nlq/schema_context.py`
   - Define `TableSchema` and `SchemaContext` dataclasses
   - **Document ACTUAL BigQuery tables from terraform/bigquery.tf**:
-    - **fact_assessment** (9 columns): date, region_id, school_name, student_id, student_name, subject, test_score (FLOAT, not FLOAT64!), file_id, ingest_timestamp
+    - **fact_assessment** (9 columns): date, region_id, school_name, student_id, student_name, subject, test_score (FLOAT!), file_id, ingest_timestamp
     - **fact_intervention** (7 columns): date, region_id, school_name, intervention_type, participants_count (INTEGER!), file_id, ingest_timestamp
-    - **observations** (5 columns): file_id, region_id, observation_text (not text_content!), source_table_type, ingest_timestamp
+    - **observations** (12 columns): file_id, region_id, text_content (STRING, NOT observation_text!), detected_entities (JSON), sentiment_score, original_content_type, audio_duration_ms, audio_confidence, audio_language, page_count, source_table_type, ingest_timestamp
+    - **observation_targets** (6 columns): observation_id, target_type, target_id, relevance_score, confidence, ingest_timestamp
     - **dim_region** (4 columns): region_id, region_name, from_date, to_date
     - **dim_school** (4 columns): school_name, region_id, from_date, to_date
-    - **dim_time** (6 columns): date, year, month, day, quarter, day_of_week
+    - **dim_time** (6 columns): date, year (INTEGER), month (INTEGER), day (INTEGER), quarter (INTEGER), day_of_week (INTEGER)
+    - **ingest_runs** (7 columns): file_id, region_id, status, step, error_message, created_at, updated_at
   - Include partition keys (date/ingest_timestamp) and clustering (region_id) in descriptions
   - Build system prompt template with schema context, safety rules, and JSON output format
   - Include 3-5 few-shot examples with REAL table names and columns
@@ -69,8 +71,10 @@ This plan breaks the NL→SQL Chat Interface project into incremental, testable 
   - _Requirements: 1.1-1.10, 11.1-11.10_
   - _Validation_: 
     - Call `get_system_prompt()` and verify it contains actual table names and columns
-    - Verify "observation_text" (not "text_content"), "participants_count INTEGER" (not INT64)
+    - Verify "text_content" (not "observation_text"), "participants_count INTEGER" (not INT64)
+    - Verify "test_score FLOAT" (not FLOAT64), "year INTEGER" (not INT64)
     - Verify dataset ID is "jedouscale_core" from settings
+    - Verify observations table has 12 columns (including audio_*, page_count, etc.)
 
 - [ ] **Task 2.2**: Implement LLM SQL Generation module (Using Featherless.ai!)
   - Create `src/eduscale/nlq/llm_sql.py`

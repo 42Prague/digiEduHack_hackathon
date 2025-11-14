@@ -46,6 +46,91 @@ class LLMClient:
             logger.error(f"Failed to initialize Featherless.ai LLM: {e}")
             raise
 
+    def _parse_json_response(self, response: str) -> list[dict[str, Any]]:
+        """Parse JSON response, handling incomplete/truncated responses.
+        
+        Args:
+            response: JSON string response from LLM (may be incomplete)
+            
+        Returns:
+            List of parsed entities
+            
+        This method tries to extract valid JSON objects from partial responses
+        by finding complete entities in the array.
+        """
+        # First, try normal parsing
+        try:
+            return json.loads(response)
+        except json.JSONDecodeError:
+            pass
+        
+        # If that fails, try to extract valid objects from partial JSON
+        response = response.strip()
+        
+        # Remove leading/trailing brackets if present
+        if response.startswith('['):
+            response = response[1:].strip()
+        if response.endswith(']'):
+            response = response[:-1].strip()
+        if response.endswith(','):
+            response = response[:-1].strip()
+        
+        # Try to find complete objects by parsing each potential object
+        entities = []
+        current_obj = ""
+        brace_count = 0
+        in_string = False
+        escape_next = False
+        
+        for char in response:
+            if escape_next:
+                current_obj += char
+                escape_next = False
+                continue
+                
+            if char == '\\':
+                current_obj += char
+                escape_next = True
+                continue
+                
+            if char == '"' and not escape_next:
+                in_string = not in_string
+                current_obj += char
+                continue
+                
+            if not in_string:
+                if char == '{':
+                    brace_count += 1
+                    current_obj += char
+                elif char == '}':
+                    brace_count -= 1
+                    current_obj += char
+                    if brace_count == 0:
+                        # Complete object found
+                        try:
+                            obj = json.loads(current_obj.strip().rstrip(','))
+                            if isinstance(obj, dict) and "text" in obj and "type" in obj:
+                                entities.append(obj)
+                        except json.JSONDecodeError:
+                            pass
+                        current_obj = ""
+                elif char == ',' and brace_count == 0:
+                    # Separator between objects, skip
+                    continue
+                else:
+                    current_obj += char
+            else:
+                current_obj += char
+        
+        # If we have any valid entities, return them
+        if entities:
+            logger.info(f"Extracted {len(entities)} entities from partial JSON response")
+            return entities
+        
+        # If nothing worked, return empty list
+        logger.warning(f"Could not parse JSON response, returning empty list. Response: {response[:200]}...")
+        return []
+
     def extract_entities(self, text: str) -> list[dict[str, str]]:
         """Extract named entities from text using LLM.
 
@@ -74,7 +159,7 @@ JSON:"""
         try:
             response = self._call_llm(prompt, max_tokens=200)
             # Try to parse JSON response
-            entities = json.loads(response.strip())
+            entities = self._parse_json_response(response.strip())
 
             if not isinstance(entities, list):
                 logger.warning(f"LLM returned non-list response: {response}")
@@ -91,9 +176,6 @@ JSON:"""
             logger.info(f"Extracted {len(valid_entities)} entities from text")
             return valid_entities
 
-        except json.JSONDecodeError as e:
-            logger.warning(f"Failed to parse LLM response as JSON: {e}, response: {response}")
-            return []
         except Exception as e:
             logger.error(f"Entity extraction failed: {e}")
             return []
