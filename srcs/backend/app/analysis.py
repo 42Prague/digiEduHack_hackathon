@@ -53,6 +53,18 @@ FEEDBACK_SCHEMA: FieldSchema = [
     ("open_feedback", "string"),
 ]
 
+SCHEMA_BY_TYPE: Dict[str, FieldSchema] = {
+    "attendance_checklist": ATTENDANCE_SCHEMA,
+    "feedback_form": FEEDBACK_SCHEMA,
+}
+
+STRUCTURED_FIELD_TYPES: Dict[str, FieldType] = {}
+for schema in SCHEMA_BY_TYPE.values():
+    for field, field_type in schema:
+        if field not in STRUCTURED_FIELD_TYPES:
+            STRUCTURED_FIELD_TYPES[field] = field_type
+VALID_ANALYSIS_TYPES = set(SCHEMA_BY_TYPE.keys()) | {"record"}
+
 def extract_text_from_file(path: str) -> str:
     # Very rough sketch, you can branch by extension
     if path.lower().endswith(".pdf"):
@@ -196,16 +208,6 @@ Document content (possibly truncated):
 \"\"\"{sample}\"\"\"
 """
 
-def _is_empty_value(value: Any) -> bool:
-    if value is None:
-        return True
-    if isinstance(value, str):
-        return value.strip() == ""
-    if isinstance(value, (list, dict)):
-        return len(value) == 0
-    return False
-
-
 def _clean_to_string(value: Any) -> Optional[str]:
     if value is None:
         return None
@@ -257,34 +259,31 @@ def _normalize_field_value(value: Any, field_type: FieldType) -> Optional[Any]:
     return _clean_to_string(value)
 
 
-def _extract_expected_fields(data: Dict[str, Any], schema: FieldSchema) -> Optional[Dict[str, Any]]:
-    payload: Dict[str, Any] = {}
+def _reset_structured_fields(file_meta: FileMeta) -> None:
+    for field_name in STRUCTURED_FIELD_TYPES.keys():
+        setattr(file_meta, field_name, None)
+
+
+def _apply_schema_to_model(file_meta: FileMeta, data: Dict[str, Any], schema: FieldSchema) -> None:
     for field, field_type in schema:
+        normalized = _normalize_field_value(data.get(field), field_type)
+        if normalized is not None:
+            setattr(file_meta, field, normalized)
+
+
+def _hydrate_common_fields(file_meta: FileMeta, data: Dict[str, Any]) -> None:
+    for field, field_type in STRUCTURED_FIELD_TYPES.items():
         if field not in data:
             continue
         normalized = _normalize_field_value(data[field], field_type)
         if normalized is not None:
-            payload[field] = normalized
-    return payload or None
-
-
-def _extract_record_payload(data: Dict[str, Any]) -> Optional[Dict[str, Any]]:
-    payload: Dict[str, Any] = {}
-    for key, value in data.items():
-        if key == "type":
-            continue
-        if _is_empty_value(value):
-            continue
-        payload[key] = value
-    return payload or None
+            setattr(file_meta, field, normalized)
 
 
 def apply_structured_metadata(file_meta: FileMeta, llm_json: Dict[str, Any]) -> None:
     file_meta.analysis_summary_text = None
     file_meta.analysis_type = None
-    file_meta.attendance_data = None
-    file_meta.feedback_data = None
-    file_meta.record_data = None
+    _reset_structured_fields(file_meta)
 
     if not isinstance(llm_json, dict):
         return
@@ -299,24 +298,19 @@ def apply_structured_metadata(file_meta: FileMeta, llm_json: Dict[str, Any]) -> 
         return
 
     declared_type = data.get("type") if isinstance(data.get("type"), str) else None
-    recognized_type = declared_type if declared_type in {"attendance_checklist", "feedback_form", "record"} else None
+    recognized_type = declared_type if declared_type in VALID_ANALYSIS_TYPES else None
 
-    if recognized_type == "attendance_checklist":
-        file_meta.attendance_data = _extract_expected_fields(data, ATTENDANCE_SCHEMA)
+    schema = SCHEMA_BY_TYPE.get(recognized_type or "")
+    if schema:
+        _apply_schema_to_model(file_meta, data, schema)
         file_meta.analysis_type = recognized_type
         return
 
-    if recognized_type == "feedback_form":
-        file_meta.feedback_data = _extract_expected_fields(data, FEEDBACK_SCHEMA)
+    _hydrate_common_fields(file_meta, data)
+    if recognized_type:
         file_meta.analysis_type = recognized_type
-        return
-
-    record_payload = _extract_record_payload(data)
-    if record_payload:
-        file_meta.record_data = record_payload
-        file_meta.analysis_type = recognized_type or "record"
-    elif recognized_type:
-        file_meta.analysis_type = recognized_type
+    elif data:
+        file_meta.analysis_type = "record"
 
 def analyze_file(
     session: Session,
