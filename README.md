@@ -1,6 +1,8 @@
 # **AI-Powered Educational Data Analysis Platform**
 ## **1. One-Sentence Description**
+
 An AI-powered analytics platform that ingests diverse educational data, understands it using LLMs, and transforms it into actionable insights to improve learning outcomes and operational efficiency.
+
 ----------
 ## **2. Technology Stack**
 ### **Languages**
@@ -75,7 +77,7 @@ In the srcs/hackaton folder run:
 -   gcloud CLI with docker containers
 
 ## **8. Known limitations**
-
+-   None
 
 
 
