@@ -13,6 +13,8 @@ services:
       - ollama_data:/root/.ollama
       - ./chat/docker-entrypoint.sh:/entrypoint.sh:ro
     entrypoint: ["/bin/sh", "/entrypoint.sh"]
+    networks:
+      - internal
     # Uncomment to request all GPUs on Linux with the NVIDIA Container Toolkit installed.
     # deploy:
     #   resources:
@@ -40,8 +42,8 @@ services:
       context: ./backend
     depends_on:
       - ollama
+      - chromadb
       - tusd
-    restart: unless-stopped
     ports:
       # match whatever your Uvicorn listens on inside the container
       # if you use `uvicorn app.main:app --port 8000`, then:
@@ -60,6 +62,8 @@ services:
       - TUSD_URL=http://tusd:1080
     volumes:
       - ./data:/data          # SQLite DB + any extra app data
+    networks:
+      - internal
 
   frontend:
     build:
@@ -72,6 +76,35 @@ services:
       - PORT=4173
     ports:
       - "4173:4173"
+
+  worker:
+    build:
+      context: ./backend
+    depends_on:
+      - ollama
+      - tusd
+    restart: unless-stopped
+    environment:
+      - OLLAMA_HOST=http://ollama:11434
+      # - OLLAMA_MODEL=${OLLAMA_MODEL:-deepseek-r1:1.5b}
+      - OLLAMA_MODEL=${OLLAMA_MODEL:-llama3.1:8b}
+      - DATABASE_URL=sqlite:////data/app.db
+      - BACKEND_TEST_PROMPT=${BACKEND_TEST_PROMPT:-Say hi from the backend container}
+    volumes:
+      - ./data:/data
+    command: ["python", "-m", "app.worker"]
+    networks:
+      - internal
+
+  chromadb: # Vector database
+    image: chromadb/chroma:latest
+    container_name: chromadb
+    ports:
+      - "9000:8000"
+    volumes:
+      - chromadb_data:/data
+    networks:
+      - internal
 
   metabase:
     image: metabase/metabase:latest
@@ -88,5 +121,11 @@ services:
 volumes:
   ollama_data:
     driver: local
+  chromadb_data:
   metabase_data:
     driver: local
+
+
+networks:
+  internal:
+    driver: bridge
