@@ -1,3 +1,6 @@
 [submodule "srcs/server/dependencies/drogon"]
 	path = srcs/server/dependencies/drogon
 	url = https://github.com/drogonframework/drogon.git
+[submodule "srcs/server/dependencies/libbcrypt2"]
+	path = srcs/server/dependencies/libbcrypt2
+	url = https://github.com/virtuosonic/libbcrypt.git

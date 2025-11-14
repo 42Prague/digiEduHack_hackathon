@@ -27,11 +27,13 @@ services:
     depends_on:
       - digiedu-db
     environment:
-      SERVER_HOST: digiedu-db
-      SERVER_DB: develop
-      SERVER_PORT: 5432
-      SERVER_USER: testuser
-      SERVER_PASSWORD: pleaseletmein
+      SERVER_DB_HOST: digiedu-db
+      SERVER_DB_DB: develop
+      SERVER_DB_PORT: 5432
+      SERVER_DB_USER: testuser
+      SERVER_DB_PASSWORD: pleaseletmein
+      SERVER_IP: 0.0.0.0
+      SERVER_PORT: 8080
   digiedu-agent:
     container_name: digiedu-agent
     build:

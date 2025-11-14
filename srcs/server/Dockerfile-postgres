@@ -2,6 +2,8 @@ FROM postgres:18.0
 
 # COPY ./src/main/resources/content /var/lib/postgresql/content
 
+COPY sql/init.sql /docker-entrypoint-initdb.d/
+
 # extensions
 # RUN echo "CREATE EXTENSION IF NOT EXISTS ltree;" > /docker-entrypoint-initdb.d/ltree_ext.sql
 # RUN echo "CREATE EXTENSION IF NOT EXISTS pg_trgm;" > /docker-entrypoint-initdb.d/pg_trgm_ext.sql
