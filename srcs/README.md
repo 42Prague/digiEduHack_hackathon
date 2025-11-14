@@ -1,4 +1,6 @@
+# DigiEduHack (2025) - It worked yesterday
 ## 1. One-sentence description
+A smart, all-in-one platform that uses AI to handle diverse data types—from processing and evaluation to storage and reporting.
 
 ## 2. Technology stack (languages, key libraries, AI models used)
 * Docker
@@ -75,7 +77,7 @@ ollama pull embeddinggemma     # embedding model (OLLAMA_EMBED_MODEL)
   * `POST/GET/PUT/DELETE /schools`
   * `POST/GET /files`
 
-### 🔄 Auto-reload during development
+### Auto-reload during development
 
 The Docker image now launches Uvicorn with `--reload`, so `docker compose up backend` will automatically restart the API when files under `app/` change. If you ever need a production-like run, override the command (e.g., `docker compose run backend uvicorn app.main:app --host 0.0.0.0 --port 8000`) to drop the reload flag.
 
@@ -95,7 +97,7 @@ Both `backend` and `tusd` access `/data` through a **shared bind mount**.
 
 ---
 
-# File persistence
+### File persistence
 
 Everything you upload or store survives container restarts because all data lives on your host:
 
@@ -109,7 +111,7 @@ Delete this folder to wipe all app data.
 
 ---
 
-# Environment variables
+### Environment variables
 
 You can override defaults using `.env` or via inline `docker compose`:
 
@@ -125,15 +127,15 @@ You can override defaults using `.env` or via inline `docker compose`:
 
 ---
 
-# Backend API Usage
+### Backend API Usage
 
-### List regions
+List regions
 
 ```bash
 curl http://localhost:8000/regions
 ```
 
-### Create a region
+Create a region
 
 ```bash
 curl -X POST http://localhost:8000/regions \
@@ -141,7 +143,7 @@ curl -X POST http://localhost:8000/regions \
      -d '{"name": "Hlavní město Praha"}'
 ```
 
-### Create a school in a region (FK)
+Create a school in a region (FK)
 
 ```bash
 curl -X POST http://localhost:8000/schools \
@@ -151,7 +153,7 @@ curl -X POST http://localhost:8000/schools \
 
 ---
 
-# File Upload Flow (tusd → backend)
+### File Upload Flow (tusd → backend)
 
 1. **Upload file to tusd**
 
@@ -172,7 +174,7 @@ The backend stores `tus_id`, `filename`, and school association.
 
 ---
 
-# Asking the LLM via Backend
+### Asking the LLM via Backend
 
 Exec into backend and run its test script:
 
@@ -190,9 +192,9 @@ docker compose exec \
 
 ---
 
-# Direct Ollama API prompting
+### Direct Ollama API prompting
 
-### Generate
+Generate
 
 ```bash
 curl http://localhost:11434/api/generate -d '{
@@ -201,7 +203,7 @@ curl http://localhost:11434/api/generate -d '{
 }'
 ```
 
-### Chat
+Chat
 
 ```bash
 curl http://localhost:11434/api/chat -d '{
@@ -214,7 +216,7 @@ curl http://localhost:11434/api/chat -d '{
 
 ---
 
-# Logs
+Logs
 
 ```bash
 docker compose logs -f         # all services
@@ -225,7 +227,7 @@ docker compose logs -f tusd    # tusd only
 
 ---
 
-# Stop / clean up
+Stop / clean up
 
 ```bash
 docker compose stop        # graceful stop
