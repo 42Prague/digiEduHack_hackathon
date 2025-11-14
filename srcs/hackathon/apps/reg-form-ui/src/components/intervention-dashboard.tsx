@@ -30,8 +30,11 @@ import {
   ThumbsUp,
   ThumbsDown,
   Zap,
+  Plus, // 1. IMPORT PLUS ICON FOR BUTTON
 } from "lucide-react";
 import { useEffect, useState } from "react";
+import { Button } from "@/components/ui/button"; // 2. IMPORT BUTTON COMPONENT
+import NewInterventionModal from "@/components/new-intervention-modal"; // 3. IMPORT THE MODAL COMPONENT
 
 // --- Utility Functions/Components for Descriptive Sentiment ---
 
@@ -153,6 +156,8 @@ export function InterventionDashboard() {
   const [error, setError] = useState<string | null>(null);
   const [selectedIntervention, setSelectedIntervention] =
     useState<Intervention | null>(null);
+  // 4. ADD MODAL STATE
+  const [isModalOpen, setIsModalOpen] = useState(false);
 
   useEffect(() => {
     const fetchInterventions = async () => {
@@ -284,6 +289,17 @@ export function InterventionDashboard() {
   return (
     <div className="min-h-screen bg-background p-6">
       <div className="max-w-7xl mx-auto">
+        {/* 5. ADD THE BUTTON FOR THE MODAL - ABOVE THE DASHBOARD HEADING */}
+        <div className="flex justify-end mb-6">
+          <Button
+            onClick={() => setIsModalOpen(true)}
+            className="flex items-center gap-2"
+          >
+            <Plus className="h-4 w-4" />
+            Add New Intervention
+          </Button>
+        </div>
+
         {interventions.length > 1 && (
           <div className="mb-6 p-4 bg-card border border-border rounded-lg">
             <label className="text-sm text-muted-foreground block mb-2">
@@ -398,39 +414,6 @@ export function InterventionDashboard() {
 
         {/* Sentiment Row - Overall Sentiment Chart (retained) and Emotional Tone (changed) */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
-          {/* Sentiment Overview (Retained Pie Chart) */}
-          {/* <Card className="bg-card border-border">
-            <CardHeader>
-              <CardTitle className="text-foreground">
-                Overall Sentiment Polarity
-              </CardTitle>
-              <CardDescription className="text-muted-foreground">
-                Distribution of feedback polarity
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <ResponsiveContainer width="100%" height={250}>
-                <PieChart>
-                  <Pie
-                    data={sentimentData}
-                    cx="50%"
-                    cy="50%"
-                    labelLine={false}
-                    label={({ name, value }) => `${name} (${value})`}
-                    outerRadius={80}
-                    fill="#8884d8"
-                    dataKey="value"
-                  >
-                    {sentimentData.map((entry, index) => (
-                      <Cell key={`cell-${index}`} fill={entry.fill} />
-                    ))}
-                  </Pie>
-                  <Tooltip />
-                </PieChart>
-              </ResponsiveContainer>
-            </CardContent>
-          </Card> */}
-
           {/* Emotional Tone (Changed to Descriptive Badges) */}
         </div>
 
@@ -630,6 +613,12 @@ export function InterventionDashboard() {
           </CardContent>
         </Card>
       </div>
+
+      {/* 6. RENDER THE MODAL */}
+      <NewInterventionModal
+        isOpen={isModalOpen}
+        onClose={() => setIsModalOpen(false)}
+      />
     </div>
   );
 }
