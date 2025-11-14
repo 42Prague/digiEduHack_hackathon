@@ -1,59 +1,63 @@
-# This directory contains the full local stack used for:
+## 1. One-sentence description
 
-* Running a **local LLM** (via Ollama)
-* Serving a **Python FastAPI backend** with CRUD endpoints for:
+## 2. Technology stack (languages, key libraries, AI models used)
+* Docker
+* Frontend: html, css, js
+* Backend: FastAPI
+* Websocket for persistent communication (Chatbot)
+* Uppy and Tusd for file(s) upload
+* AI models:
+    * llama3.1:8b for data manipulation
+    * embedded-ollama for chatbot
+    * whisper for speech2text
 
-  * `regions`
-  * `schools` (FK → region)
-  * `files` (tus upload metadata)
-* Handling **file uploads** using a separate `tusd` container
-* Persisting **all data** (SQLite DB + uploaded files) in a shared `./data` folder on your host
+## 3. Data Privacy Statement
+* Where data is processed?
+    * locally
+* AI services used
+    * models mentioned above
+* Does data leave the EU?
+    * no, everything is processed locally
+* Monthly cost estimate:
+    * **On-prem GPU amortized:**:
+        * Electricity	€30–€40
+        * Hardware amortization	€35–€40
+        * Maintenance	€0–€20
+    * Total monthly	€65–€100
+    * All can be run on individual server (ofcourse we do not recommend that for data security and integrity)
 
-Everything runs through **Docker Compose**, so you can start/stop the whole environment with a single command.
+## 4. Prerequisities
+Docker Engine 24+ or Docker Desktop 4.27 <br>
+[requirements.txt](/srcs/src/backend/requirements.txt) <br>
+[uppy](https://uppy.io/docs/quick-start/) <br>
+[tus.io](https://tus.github.io/tusd/getting-started/installation/) <br>
+[whisper](https://github.com/openai/whisper) <br>
+[metabase](https://www.metabase.com/), open source version under the GNU Affero General Public License (AGPL) <br>
+[chromadb](https://www.trychroma.com/)
 
----
-
-# Prerequisites
-
-* Docker Engine 24+ or Docker Desktop 4.27+
-* (Optional) NVIDIA GPU + NVIDIA Container Toolkit if you want GPU-accelerated LLM inference on Linux
-
----
-
-# 🏁 Start the full stack
-
-```bash
-cd digiEduHack_hackathon/srcs
+## 5. Setup instructions (copy-paste commands), 6. How to run locally
+``` Docker
+cd digiEduHack_hackathon/srcs/
 docker compose up -d
 ```
+Use the embedded Ollama container (default, more self-contained):
+```
+docker compose --profile embedded-ollama up -d
+```
+This launches the ollama service defined in docker-compose.yml so everything stays inside Docker.
 
-### Choosing your Ollama instance
+Use an existing host Ollama (saves resources, skips the container):
+```
+OLLAMA_HOST=http://host.docker.internal:11434 docker compose up -d
+```
+Because the Ollama service sits behind the embedded-ollama profile, it will only start if you explicitly request that profile.
+(On Linux we add host.docker.internal via extra_hosts, so this hostname resolves to your host automatically.)
 
-- **Use the embedded Ollama container** (default, more self-contained):
-  ```bash
-  docker compose --profile embedded-ollama up -d
-  ```
-  This launches the `ollama` service defined in `docker-compose.yml` so everything stays inside Docker.
-
-- **Use an existing host Ollama** (saves resources, skips the container):
-  ```bash
-  OLLAMA_HOST=http://host.docker.internal:11434 docker compose up -d
-  ```
-  Because the Ollama service sits behind the `embedded-ollama` profile, it will only start if you explicitly request that profile.  
-  (On Linux we add `host.docker.internal` via `extra_hosts`, so this hostname resolves to your host automatically.)
-
-Whichever option you choose, make sure the Ollama instance has *both* the chat model and the embedding model pulled. By default the code expects:
-
-```bash
+Whichever option you choose, make sure the Ollama instance has both the chat model and the embedding model pulled. By default the code expects:
+```
 ollama pull llama3.1:8b        # chat model (OLLAMA_MODEL)
 ollama pull embeddinggemma     # embedding model (OLLAMA_EMBED_MODEL)
 ```
-
-If you change `OLLAMA_MODEL` or `OLLAMA_EMBED_MODEL`, remember to pull the matching models before starting the stack.
-
-All backend components read `OLLAMA_HOST`, `OLLAMA_MODEL`, and `OLLAMA_EMBED_MODEL`, so once the environment variable is set (inline or via `.env`) the RAG pipeline automatically points to the correct instance.
-
-This boots the main services:
 
 ### **1. ollama (local LLM server, optional profile)**
 
@@ -91,7 +95,7 @@ Both `backend` and `tusd` access `/data` through a **shared bind mount**.
 
 ---
 
-# 🌍 File persistence
+# File persistence
 
 Everything you upload or store survives container restarts because all data lives on your host:
 
@@ -105,7 +109,7 @@ Delete this folder to wipe all app data.
 
 ---
 
-# ⚙️ Environment variables
+# Environment variables
 
 You can override defaults using `.env` or via inline `docker compose`:
 
@@ -121,7 +125,7 @@ You can override defaults using `.env` or via inline `docker compose`:
 
 ---
 
-# 🧪 Backend API Usage
+# Backend API Usage
 
 ### List regions
 
@@ -147,7 +151,7 @@ curl -X POST http://localhost:8000/schools \
 
 ---
 
-# 📤 File Upload Flow (tusd → backend)
+# File Upload Flow (tusd → backend)
 
 1. **Upload file to tusd**
 
@@ -168,7 +172,7 @@ The backend stores `tus_id`, `filename`, and school association.
 
 ---
 
-# 🤖 Asking the LLM via Backend
+# Asking the LLM via Backend
 
 Exec into backend and run its test script:
 
@@ -186,7 +190,7 @@ docker compose exec \
 
 ---
 
-# 📡 Direct Ollama API prompting
+# Direct Ollama API prompting
 
 ### Generate
 
@@ -210,7 +214,7 @@ curl http://localhost:11434/api/chat -d '{
 
 ---
 
-# 🖥 Logs
+# Logs
 
 ```bash
 docker compose logs -f         # all services
@@ -221,7 +225,7 @@ docker compose logs -f tusd    # tusd only
 
 ---
 
-# 🛑 Stop / clean up
+# Stop / clean up
 
 ```bash
 docker compose stop        # graceful stop
@@ -229,3 +233,12 @@ docker compose down        # remove containers, keep volumes
 docker compose down -v     # remove containers + ollama model volume
 rm -rf ./data              # wipe DB + uploads
 ```
+
+## 7. How to deploy to production
+* Everything is running in Docker, so as far as you have running Docker, you should be fine.
+
+## 8. Known limitations
+* Hallucinations and factual inaccuracies – possible limitations linked to the smaller model size.
+* Chatbot response time – may be slower because all processing runs on local hardware.
+* Reporting features – still partially incomplete and require further refinement.
+* Dependency on open source solutions could lead to lack of support/end of support.
