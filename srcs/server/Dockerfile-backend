@@ -16,6 +16,6 @@ WORKDIR digiedu-backend
 RUN mkdir build
 WORKDIR build
 RUN cmake ..
-RUN make
+RUN make -j 8
 
 ENTRYPOINT ["src/server"]
