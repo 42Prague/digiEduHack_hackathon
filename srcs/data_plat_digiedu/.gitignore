@@ -3,7 +3,6 @@
 # ====================================================================
 
 # Streamlit secrets (IMPORTANT - contains database credentials!)
-.streamlit/secrets.toml
 
 # Python
 __pycache__/
