@@ -17,7 +17,7 @@ export const env = createEnv({
     NODE_ENV: z
       .enum(["development", "test", "production"])
       .default("development"),
-      SKIP_MIGRATIONS: z.boolean()
+      SKIP_MIGRATIONS: z.string().default("true")
   },
 
   /**
