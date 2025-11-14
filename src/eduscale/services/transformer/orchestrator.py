@@ -329,7 +329,7 @@ async def transform_file(
                 # Determine language (default to English, could be configurable)
                 language_code = settings.SPEECH_LANGUAGE_EN
 
-                extracted_text, audio_meta = transcribe_audio(
+                extracted_text, audio_meta = await transcribe_audio(
                     temp_file_path,
                     language_code=language_code,
                     storage_client=storage_client,

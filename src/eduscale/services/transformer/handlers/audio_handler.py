@@ -902,7 +902,7 @@ def merge_transcription_results(
         raise TranscriptionError(f"Failed to merge results: {e}") from e
 
 
-def transcribe_audio(
+async def transcribe_audio(
     file_path: Path,
     language_code: str = "en-US",
     storage_client=None,
@@ -980,7 +980,7 @@ def transcribe_audio(
                 )
 
                 # 3. Process chunks in parallel using asyncio
-                results = asyncio.run(process_chunks_parallel(chunk_uris, language_code))
+                results = await process_chunks_parallel(chunk_uris, language_code)
 
                 logger.info(
                     "All chunks transcribed",
