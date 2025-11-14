@@ -72,14 +72,24 @@ def _with_timestamp(message: Dict[str, Any]) -> Dict[str, Any]:
 def _get_connection():
     if not USE_DB or psycopg is None:
         raise RuntimeError("PostgreSQL session storage is not available")
-    return psycopg.connect(
-        host=settings.server_host,
-        port=settings.server_port,
-        dbname=settings.server_db,
-        user=settings.server_user,
-        password=settings.server_password,
-        connect_timeout=5,
-    )
+    import time
+
+    while True:
+        try:
+            return psycopg.connect(
+                host=settings.server_host,
+                port=settings.server_port,
+                dbname=settings.server_db,
+                user=settings.server_user,
+                password=settings.server_password,
+                connect_timeout=5,
+            )
+        except psycopg.Error as exc:  # type: ignore[attr-defined]
+            logger.warning(
+                "PostgreSQL not ready (%s); retrying in 10 seconds...",
+                exc,
+            )
+            time.sleep(10)
 
 
 def _ensure_table() -> None:
