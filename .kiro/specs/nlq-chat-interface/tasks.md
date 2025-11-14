@@ -4,24 +4,33 @@
 
 This plan breaks the NL→SQL Chat Interface project into incremental, testable tasks. Each task builds on previous work and can be validated independently. The implementation follows a bottom-up approach: core modules first, then API integration, finally UI.
 
+**KEY**: This implementation uses **Featherless.ai API** (NOT Ollama) and **reuses existing infrastructure**, making it significantly simpler than originally planned.
+
 ## Estimated Timeline
 
-- **Total Development**: 12-16 hours
-- **Testing & Polish**: 4-6 hours
-- **Documentation**: 2-3 hours
-- **Total**: 18-25 hours (2-3 days for single developer)
+- **Total Development**: 8-12 hours (reduced from 12-16!)
+- **Testing & Polish**: 3-4 hours (reduced from 4-6)
+- **Documentation**: 1-2 hours (reduced from 2-3)
+- **Total**: 12-18 hours (1.5-2 days for single developer)
+
+**Why faster?** No Docker changes, no Ollama setup, reuses existing LLMClient pattern, standard Cloud Run config.
 
 ## Task List
 
-### Phase 1: Foundation & Configuration (2-3 hours)
+### Phase 1: Foundation & Configuration (1-2 hours, REDUCED!)
 
-- [ ] **Task 1.1**: Extend configuration settings
-  - Add NLQ-related settings to `src/eduscale/core/config.py`
-  - Add fields: `NLQ_ENABLED`, `LLM_MODEL`, `LLM_ENDPOINT`, `BQ_MAX_BYTES_BILLED`, `NLQ_MAX_RESULTS`, `NLQ_QUERY_TIMEOUT_SECONDS`
-  - Set sensible defaults: `LLM_MODEL="llama3.2:1b"`, `LLM_ENDPOINT="http://localhost:11434"`, `NLQ_MAX_RESULTS=100`
-  - Add validation for required settings (GCP_PROJECT_ID, BIGQUERY_DATASET_ID)
-  - _Requirements: 6.1-6.10_
-  - _Validation_: Import settings and verify all NLQ fields are accessible
+- [ ] **Task 1.1**: Extend configuration settings (MINIMAL changes!)
+  - Open `src/eduscale/core/config.py`
+  - **ONLY ADD these 3 variables** to Settings class:
+    ```python
+    NLQ_MAX_RESULTS: int = 100
+    NLQ_QUERY_TIMEOUT_SECONDS: int = 60
+    BQ_MAX_BYTES_BILLED: Optional[int] = None
+    ```
+  - **DO NOT ADD**: `NLQ_ENABLED`, `LLM_MODEL`, `LLM_ENDPOINT` (already exist as `LLM_ENABLED`, `FEATHERLESS_LLM_MODEL`, `FEATHERLESS_BASE_URL`)
+  - Verify existing settings are present: `GCP_PROJECT_ID`, `BIGQUERY_DATASET_ID`, `FEATHERLESS_API_KEY`, `LLM_ENABLED`
+  - _Requirements: 6.1-6.11_
+  - _Validation_: Import settings and verify: `settings.NLQ_MAX_RESULTS`, `settings.FEATHERLESS_API_KEY`, `settings.LLM_ENABLED`
 
 - [ ] **Task 1.2**: Create NLQ module structure
   - Create directory `src/eduscale/nlq/`
@@ -30,63 +39,79 @@ This plan breaks the NL→SQL Chat Interface project into incremental, testable 
   - _Requirements: N/A (project structure)_
   - _Validation_: Import `from eduscale.nlq import schema_context` succeeds
 
-- [ ] **Task 1.3**: Update requirements.txt
-  - Verify existing dependencies: `google-cloud-bigquery>=3.11.0`, `requests>=2.31.0`, `pydantic>=2.0.0`
-  - No new Python dependencies needed (Ollama is system-level)
-  - Document Ollama as system dependency in comments
-  - _Requirements: N/A (dependencies)_
-  - _Validation_: `pip install -r requirements.txt` succeeds
+- [ ] **Task 1.3**: Verify dependencies (NO NEW PACKAGES!)
+  - **Verify existing** dependencies in `requirements.txt`:
+    - ✅ `openai>=1.0.0` (for Featherless.ai API client)
+    - ✅ `google-cloud-bigquery>=3.11.0` (for BigQuery)
+    - ✅ `fastapi>=0.115.0`, `pydantic>=2.10.0` (existing)
+  - **DO NOT ADD**: requests, ollama, or any other packages
+  - _Requirements: Dependencies section_
+  - _Validation_: `pip install -r requirements.txt` succeeds (no changes needed)
 
-### Phase 2: Core NLQ Modules (4-5 hours)
+### Phase 2: Core NLQ Modules (3-4 hours, REDUCED!)
 
-- [ ] **Task 2.1**: Implement Schema Context module
+- [ ] **Task 2.1**: Implement Schema Context module (WITH ACTUAL BigQuery schema!)
   - Create `src/eduscale/nlq/schema_context.py`
   - Define `TableSchema` and `SchemaContext` dataclasses
-  - Document all BigQuery tables: fact_assessment, fact_intervention, fact_attendance, dim_region, dim_school, dim_time, observations
-  - Include column names, types, and business descriptions for each table
-  - Build system prompt template with schema context, safety rules, and output format
-  - Include 3-5 few-shot examples: region comparison, intervention effectiveness, score trends, observations search
+  - **Document ACTUAL BigQuery tables from terraform/bigquery.tf**:
+    - **fact_assessment** (9 columns): date, region_id, school_name, student_id, student_name, subject, test_score (FLOAT, not FLOAT64!), file_id, ingest_timestamp
+    - **fact_intervention** (7 columns): date, region_id, school_name, intervention_type, participants_count (INTEGER!), file_id, ingest_timestamp
+    - **observations** (5 columns): file_id, region_id, observation_text (not text_content!), source_table_type, ingest_timestamp
+    - **dim_region** (4 columns): region_id, region_name, from_date, to_date
+    - **dim_school** (4 columns): school_name, region_id, from_date, to_date
+    - **dim_time** (6 columns): date, year, month, day, quarter, day_of_week
+  - Include partition keys (date/ingest_timestamp) and clustering (region_id) in descriptions
+  - Build system prompt template with schema context, safety rules, and JSON output format
+  - Include 3-5 few-shot examples with REAL table names and columns
   - Implement `load_schema_context() -> SchemaContext` function
   - Implement `get_system_prompt() -> str` function
-  - Use `settings.BIGQUERY_DATASET_ID` for dataset references
-  - _Requirements: 1.1-1.10_
+  - Use `settings.BIGQUERY_DATASET_ID` (default: "jedouscale_core") for dataset references
+  - _Requirements: 1.1-1.10, 11.1-11.10_
   - _Validation_: 
-    - Call `get_system_prompt()` and verify it contains safety rules, table schemas, and examples
-    - Verify dataset ID is correctly injected from settings
+    - Call `get_system_prompt()` and verify it contains actual table names and columns
+    - Verify "observation_text" (not "text_content"), "participants_count INTEGER" (not INT64)
+    - Verify dataset ID is "jedouscale_core" from settings
 
-- [ ] **Task 2.2**: Implement LLM SQL Generation module
+- [ ] **Task 2.2**: Implement LLM SQL Generation module (Using Featherless.ai!)
   - Create `src/eduscale/nlq/llm_sql.py`
   - Define custom exceptions: `SqlGenerationError`, `SqlSafetyError`
   - Implement `generate_sql_from_nl(user_query: str, history: list | None) -> dict` function:
     - Load system prompt from schema context
-    - Compose messages for Ollama (system + user)
-    - Call `_call_ollama(messages)` helper
+    - **Initialize OpenAI client with Featherless.ai endpoint**:
+      ```python
+      from openai import OpenAI
+      client = OpenAI(
+          base_url=settings.FEATHERLESS_BASE_URL,
+          api_key=settings.FEATHERLESS_API_KEY,
+      )
+      ```
+    - **Call Featherless.ai API** using `client.chat.completions.create()`:
+      - model=`settings.FEATHERLESS_LLM_MODEL` ("meta-llama/Meta-Llama-3.1-8B-Instruct")
+      - messages=[system_prompt, user_query]
+      - temperature=0.1, max_tokens=500
     - Parse JSON response to extract "sql" and "explanation"
     - Handle JSON parsing errors with clear exception messages
+    - Handle API errors (timeout, rate limit, auth failure)
     - Call `_validate_and_fix_sql(sql)` for safety checks
     - Return dict with validated SQL and explanation
-  - Implement `_call_ollama(messages: list) -> str` helper:
-    - POST to `{settings.LLM_ENDPOINT}/api/generate`
-    - Use model from `settings.LLM_MODEL`
-    - Set temperature=0.1 for deterministic output
-    - Set timeout from `settings.NLQ_QUERY_TIMEOUT_SECONDS`
-    - Handle timeout and connection errors
   - Implement `_validate_and_fix_sql(sql: str, user_query: str) -> str` helper:
     - Normalize SQL (strip, lowercase for checks)
     - Verify starts with "select" (case-insensitive)
     - Reject forbidden keywords: INSERT, UPDATE, DELETE, DROP, ALTER, CREATE, TRUNCATE, MERGE, GRANT, REVOKE
     - Use regex with word boundaries: `\b{keyword}\b`
-    - Verify dataset prefix present (warn if missing)
-    - Append "LIMIT {NLQ_MAX_RESULTS}" if no LIMIT clause
+    - Verify dataset prefix present ("jedouscale_core")
+    - Append "LIMIT {settings.NLQ_MAX_RESULTS}" if no LIMIT clause
     - Reduce LIMIT if > NLQ_MAX_RESULTS
     - Log all checks and modifications
   - Add comprehensive logging with correlation IDs
-  - _Requirements: 2.1-2.17_
+  - **Alternative**: Consider reusing existing `LLMClient` from `eduscale.tabular.analysis.llm_client` (see design.md)
+  - _Requirements: 2.1-2.17, 10.1-10.12_
   - _Validation_:
-    - Unit test with mocked Ollama responses
+    - Unit test with mocked OpenAI client (patch `openai.OpenAI`)
     - Verify safety checks reject INSERT, UPDATE, DELETE
     - Verify LIMIT is appended when missing
-    - Test error handling for invalid JSON, missing keys, timeout
+    - Test error handling for invalid JSON, missing keys, API timeout
+    - Test with actual Featherless.ai API key in integration test
 
 - [ ] **Task 2.3**: Implement BigQuery Query Engine
   - Create `src/eduscale/nlq/bq_query_engine.py`
@@ -204,51 +229,56 @@ This plan breaks the NL→SQL Chat Interface project into incremental, testable 
     - Navigate to `/nlq/chat` and verify page loads
     - Verify no console errors in browser DevTools
 
-### Phase 5: Ollama Integration & Deployment (3-4 hours)
+### Phase 5: Deployment (NO DOCKER CHANGES!) (1-2 hours, DRASTICALLY REDUCED!)
 
-- [ ] **Task 5.1**: Update Dockerfile for Ollama
-  - Update `docker/Dockerfile` (or create `Dockerfile.nlq` if separate)
-  - Add curl installation: `apt-get install -y curl`
-  - Install Ollama: `curl -fsSL https://ollama.com/install.sh | sh`
-  - Keep existing Python dependencies
-  - Create startup script `/start.sh`:
-    - Start Ollama in background: `ollama serve &`
-    - Wait for Ollama to be ready: loop curl to `/api/tags` with 30 retries
-    - Pull model: `ollama pull ${LLM_MODEL:-llama3.2:1b}`
-    - Start FastAPI: `uvicorn eduscale.main:app --host 0.0.0.0 --port ${PORT:-8080}`
-  - Make startup script executable: `chmod +x /start.sh`
-  - Set CMD to `/start.sh`
+- [ ] **Task 5.1**: Verify Dockerfile (NO CHANGES NEEDED!)
+  - **DO NOT MODIFY Dockerfile** - use existing as-is
+  - Verify existing Dockerfile has:
+    - ✅ Python 3.11
+    - ✅ FastAPI/Uvicorn
+    - ✅ All dependencies from requirements.txt (including openai)
+  - **DO NOT ADD**:
+    - ❌ Ollama installation
+    - ❌ Model downloading
+    - ❌ Special startup scripts
   - _Requirements: 10.1-10.12_
   - _Validation_:
-    - Build Docker image: `docker build -t eduscale-nlq .`
-    - Run container: `docker run -e NLQ_ENABLED=true eduscale-nlq`
-    - Check logs for "Ollama is ready", "Model pulled", "FastAPI started"
-    - Verify container doesn't exit immediately
+    - Existing Dockerfile works without modifications
+    - `docker build -t eduscale-engine .` succeeds (unchanged)
+    - No "Ollama" mentions in Dockerfile
 
-- [ ] **Task 5.2**: Create Cloud Run configuration
-  - Create `infra/nlq-config.yaml` with Cloud Run service definition
-  - Set resource limits: memory=8Gi, cpu=2
-  - Set concurrency: 5 (lower due to LLM memory usage)
-  - Set timeout: 300 seconds (allow for slow LLM inference)
-  - Set environment variables: NLQ_ENABLED=true, LLM_MODEL, LLM_ENDPOINT, GCP_PROJECT_ID, BIGQUERY_DATASET_ID, BQ_MAX_BYTES_BILLED
+- [ ] **Task 5.2**: Create Cloud Run configuration (STANDARD config, not specialized!)
+  - Create or update `infra/nlq-config.yaml` with STANDARD Cloud Run service definition
+  - **Set STANDARD resource limits**: memory=2Gi, cpu=1 (NOT 8Gi/2!)
+  - **Set STANDARD concurrency**: 80 (NOT 5!)
+  - **Set STANDARD timeout**: 60 seconds (NOT 300!)
+  - Set environment variables:
+    - FEATHERLESS_API_KEY (from Secret Manager)
+    - NLQ_MAX_RESULTS=100
+    - NLQ_QUERY_TIMEOUT_SECONDS=60
+    - BQ_MAX_BYTES_BILLED=1000000000 (optional)
+  - **DO NOT SET**: LLM_MODEL, LLM_ENDPOINT (use existing FEATHERLESS_*)
   - Set autoscaling: minScale=0, maxScale=10
   - _Requirements: 10.1-10.12_
   - _Validation_:
-    - Deploy to Cloud Run: `gcloud run services replace nlq-config.yaml`
-    - Verify service starts successfully
-    - Check logs for Ollama startup completion
+    - Config file has standard Cloud Run resources
+    - No "Ollama" mentions in config
+    - Featherless.ai API key from Secret Manager
 
-- [ ] **Task 5.3**: Test Ollama integration locally
-  - Create local docker-compose override for NLQ
-  - Start Ollama service on host or in separate container
-  - Set LLM_ENDPOINT to Ollama URL
-  - Run FastAPI app and test `/api/v1/nlq/chat` endpoint
+- [ ] **Task 5.3**: Test Featherless.ai integration locally
+  - Set environment variables in `.env`:
+    - FEATHERLESS_API_KEY=your-key
+    - LLM_ENABLED=true
+    - NLQ_MAX_RESULTS=100
+  - Run FastAPI app locally: `uvicorn eduscale.main:app --reload`
+  - Test `/api/v1/nlq/chat` endpoint with real Featherless.ai API
   - Verify LLM generates valid SQL
   - _Requirements: 10.1-10.12_
   - _Validation_:
-    - Send test query: `curl -X POST localhost:8080/api/v1/nlq/chat -d '{"messages": [{"role": "user", "content": "Show test scores"}]}'`
+    - Send test query: `curl -X POST localhost:8080/api/v1/nlq/chat -H "Content-Type: application/json" -d '{"messages": [{"role": "user", "content": "Show test scores"}]}'`
     - Verify response contains SQL and explanation
-    - Check logs for Ollama API call success
+    - Check logs show "Featherless.ai API call succeeded"
+    - Verify no "Ollama" connection errors
 
 ### Phase 6: Testing & Validation (3-4 hours)
 
@@ -261,17 +291,30 @@ This plan breaks the NL→SQL Chat Interface project into incremental, testable 
   - _Requirements: 9.1_
   - _Validation_: `pytest tests/test_schema_context.py -v` passes with 100% coverage
 
-- [ ] **Task 6.2**: Write unit tests for LLM SQL Generator
+- [ ] **Task 6.2**: Write unit tests for LLM SQL Generator (Mock Featherless.ai!)
   - Create `tests/test_llm_sql.py`
-  - Mock Ollama responses with `requests.post`
+  - **Mock OpenAI client** with `@patch('openai.OpenAI')`:
+    ```python
+    @patch('openai.OpenAI')
+    def test_generate_sql(mock_openai):
+        mock_client = Mock()
+        mock_response = Mock()
+        mock_response.choices = [Mock(message=Mock(content='{"sql": "SELECT...", "explanation": "..."}'))]
+        mock_client.chat.completions.create.return_value = mock_response
+        mock_openai.return_value = mock_client
+        
+        result = generate_sql_from_nl("Show test scores")
+        assert "sql" in result
+    ```
   - Test successful SQL generation flow
   - Test JSON parsing errors raise `SqlGenerationError`
   - Test safety checks reject INSERT, UPDATE, DELETE, DROP
   - Test safety checks reject unknown table names (optional)
   - Test LIMIT clause is appended when missing
   - Test LIMIT clause is reduced if > NLQ_MAX_RESULTS
-  - Test Ollama timeout handling
-  - Test Ollama connection errors
+  - Test Featherless.ai API timeout handling
+  - Test Featherless.ai API connection errors (auth failure, rate limit)
+  - **DO NOT mock requests.post** (use openai client mocking!)
   - _Requirements: 9.2-9.5_
   - _Validation_: `pytest tests/test_llm_sql.py -v` passes with >= 80% coverage
 
@@ -306,15 +349,19 @@ This plan breaks the NL→SQL Chat Interface project into incremental, testable 
   - _Requirements: 9.11_
   - _Validation_: Fixtures can be loaded and used in tests
 
-- [ ] **Task 6.6**: End-to-end testing with staging data
-  - Deploy to staging environment with Ollama running
-  - Test 3-5 demo queries against actual BigQuery staging dataset
-  - Verify SQL is generated correctly
-  - Verify queries complete in < 5 seconds
+- [ ] **Task 6.6**: End-to-end testing with staging data (Real Featherless.ai + BigQuery)
+  - Deploy to staging environment (no Ollama needed!)
+  - Configure FEATHERLESS_API_KEY in staging environment
+  - Test 3-5 demo queries against actual BigQuery staging dataset:
+    1. "Compare regions by average test scores"
+    2. "Show interventions in Region A"
+    3. "Find observations mentioning teachers"
+  - Verify SQL is generated correctly (check against actual schema)
+  - Verify queries complete in < 5 seconds (improved from original!)
   - Verify results are correct (manual validation)
   - Document any issues and fix
   - _Requirements: 12.1-12.7_
-  - _Validation_: All demo queries work reliably in staging
+  - _Validation_: All demo queries work reliably in staging with < 5s latency
 
 ### Phase 7: Documentation & Polish (2-3 hours)
 
@@ -383,23 +430,30 @@ This plan breaks the NL→SQL Chat Interface project into incremental, testable 
   - _Requirements: 12.1-12.7_
   - _Validation_: All smoke tests pass
 
-- [ ] **Task 8.3**: Performance testing
-  - Measure cold start time (first request after deploy)
-  - Measure warm request time (subsequent requests)
-  - Test concurrent requests (5-10 simultaneous queries)
-  - Verify P95 latency < 15 seconds
-  - Document performance metrics
+- [ ] **Task 8.3**: Performance testing (Expect BETTER performance!)
+  - Measure cold start time (first request after deploy) - **expect ~5-10s, not 30-60s!**
+  - Measure warm request time (subsequent requests) - **expect ~3-8s, not 5-15s!**
+  - Test concurrent requests (20-50 simultaneous queries) - **more than original 5-10!**
+  - Verify P95 latency < 10 seconds (improved from 15s!)
+  - Document performance metrics:
+    - Cold start time
+    - Featherless.ai API latency
+    - BigQuery query execution time
+    - Total request time
   - _Requirements: 13.1-13.9_
-  - _Validation_: Performance meets targets
+  - _Validation_: Performance meets improved targets (< 10s P95)
 
-- [ ] **Task 8.4**: Security audit
+- [ ] **Task 8.4**: Security audit (Plus Featherless.ai API security)
   - Verify service account has read-only BigQuery permissions
   - Test SQL injection attempts (should be rejected by safety checks)
   - Verify no sensitive data logged (check Cloud Logging)
-  - Test feature toggle (disable NLQ and verify 503 response)
+  - Test feature toggle (disable LLM_ENABLED and verify 503 response)
   - Review IAM permissions for Cloud Run service
-  - _Requirements: 7.1-7.10_
-  - _Validation_: Security checklist complete, no vulnerabilities found
+  - **Verify Featherless.ai API key stored in Secret Manager** (not plain text env var)
+  - **Review what data is sent to Featherless.ai**: user questions only, NOT BigQuery results
+  - Document privacy implications of external API usage
+  - _Requirements: 7.1-7.10, 14.1-14.12_
+  - _Validation_: Security checklist complete, API key secured, privacy documented
 
 - [ ] **Task 8.5**: Deploy to production
   - Build production Docker image: `docker build -t gcr.io/PROJECT_ID/eduscale-nlq:prod .`
@@ -414,12 +468,14 @@ This plan breaks the NL→SQL Chat Interface project into incremental, testable 
 ## Task Dependencies
 
 ```
-Phase 1: Foundation
-  1.1 → 1.2 → 1.3
+Phase 1: Foundation (SIMPLIFIED!)
+  1.1 (Add 3 config vars) → 1.2 (Create module structure)
+  1.3 (Verify deps) - parallel to 1.1, 1.2
 
-Phase 2: Core Modules
-  2.1 (Schema Context) → 2.2 (LLM SQL) → 2.3 (BigQuery Engine)
+Phase 2: Core Modules (FASTER with Featherless.ai!)
+  2.1 (Schema Context with REAL BigQuery schema) → 2.2 (LLM SQL with Featherless.ai) → 2.3 (BigQuery Engine)
   Depends on: 1.1, 1.2
+  Note: 2.2 can reuse existing LLMClient pattern
 
 Phase 3: API Integration
   3.1 (API Endpoint) depends on 2.2, 2.3
@@ -429,23 +485,33 @@ Phase 4: UI
   4.1 (Chat UI) → 4.2 (UI Route)
   4.2 depends on 3.1
 
-Phase 5: Deployment
-  5.1 (Dockerfile) → 5.2 (Cloud Run Config) → 5.3 (Local Test)
+Phase 5: Deployment (NO DOCKER WORK!)
+  5.1 (Verify Dockerfile - NO CHANGES) - quick check
+  5.2 (Standard Cloud Run Config) - simple yaml
+  5.3 (Test Featherless.ai locally) - faster than Ollama setup
   Depends on: All previous phases
 
-Phase 6: Testing
+Phase 6: Testing (Mock OpenAI client, not Ollama HTTP)
   6.1-6.4 (Unit/Integration Tests) can run in parallel
   6.5 (Fixtures) supports 6.1-6.4
-  6.6 (E2E Tests) depends on 5.3
+  6.6 (E2E Tests with real Featherless.ai) depends on 5.3
 
-Phase 7: Documentation
+Phase 7: Documentation (LESS to document!)
   7.1-7.5 can run in parallel
+  Note: No Ollama setup docs needed
   Depends on: All implementation phases
 
-Phase 8: Deployment & Validation
-  8.1 → 8.2 → 8.3 → 8.4 → 8.5 (sequential)
+Phase 8: Deployment & Validation (FASTER cold starts!)
+  8.1 → 8.2 → 8.3 (expect better performance!) → 8.4 (+ API security) → 8.5
   Depends on: All previous phases
 ```
+
+**Key Simplifications:**
+- ✅ No Dockerfile changes (Phase 5 reduced from 3-4h to 1-2h)
+- ✅ No Ollama setup/testing (saves ~2h)
+- ✅ Standard Cloud Run config (saves ~1h)
+- ✅ Can reuse existing LLMClient (saves ~1h in Phase 2)
+- ✅ Faster testing (mock OpenAI client simpler than mock Ollama HTTP)
 
 ## Testing Strategy
 
@@ -504,46 +570,51 @@ Phase 8: Deployment & Validation
 
 ## Risk Mitigation
 
-### Risk: Ollama fails to start in Cloud Run
+### Risk: Featherless.ai API unavailable or rate-limited
 
 - **Mitigation**: 
-  - Add comprehensive startup logging
-  - Implement health check retry logic
-  - Test locally with Docker first
-  - Document troubleshooting steps
+  - Implement retry logic with exponential backoff
+  - Handle API errors gracefully (return user-friendly message)
+  - Monitor API latency and error rates
+  - Have backup plan (document fallback to disable feature)
+  - Test API limits during load testing
 
 ### Risk: LLM generates invalid SQL
 
 - **Mitigation**:
   - Implement multi-layer safety checks
   - Use strict JSON output format
-  - Include extensive few-shot examples
+  - Include extensive few-shot examples with REAL table names
   - Log all generated SQL for debugging
   - Test with diverse queries
+  - Use actual BigQuery schema in system prompt
 
 ### Risk: BigQuery queries timeout or cost too much
 
 - **Mitigation**:
   - Enforce LIMIT clause on all queries
-  - Set BQ_MAX_BYTES_BILLED limit
+  - Set BQ_MAX_BYTES_BILLED=1GB limit
   - Set query timeout to 60 seconds
   - Test with realistic dataset sizes
+  - Document query optimization patterns
 
-### Risk: Performance too slow for demo
-
-- **Mitigation**:
-  - Use lightweight model (Llama 3.2 1B)
-  - Set low temperature for faster inference
-  - Leverage BigQuery caching
-  - Test demo queries in advance
-
-### Risk: Container exceeds memory limits
+### Risk: Featherless.ai API key leaked
 
 - **Mitigation**:
-  - Allocate 8GB memory for Cloud Run
-  - Set concurrency to 5 (not 80)
-  - Monitor memory usage in logs
-  - Consider smaller model if needed
+  - Store API key in Secret Manager (not env var)
+  - Never log API key values
+  - Use Cloud Run service account for access
+  - Rotate keys regularly
+  - Monitor API usage for anomalies
+
+### Risk: Privacy concerns with external API
+
+- **Mitigation**:
+  - Document what data is sent (user questions only, NOT BigQuery results)
+  - Include privacy notice in UI
+  - Provide toggle to disable feature (LLM_ENABLED=false)
+  - Review Featherless.ai privacy policy
+  - Consider on-prem LLM for sensitive deployments (future)
 
 ## Success Criteria
 

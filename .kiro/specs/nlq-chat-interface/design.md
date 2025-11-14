@@ -374,7 +374,9 @@ def get_system_prompt() -> str:
 
 ### 2. LLM SQL Generation Module (`nlq/llm_sql.py`)
 
-**Purpose**: Generate SQL from natural language using Ollama + safety validation
+**Purpose**: Generate SQL from natural language using Featherless.ai API + safety validation
+
+**Note**: This module CAN reuse parts of existing `eduscale.tabular.analysis.llm_client.LLMClient` but needs custom JSON parsing for SQL generation.
 
 **Custom Exceptions**:
 
@@ -391,11 +393,18 @@ class SqlSafetyError(Exception):
 **Main Function**:
 
 ```python
+from openai import OpenAI
+from eduscale.core.config import settings
+import json
+import logging
+
+logger = logging.getLogger(__name__)
+
 def generate_sql_from_nl(
     user_query: str,
     history: list[dict[str, str]] | None = None
 ) -> dict[str, str]:
-    """Generate SQL from natural language query.
+    """Generate SQL from natural language query using Featherless.ai API.
     
     Args:
         user_query: User's question in plain text
@@ -411,17 +420,34 @@ def generate_sql_from_nl(
     # 1. Load system prompt
     system_prompt = get_system_prompt()
     
-    # 2. Compose messages
-    messages = [
-        {"role": "system", "content": system_prompt},
-        {"role": "user", "content": user_query}
-    ]
+    # 2. Initialize Featherless.ai client (OpenAI-compatible)
+    client = OpenAI(
+        base_url=settings.FEATHERLESS_BASE_URL,
+        api_key=settings.FEATHERLESS_API_KEY,
+    )
     
-    # 3. Call Ollama
+    # 3. Call Featherless.ai API
     try:
-        response_text = _call_ollama(messages)
+        response = client.chat.completions.create(
+            model=settings.FEATHERLESS_LLM_MODEL,
+            messages=[
+                {"role": "system", "content": system_prompt},
+                {"role": "user", "content": user_query}
+            ],
+            max_tokens=500,
+            temperature=0.1,  # Low temperature for deterministic SQL
+        )
+        
+        response_text = response.choices[0].message.content
+        
+        logger.info("LLM API call succeeded", extra={
+            "user_query": user_query,
+            "response_length": len(response_text),
+            "model": settings.FEATHERLESS_LLM_MODEL
+        })
+        
     except Exception as e:
-        logger.error(f"Ollama call failed: {e}", extra={"user_query": user_query})
+        logger.error(f"Featherless.ai API call failed: {e}", extra={"user_query": user_query})
         raise SqlGenerationError(f"LLM service unavailable: {e}")
     
     # 4. Parse JSON response
@@ -521,71 +547,50 @@ def _validate_and_fix_sql(sql: str, user_query: str) -> str:
     return sql_normalized
 ```
 
-**Ollama Client**:
+**Alternative: Reuse Existing LLMClient**:
+
+You can also reuse the existing LLMClient and just wrap it:
 
 ```python
-def _call_ollama(messages: list[dict[str, str]]) -> str:
-    """Call Ollama API for chat completion.
+from eduscale.tabular.analysis.llm_client import LLMClient
+
+def generate_sql_from_nl_with_existing_client(
+    user_query: str,
+    history: list[dict[str, str]] | None = None
+) -> dict[str, str]:
+    """Alternative implementation using existing LLMClient."""
     
-    Args:
-        messages: List of message dicts with "role" and "content"
-        
-    Returns:
-        Response text from LLM
-        
-    Raises:
-        requests.RequestException: When API call fails
-    """
-    import requests
+    # 1. Load system prompt
+    system_prompt = get_system_prompt()
     
-    endpoint = settings.LLM_ENDPOINT
-    model = settings.LLM_MODEL
+    # 2. Compose full prompt (LLMClient._call_llm expects single prompt string)
+    full_prompt = f"{system_prompt}\n\nUser Question: {user_query}\n\nGenerate SQL:"
     
-    # Ollama /api/generate endpoint (simple prompt-response)
-    # Compose full prompt from messages
-    prompt_parts = []
-    for msg in messages:
-        role = msg["role"]
-        content = msg["content"]
-        if role == "system":
-            prompt_parts.append(f"<system>\n{content}\n</system>")
-        elif role == "user":
-            prompt_parts.append(f"<user>\n{content}\n</user>")
+    # 3. Initialize existing LLMClient
+    llm_client = LLMClient()
     
-    full_prompt = "\n\n".join(prompt_parts)
-    
-    payload = {
-        "model": model,
-        "prompt": full_prompt,
-        "stream": False,
-        "options": {
-            "temperature": 0.1,  # Low temperature for deterministic SQL
-            "num_predict": 500,  # Limit output tokens
-        }
-    }
-    
-    logger.info(f"Calling Ollama", extra={
-        "endpoint": endpoint,
-        "model": model,
-        "prompt_length": len(full_prompt)
-    })
-    
+    # 4. Call LLM
     try:
-        response = requests.post(
-            f"{endpoint}/api/generate",
-            json=payload,
-            timeout=settings.NLQ_QUERY_TIMEOUT_SECONDS
-        )
-        response.raise_for_status()
-        response_json = response.json()
-        return response_json["response"]
-    except requests.Timeout:
-        logger.error("Ollama request timed out")
-        raise SqlGenerationError("LLM request timed out")
-    except requests.RequestException as e:
-        logger.error(f"Ollama request failed: {e}")
-        raise SqlGenerationError(f"LLM service error: {e}")
+        response_text = llm_client._call_llm(full_prompt, max_tokens=500)
+    except Exception as e:
+        logger.error(f"LLM call failed: {e}")
+        raise SqlGenerationError(f"LLM service unavailable: {e}")
+    
+    # 5. Parse JSON response (same as above)
+    try:
+        response_json = json.loads(response_text.strip())
+        sql = response_json["sql"]
+        explanation = response_json["explanation"]
+    except (json.JSONDecodeError, KeyError) as e:
+        raise SqlGenerationError(f"LLM returned invalid response: {e}")
+    
+    # 6. Apply safety checks
+    safe_sql = _validate_and_fix_sql(sql, user_query)
+    
+    return {"sql": safe_sql, "explanation": explanation}
 ```
+
+**Recommendation**: Use the first approach (direct OpenAI client) for cleaner message formatting, but either works.
 
 **Logging Strategy**:
 
@@ -1331,88 +1336,56 @@ async def chat_ui(request: Request):
 class Settings(BaseSettings):
     # ... existing settings ...
     
-    # NLQ Configuration
-    NLQ_ENABLED: bool = True
-    LLM_MODEL: str = "llama3.2:1b"
-    LLM_ENDPOINT: str = "http://localhost:11434"
-    BQ_MAX_BYTES_BILLED: Optional[int] = None  # None = no limit
+    # Existing Featherless.ai configuration (ALREADY EXISTS, DO NOT ADD AGAIN!)
+    # FEATHERLESS_API_KEY: str = ""
+    # FEATHERLESS_BASE_URL: str = "https://api.featherless.ai/v1"
+    # FEATHERLESS_LLM_MODEL: str = "meta-llama/Meta-Llama-3.1-8B-Instruct"
+    # LLM_ENABLED: bool = True
+    
+    # Existing BigQuery configuration (ALREADY EXISTS)
+    # GCP_PROJECT_ID: str = ""
+    # BIGQUERY_DATASET_ID: str = "jedouscale_core"
+    
+    # NEW: NLQ-specific Configuration (ONLY THESE 3 VARIABLES!)
     NLQ_MAX_RESULTS: int = 100
     NLQ_QUERY_TIMEOUT_SECONDS: int = 60
+    BQ_MAX_BYTES_BILLED: Optional[int] = None  # None = no limit
 ```
 
 **Environment Variables** (`.env.example`):
 
 ```bash
-# NLQ Feature Configuration
-NLQ_ENABLED=true
-LLM_MODEL=llama3.2:1b
-LLM_ENDPOINT=http://localhost:11434
-BQ_MAX_BYTES_BILLED=1000000000  # 1GB limit (optional)
+# Existing Featherless.ai Configuration (ALREADY IN .env.example)
+FEATHERLESS_API_KEY=your-api-key-here
+FEATHERLESS_BASE_URL=https://api.featherless.ai/v1
+FEATHERLESS_LLM_MODEL=meta-llama/Meta-Llama-3.1-8B-Instruct
+LLM_ENABLED=true
+
+# NEW: NLQ Feature Configuration (ADD ONLY THIS SECTION)
 NLQ_MAX_RESULTS=100
 NLQ_QUERY_TIMEOUT_SECONDS=60
+BQ_MAX_BYTES_BILLED=1000000000  # 1GB limit (optional)
 ```
 
 ### 7. Container and Deployment
 
 **Dockerfile Updates**:
 
-```dockerfile
-# Use existing Python base image
-FROM python:3.11-slim
+**NO CHANGES NEEDED!** The existing Dockerfile already has everything required:
+- ✅ Python 3.11
+- ✅ FastAPI/Uvicorn
+- ✅ openai library (in requirements.txt)
+- ✅ google-cloud-bigquery (in requirements.txt)
 
-# Install system dependencies
-RUN apt-get update && apt-get install -y \
-    curl \
-    && rm -rf /var/lib/apt/lists/*
-
-# Install Ollama
-RUN curl -fsSL https://ollama.com/install.sh | sh
-
-# Install Python dependencies
-COPY requirements.txt .
-RUN pip install --no-cache-dir -r requirements.txt
-
-# Copy application code
-COPY src/ /app/src/
-COPY config/ /app/config/
-WORKDIR /app
-
-# Create startup script
-RUN echo '#!/bin/bash\n\
-set -e\n\
-\n\
-echo "Starting Ollama service..."\n\
-ollama serve &\n\
-OLLAMA_PID=$!\n\
-\n\
-echo "Waiting for Ollama to be ready..."\n\
-for i in {1..30}; do\n\
-  if curl -s http://localhost:11434/api/tags > /dev/null; then\n\
-    echo "Ollama is ready!"\n\
-    break\n\
-  fi\n\
-  if [ $i -eq 30 ]; then\n\
-    echo "Ollama failed to start"\n\
-    exit 1\n\
-  fi\n\
-  sleep 1\n\
-done\n\
-\n\
-echo "Pulling LLM model..."\n\
-ollama pull ${LLM_MODEL:-llama3.2:1b}\n\
-\n\
-echo "Starting FastAPI application..."\n\
-exec uvicorn eduscale.main:app --host 0.0.0.0 --port ${PORT:-8080}' > /start.sh \
-&& chmod +x /start.sh
-
-# Use startup script as entrypoint
-CMD ["/start.sh"]
-```
+**DO NOT ADD:**
+- ❌ Ollama installation
+- ❌ Model downloading
+- ❌ Special startup scripts
 
 **Cloud Run Configuration**:
 
 ```yaml
-# infra/nlq-config.yaml (example Cloud Run config)
+# infra/nlq-config.yaml (STANDARD Cloud Run config, NO special requirements)
 apiVersion: serving.knative.dev/v1
 kind: Service
 metadata:
@@ -1424,30 +1397,49 @@ spec:
         autoscaling.knative.dev/maxScale: '10'
         autoscaling.knative.dev/minScale: '0'
     spec:
-      containerConcurrency: 5
-      timeoutSeconds: 300
+      containerConcurrency: 80  # STANDARD concurrency (not 5!)
+      timeoutSeconds: 60  # STANDARD timeout (not 300!)
       containers:
       - image: gcr.io/PROJECT_ID/eduscale-engine:latest
         resources:
           limits:
-            memory: 8Gi
-            cpu: '2'
+            memory: 2Gi  # STANDARD memory (not 8Gi!)
+            cpu: '1'     # STANDARD CPU (not 2!)
         env:
-        - name: NLQ_ENABLED
+        # Existing Featherless.ai configuration
+        - name: FEATHERLESS_API_KEY
+          valueFrom:
+            secretKeyRef:
+              name: featherless-api-key
+              key: api-key
+        - name: FEATHERLESS_BASE_URL
+          value: 'https://api.featherless.ai/v1'
+        - name: FEATHERLESS_LLM_MODEL
+          value: 'meta-llama/Meta-Llama-3.1-8B-Instruct'
+        - name: LLM_ENABLED
           value: 'true'
-        - name: LLM_MODEL
-          value: 'llama3.2:1b'
-        - name: LLM_ENDPOINT
-          value: 'http://localhost:11434'
+        
+        # Existing BigQuery configuration
         - name: GCP_PROJECT_ID
           value: 'PROJECT_ID'
         - name: BIGQUERY_DATASET_ID
           value: 'jedouscale_core'
-        - name: BQ_MAX_BYTES_BILLED
-          value: '1000000000'  # 1GB
+        
+        # NEW: NLQ configuration
         - name: NLQ_MAX_RESULTS
           value: '100'
+        - name: NLQ_QUERY_TIMEOUT_SECONDS
+          value: '60'
+        - name: BQ_MAX_BYTES_BILLED
+          value: '1000000000'  # 1GB (optional)
 ```
+
+**Key Differences from Original Spec:**
+- ✅ **No Dockerfile changes** (use existing as-is)
+- ✅ **Standard Cloud Run resources** (2Gi/1CPU, not 8Gi/2CPU)
+- ✅ **Standard concurrency** (80, not 5)
+- ✅ **Standard timeout** (60s, not 300s)
+- ✅ **External API** (Featherless.ai, not local Ollama)
 
 ## Testing Strategy
 
@@ -1630,19 +1622,20 @@ def test_chat_endpoint_feature_disabled(client, mocker):
 
 ### Expected Performance
 
-- **Cold Start**: 30-60 seconds (Ollama startup + model loading)
-- **Warm Request**: 5-15 seconds end-to-end
-  - LLM Inference: 2-5 seconds (CPU-only, Llama 3.2 1B)
+- **Cold Start**: 5-10 seconds (FastAPI startup only, no model loading!)
+- **Warm Request**: 3-8 seconds end-to-end
+  - Featherless.ai API Call: 1-3 seconds (serverless, fast)
   - BigQuery Execution: 1-5 seconds (typical queries)
-  - Network + Processing: 1-3 seconds
+  - Network + Processing: 1-2 seconds
 
 ### Optimization Strategies
 
-1. **Model Caching**: Ollama keeps model in memory after first load
+1. **OpenAI Client Reuse**: Keep client instance in memory (managed by openai library)
 2. **BigQuery Caching**: Leverage BigQuery's automatic result caching
 3. **Client Pooling**: Reuse BigQuery client connection (singleton pattern)
-4. **Concurrency Limits**: Set concurrency=5 to prevent memory exhaustion
+4. **Standard Concurrency**: Use concurrency=80 (no memory concerns with external API)
 5. **LIMIT Enforcement**: Always cap result sets to 100 rows
+6. **Async API Calls**: Consider using async openai client for concurrent requests
 
 ### Monitoring Metrics
 
@@ -1651,13 +1644,26 @@ Log key metrics for performance tuning:
 ```python
 logger.info("Performance metrics", extra={
     "correlation_id": correlation_id,
-    "llm_inference_ms": llm_end - llm_start,
+    "llm_api_ms": llm_end - llm_start,  # Featherless.ai API latency
     "query_execution_ms": query_end - query_start,
     "total_request_ms": total_end - total_start,
     "bytes_processed": query_job.total_bytes_processed,
-    "cache_hit": query_job.cache_hit
+    "cache_hit": query_job.cache_hit,
+    "llm_model": settings.FEATHERLESS_LLM_MODEL,
+    "api_endpoint": settings.FEATHERLESS_BASE_URL
 })
 ```
+
+### Performance Comparison: Featherless.ai vs Ollama
+
+| Metric | Featherless.ai (Current) | Ollama (Original Spec) |
+|--------|--------------------------|------------------------|
+| Cold Start | 5-10s | 30-60s |
+| Warm Request | 3-8s | 5-15s |
+| LLM Latency | 1-3s | 2-5s |
+| Concurrency | 80/instance | 5/instance |
+| Memory Required | 2GB | 8GB |
+| Scalability | Unlimited (external API) | Limited by instance resources |
 
 ## Security Considerations
 
@@ -1681,31 +1687,36 @@ logger.info("Performance metrics", extra={
 
 ## Deployment Checklist
 
-- [ ] Ollama installed in Docker image
-- [ ] Llama 3.2 1B model pulled during startup
-- [ ] Cloud Run memory configured to 8GB
-- [ ] Cloud Run CPU configured to 2 vCPUs
-- [ ] Cloud Run concurrency set to 5
-- [ ] Cloud Run timeout set to 300 seconds
+- [ ] **NO Docker changes needed** (use existing Dockerfile as-is)
+- [ ] **NO model installation** (external Featherless.ai API)
+- [ ] Cloud Run memory configured to 2Gi (standard, not 8Gi)
+- [ ] Cloud Run CPU configured to 1 vCPU (standard, not 2)
+- [ ] Cloud Run concurrency set to 80 (standard, not 5)
+- [ ] Cloud Run timeout set to 60 seconds (standard, not 300)
 - [ ] Service account has `bigquery.jobUser` and `bigquery.dataViewer` roles
-- [ ] Environment variables configured (NLQ_ENABLED, LLM_MODEL, etc.)
-- [ ] Few-shot examples tested against staging data
+- [ ] Featherless.ai API key configured in Secret Manager
+- [ ] Environment variables configured:
+  - [ ] FEATHERLESS_API_KEY (from Secret Manager)
+  - [ ] NLQ_MAX_RESULTS=100
+  - [ ] NLQ_QUERY_TIMEOUT_SECONDS=60
+  - [ ] BQ_MAX_BYTES_BILLED=1000000000 (optional)
+- [ ] Few-shot examples tested against staging BigQuery data
 - [ ] Demo queries documented and validated
 - [ ] Logs enabled with correlation IDs
-- [ ] Error handling tested for common scenarios
+- [ ] Error handling tested for Featherless.ai API failures
 
 ## Future Enhancements (Out of Scope for MVP)
 
-1. **Conversation History**: Store chat sessions in database with TTL
-2. **Query Caching**: Cache common queries in Redis
-3. **Query Suggestions**: Suggest questions based on schema
-4. **Visualization**: Auto-generate charts from query results
-5. **Multi-Language Support**: Support Czech/English prompts
-6. **GPU Acceleration**: Use GPU-enabled Cloud Run for faster inference
-7. **Fine-Tuned Model**: Fine-tune Llama on EduScale-specific queries
-8. **Query Optimization**: Suggest index creation or query rewrites
-9. **Data Export**: Export results to CSV/Excel
-10. **Collaborative Features**: Share queries with team members
+1. **Conversation History**: Store chat sessions in Firestore with TTL
+2. **Query Caching**: Cache common queries in Redis/Memorystore
+3. **Query Suggestions**: Suggest questions based on schema and history
+4. **Visualization**: Auto-generate charts from query results (Chart.js, Plotly)
+5. **Multi-Language Support**: Support Czech/English prompts (already supported by Llama 3.1)
+6. **Fine-Tuned Model**: Fine-tune Llama on EduScale-specific queries via Featherless.ai
+7. **Query Optimization**: Suggest BigQuery optimizations (partitioning, clustering hints)
+8. **Data Export**: Export results to CSV/Excel
+9. **Collaborative Features**: Share queries with team members
+10. **Advanced Analytics**: Natural language → SQL → Chart in one step
 
 ## Success Metrics
 
@@ -1714,8 +1725,11 @@ The NL→SQL Chat Interface MVP is successful when:
 1. ✅ Users can query BigQuery using natural language
 2. ✅ 3-5 demo queries work reliably (< 5s execution time)
 3. ✅ System prevents data modification (100% SQL validation accuracy)
-4. ✅ Performance meets targets (P95 < 15s end-to-end)
+4. ✅ Performance meets targets (P95 < 10s end-to-end, improved from 15s!)
 5. ✅ Code coverage >= 80%
 6. ✅ Feature is demo-ready for pitch (UI + examples)
 7. ✅ Documentation enables junior developer onboarding in < 30 min
+8. ✅ NO Docker/deployment complexity (reuses existing infrastructure)
+9. ✅ Featherless.ai API integration working (< 3s API latency)
+10. ✅ Standard Cloud Run configuration (2Gi/1CPU, not specialized)
 

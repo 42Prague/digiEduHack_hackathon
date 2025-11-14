@@ -29,20 +29,21 @@ This specification defines the Natural Language to SQL (NL→SQL) Chat Interface
 ## Key Features
 
 - **Natural Language Query**: Ask questions in plain text, get SQL results
-- **Local LLM**: Uses Llama 3.2 1B via Ollama (no external API dependencies)
+- **Featherless.ai LLM**: Uses Llama 3.1 8B Instruct via serverless API (faster, simpler than local LLM)
 - **Safety-First**: Multi-layer SQL validation (read-only, no DML/DDL)
 - **BigQuery Integration**: Direct execution against EduScale data warehouse
 - **Simple UI**: Chat interface with result tables and SQL transparency
-- **Cloud Run Deployment**: Containerized with Ollama, 8GB memory, 2 vCPUs
+- **Standard Cloud Run**: No special deployment (2GB memory, 1 vCPU, concurrency=80)
 
 ## Technology Stack
 
 - **Backend**: FastAPI (existing)
-- **LLM Runtime**: Ollama 
-- **LLM Model**: Llama 3.2 1B (Meta, open-source)
+- **LLM API**: Featherless.ai (serverless, OpenAI-compatible)
+- **LLM Model**: Llama 3.1 8B Instruct (Meta, via Featherless.ai)
+- **API Client**: OpenAI Python library (already in requirements.txt)
 - **Database**: Google BigQuery
 - **UI**: Vanilla HTML/CSS/JavaScript
-- **Deployment**: Google Cloud Run (Docker container)
+- **Deployment**: Google Cloud Run (standard configuration)
 
 ## Architecture Summary
 
@@ -54,7 +55,7 @@ Chat UI (/nlq/chat)
 FastAPI Chat Endpoint
     ↓                           ↓
 LLM SQL Generator          BigQuery Engine
-(Ollama/Llama)            (google-cloud-bigquery)
+(Featherless.ai API)      (google-cloud-bigquery)
     ↓                           ↓
 [Generated SQL] ───────→ [Execute Query]
     ↓
@@ -82,28 +83,31 @@ Chat UI (render table + SQL)
 
 ## Timeline
 
-- **Estimated Development**: 18-25 hours (2-3 days for single developer)
-  - Foundation & Configuration: 2-3 hours
-  - Core NLQ Modules: 4-5 hours
+- **Estimated Development**: 12-18 hours (1.5-2 days for single developer) - **REDUCED from 18-25h!**
+  - Foundation & Configuration: 1-2 hours (minimal config changes)
+  - Core NLQ Modules: 3-4 hours (reuse existing LLMClient pattern)
   - API Integration: 3-4 hours
   - User Interface: 2-3 hours
-  - Ollama Integration: 3-4 hours
-  - Testing: 3-4 hours
-  - Documentation: 2-3 hours
-  - Deployment: 2-3 hours
+  - Deployment: 1-2 hours (NO Docker changes needed!)
+  - Testing: 3-4 hours (simpler mocking)
+  - Documentation: 1-2 hours (less to document)
+  
+**Why faster?** No Ollama setup, no Docker changes, reuses existing infrastructure!
 
 ## Dependencies
 
 ### Internal
 - BigQuery infrastructure (from `terraform-gcp-infrastructure` spec)
-- Configuration system (`eduscale.core.config`)
+- **Existing LLMClient** (`eduscale.tabular.analysis.llm_client`) - REUSED!
+- **Existing config** (`FEATHERLESS_*`, `LLM_ENABLED`) - REUSED!
 - Logging system (`eduscale.core.logging`)
 
 ### External
-- Ollama (system-level, installed in Docker)
-- Llama 3.2 1B model (pulled via Ollama)
+- **Featherless.ai API** (serverless LLM, no installation needed)
+- **OpenAI Python library** (already in requirements.txt)
+- Llama 3.1 8B Instruct model (via Featherless.ai API)
 - Google Cloud BigQuery API
-- Google Cloud Run (hosting)
+- Google Cloud Run (standard hosting)
 
 ## Success Metrics
 
@@ -120,9 +124,11 @@ MVP is successful when:
 ## Security & Compliance
 
 - **Read-Only**: Only SELECT queries allowed (enforced by validation + IAM)
-- **Local LLM**: No data sent to external APIs (GDPR-compliant)
+- **External LLM API**: User questions sent to Featherless.ai (NOT BigQuery results)
+- **API Key Security**: Stored in Secret Manager, never logged
 - **Cost Controls**: LIMIT enforcement + optional bytes_billed cap
-- **Data Locality**: All processing within configured GCP region
+- **Data Locality**: BigQuery processing within configured GCP region
+- **Privacy Documentation**: Clear disclosure of external API usage
 
 ## Related Specs
 
@@ -138,7 +144,16 @@ MVP is successful when:
 
 ## Change Log
 
-- **2025-11-14**: Initial specification created
+- **2025-11-14**: Specification updated to match current architecture
+  - **CRITICAL**: Changed from Ollama (local) to Featherless.ai API (external)
+  - Updated to use actual BigQuery schema from terraform/bigquery.tf
+  - Reduced timeline from 18-25h to 12-18h (no Docker work!)
+  - Added UPDATES.md with detailed migration guide
+  - Requirements: 15 requirements updated for Featherless.ai
+  - Design: 7 components updated with OpenAI client integration
+  - Tasks: 8 phases, 30+ tasks, 12-18 hour estimate
+
+- **2025-11-14**: Initial specification created (Ollama-based)
   - Requirements: 15 requirements, 100+ acceptance criteria
   - Design: 7 components, complete implementation details
   - Tasks: 8 phases, 30+ tasks, 18-25 hour estimate
