@@ -38,7 +38,7 @@ Estimated Cost
 -   **Network traffic**		~€20 / month
 -   **Speech-to-Text**		~$0.014 per minute (≈ €13 / 1000 minutes)
 -   **MongoDB Atlas (Free Tier)**		€0
-Total typical cost: **€70–90/month + audio usage**.
+-   Total typical cost: **€70–90/month + audio usage**.
 ----------
 ## **4. Prerequisites**
 ### **For Local Development**
