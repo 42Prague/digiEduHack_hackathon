@@ -9,13 +9,22 @@ from typing import Any
 from eduscale.core.config import settings
 from eduscale.services.transformer.storage import StorageClient
 from eduscale.services.transformer.exceptions import (
-    FileTooLargeError,
     TransformationError,
     StorageError,
     ExtractionError,
     TranscriptionError,
 )
-from eduscale.services.transformer.handlers.text_handler import extract_text, build_text_frontmatter
+from eduscale.services.transformer.handlers.text_handler import (
+    extract_text_from_plain,
+    extract_text_from_pdf,
+    extract_text_from_docx,
+    extract_text_from_doc,
+    extract_text_from_xlsx,
+    extract_text_from_odt,
+    extract_text_from_ods,
+    extract_text_from_odp,
+    build_text_frontmatter,
+)
 from eduscale.services.transformer.handlers.audio_handler import transcribe_audio, build_audio_frontmatter
 
 logger = logging.getLogger(__name__)
@@ -43,7 +52,6 @@ async def transform_file(
         Dictionary with transformation results and metadata
 
     Raises:
-        FileTooLargeError: If file exceeds size limit
         TransformationError: If transformation fails
     """
     storage_client = StorageClient(project_id=settings.GCP_PROJECT_ID or None)
@@ -62,23 +70,8 @@ async def transform_file(
             },
         )
 
-        # Check file size
+        # Get file size for metadata
         file_size_bytes = storage_client.get_file_size(bucket, object_name)
-        max_size_bytes = settings.MAX_FILE_SIZE_MB * 1024 * 1024
-
-        if file_size_bytes > max_size_bytes:
-            logger.warning(
-                "File too large",
-                extra={
-                    "file_id": file_id,
-                    "file_size_mb": file_size_bytes / (1024 * 1024),
-                    "max_size_mb": settings.MAX_FILE_SIZE_MB,
-                },
-            )
-            raise FileTooLargeError(
-                f"File size {file_size_bytes / (1024 * 1024):.2f}MB exceeds limit "
-                f"of {settings.MAX_FILE_SIZE_MB}MB"
-            )
 
         # Download file to temporary location
         with tempfile.NamedTemporaryFile(
@@ -98,22 +91,19 @@ async def transform_file(
         frontmatter = ""
 
         if file_category == "text":
-            logger.info("Extracting text from document", extra={"file_id": file_id})
+            # Plain text files - just read as-is
+            logger.info("Reading plain text file", extra={"file_id": file_id})
             start_time = time.time()
             try:
-                extracted_text, extraction_meta = extract_text(temp_file_path, content_type)
+                extracted_text, extraction_meta = extract_text_from_plain(temp_file_path)
                 extraction_duration_ms = int((time.time() - start_time) * 1000)
 
                 metadata = {
                     "extraction_method": extraction_meta.extraction_method,
-                    "page_count": extraction_meta.page_count,
-                    "sheet_count": extraction_meta.sheet_count,
-                    "slide_count": extraction_meta.slide_count,
                     "word_count": extraction_meta.word_count,
                     "character_count": extraction_meta.character_count,
                 }
 
-                # Build frontmatter with metadata
                 text_uri = f"gs://{bucket}/text/{file_id}.txt"
                 frontmatter = build_text_frontmatter(
                     file_id=file_id,
@@ -131,10 +121,206 @@ async def transform_file(
 
             except ExtractionError as e:
                 logger.error(
-                    "Text extraction failed",
-                    extra={"file_id": file_id, "error": str(e)},
+                    "Plain text extraction failed, skipping file",
+                    extra={"file_id": file_id, "error": str(e), "file_category": file_category},
                 )
-                raise TransformationError(f"Text extraction failed: {e}") from e
+                return {
+                    "file_id": file_id,
+                    "status": "skipped",
+                    "reason": f"Extraction failed: {str(e)}",
+                    "metadata": {"extraction_method": "none", "file_category": file_category},
+                }
+
+        elif file_category == "pdf":
+            # PDF files
+            logger.info("Extracting text from PDF", extra={"file_id": file_id})
+            start_time = time.time()
+            try:
+                extracted_text, extraction_meta = extract_text_from_pdf(temp_file_path)
+                extraction_duration_ms = int((time.time() - start_time) * 1000)
+
+                metadata = {
+                    "extraction_method": extraction_meta.extraction_method,
+                    "page_count": extraction_meta.page_count,
+                    "word_count": extraction_meta.word_count,
+                    "character_count": extraction_meta.character_count,
+                }
+
+                text_uri = f"gs://{bucket}/text/{file_id}.txt"
+                frontmatter = build_text_frontmatter(
+                    file_id=file_id,
+                    region_id=region_id or "unknown",
+                    text_uri=text_uri,
+                    file_category=file_category,
+                    extraction_metadata=extraction_meta,
+                    original_filename=Path(object_name).name,
+                    original_content_type=content_type,
+                    original_size_bytes=file_size_bytes,
+                    bucket=bucket,
+                    object_path=object_name,
+                    extraction_duration_ms=extraction_duration_ms,
+                )
+
+            except ExtractionError as e:
+                logger.error(
+                    "PDF extraction failed, skipping file",
+                    extra={"file_id": file_id, "error": str(e), "file_category": file_category},
+                )
+                return {
+                    "file_id": file_id,
+                    "status": "skipped",
+                    "reason": f"Extraction failed: {str(e)}",
+                    "metadata": {"extraction_method": "none", "file_category": file_category},
+                }
+
+        elif file_category == "docx":
+            # Word documents (.docx or .doc)
+            logger.info("Extracting text from Word document", extra={"file_id": file_id, "content_type": content_type})
+            start_time = time.time()
+            try:
+                if content_type == "application/msword":
+                    extracted_text, extraction_meta = extract_text_from_doc(temp_file_path)
+                else:
+                    extracted_text, extraction_meta = extract_text_from_docx(temp_file_path)
+                extraction_duration_ms = int((time.time() - start_time) * 1000)
+
+                metadata = {
+                    "extraction_method": extraction_meta.extraction_method,
+                    "word_count": extraction_meta.word_count,
+                    "character_count": extraction_meta.character_count,
+                }
+
+                text_uri = f"gs://{bucket}/text/{file_id}.txt"
+                frontmatter = build_text_frontmatter(
+                    file_id=file_id,
+                    region_id=region_id or "unknown",
+                    text_uri=text_uri,
+                    file_category=file_category,
+                    extraction_metadata=extraction_meta,
+                    original_filename=Path(object_name).name,
+                    original_content_type=content_type,
+                    original_size_bytes=file_size_bytes,
+                    bucket=bucket,
+                    object_path=object_name,
+                    extraction_duration_ms=extraction_duration_ms,
+                )
+
+            except ExtractionError as e:
+                logger.error(
+                    "Word document extraction failed, skipping file",
+                    extra={"file_id": file_id, "error": str(e), "file_category": file_category},
+                )
+                return {
+                    "file_id": file_id,
+                    "status": "skipped",
+                    "reason": f"Extraction failed: {str(e)}",
+                    "metadata": {"extraction_method": "none", "file_category": file_category},
+                }
+
+        elif file_category == "excel":
+            # Excel spreadsheets
+            logger.info("Extracting text from Excel", extra={"file_id": file_id})
+            start_time = time.time()
+            try:
+                extracted_text, extraction_meta = extract_text_from_xlsx(temp_file_path)
+                extraction_duration_ms = int((time.time() - start_time) * 1000)
+
+                metadata = {
+                    "extraction_method": extraction_meta.extraction_method,
+                    "sheet_count": extraction_meta.sheet_count,
+                    "word_count": extraction_meta.word_count,
+                    "character_count": extraction_meta.character_count,
+                }
+
+                text_uri = f"gs://{bucket}/text/{file_id}.txt"
+                frontmatter = build_text_frontmatter(
+                    file_id=file_id,
+                    region_id=region_id or "unknown",
+                    text_uri=text_uri,
+                    file_category=file_category,
+                    extraction_metadata=extraction_meta,
+                    original_filename=Path(object_name).name,
+                    original_content_type=content_type,
+                    original_size_bytes=file_size_bytes,
+                    bucket=bucket,
+                    object_path=object_name,
+                    extraction_duration_ms=extraction_duration_ms,
+                )
+
+            except ExtractionError as e:
+                logger.error(
+                    "Excel extraction failed, skipping file",
+                    extra={"file_id": file_id, "error": str(e), "file_category": file_category},
+                )
+                return {
+                    "file_id": file_id,
+                    "status": "skipped",
+                    "reason": f"Extraction failed: {str(e)}",
+                    "metadata": {"extraction_method": "none", "file_category": file_category},
+                }
+
+        elif file_category == "odf":
+            # OpenDocument formats
+            logger.info("Extracting text from ODF", extra={"file_id": file_id, "content_type": content_type})
+            start_time = time.time()
+            try:
+                # Route based on ODF content type
+                if content_type == "application/vnd.oasis.opendocument.text":
+                    extracted_text, extraction_meta = extract_text_from_odt(temp_file_path)
+                elif content_type == "application/vnd.oasis.opendocument.spreadsheet":
+                    extracted_text, extraction_meta = extract_text_from_ods(temp_file_path)
+                elif content_type == "application/vnd.oasis.opendocument.presentation":
+                    extracted_text, extraction_meta = extract_text_from_odp(temp_file_path)
+                else:
+                    # Unknown ODF type - treat as "other"
+                    logger.warning(
+                        "Unknown ODF content type, treating as 'other'",
+                        extra={"file_id": file_id, "content_type": content_type},
+                    )
+                    return {
+                        "file_id": file_id,
+                        "status": "skipped",
+                        "reason": f"Unknown ODF content type: {content_type}",
+                        "metadata": {"extraction_method": "none", "file_category": file_category},
+                    }
+
+                extraction_duration_ms = int((time.time() - start_time) * 1000)
+
+                metadata = {
+                    "extraction_method": extraction_meta.extraction_method,
+                    "page_count": extraction_meta.page_count,
+                    "sheet_count": extraction_meta.sheet_count,
+                    "slide_count": extraction_meta.slide_count,
+                    "word_count": extraction_meta.word_count,
+                    "character_count": extraction_meta.character_count,
+                }
+
+                text_uri = f"gs://{bucket}/text/{file_id}.txt"
+                frontmatter = build_text_frontmatter(
+                    file_id=file_id,
+                    region_id=region_id or "unknown",
+                    text_uri=text_uri,
+                    file_category=file_category,
+                    extraction_metadata=extraction_meta,
+                    original_filename=Path(object_name).name,
+                    original_content_type=content_type,
+                    original_size_bytes=file_size_bytes,
+                    bucket=bucket,
+                    object_path=object_name,
+                    extraction_duration_ms=extraction_duration_ms,
+                )
+
+            except ExtractionError as e:
+                logger.error(
+                    "ODF extraction failed, skipping file",
+                    extra={"file_id": file_id, "error": str(e), "file_category": file_category},
+                )
+                return {
+                    "file_id": file_id,
+                    "status": "skipped",
+                    "reason": f"Extraction failed: {str(e)}",
+                    "metadata": {"extraction_method": "none", "file_category": file_category},
+                }
 
         elif file_category == "audio":
             logger.info("Transcribing audio file", extra={"file_id": file_id})
@@ -187,52 +373,43 @@ async def transform_file(
                 raise TransformationError(f"Audio transcription failed: {e}") from e
 
         elif file_category == "other":
-            # Attempt text extraction for unknown types
-            logger.info("Attempting text extraction for unknown type", extra={"file_id": file_id})
-            start_time = time.time()
-            try:
-                extracted_text, extraction_meta = extract_text(temp_file_path, content_type)
-                extraction_duration_ms = int((time.time() - start_time) * 1000)
+            # For "other" category, just log warning and return success without processing
+            logger.warning(
+                "File category is 'other', skipping text extraction and upload",
+                extra={
+                    "file_id": file_id,
+                    "content_type": content_type,
+                    "bucket": bucket,
+                    "object_name": object_name,
+                },
+            )
 
-                metadata = {
-                    "extraction_method": extraction_meta.extraction_method,
-                    "word_count": extraction_meta.word_count,
-                }
-
-                # Build frontmatter even for "other" category
-                text_uri = f"gs://{bucket}/text/{file_id}.txt"
-                frontmatter = build_text_frontmatter(
-                    file_id=file_id,
-                    region_id=region_id or "unknown",
-                    text_uri=text_uri,
-                    file_category=file_category,
-                    extraction_metadata=extraction_meta,
-                    original_filename=Path(object_name).name,
-                    original_content_type=content_type,
-                    original_size_bytes=file_size_bytes,
-                    bucket=bucket,
-                    object_path=object_name,
-                    extraction_duration_ms=extraction_duration_ms,
-                )
-
-            except ExtractionError as e:
-                logger.warning(
-                    "Text extraction failed for unknown type",
-                    extra={"file_id": file_id, "error": str(e)},
-                )
-                # For "other" category, we don't fail completely
-                extracted_text = f"[Text extraction not supported for {content_type}]"
-                frontmatter = ""
-                metadata = {"extraction_method": "none"}
+            # Return success response without uploading anything
+            return {
+                "file_id": file_id,
+                "status": "skipped",
+                "reason": "File category 'other' - no text extraction performed",
+                "metadata": {"extraction_method": "none", "file_category": file_category},
+            }
 
         else:
+            # Unknown category - treat as "other"
             logger.warning(
-                "Unsupported file category",
-                extra={"file_id": file_id, "file_category": file_category},
+                "Unknown file category, treating as 'other'",
+                extra={
+                    "file_id": file_id,
+                    "file_category": file_category,
+                    "content_type": content_type,
+                },
             )
-            extracted_text = f"[Processing not implemented for category: {file_category}]"
-            frontmatter = ""
-            metadata = {"extraction_method": "none"}
+
+            # Return success response without uploading anything
+            return {
+                "file_id": file_id,
+                "status": "skipped",
+                "reason": f"Unknown file category '{file_category}' - no processing performed",
+                "metadata": {"extraction_method": "none", "file_category": file_category},
+            }
 
         # Upload extracted text with frontmatter to Cloud Storage using streaming
         text_object_name = f"text/{file_id}.txt"
@@ -275,9 +452,6 @@ async def transform_file(
             "metadata": metadata,
         }
 
-    except FileTooLargeError:
-        # Re-raise without wrapping
-        raise
     except StorageError as e:
         logger.error(
             "Storage operation failed",

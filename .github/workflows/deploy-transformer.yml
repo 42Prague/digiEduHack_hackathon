@@ -55,6 +55,7 @@ jobs:
           sed -i "s|IMAGE_URL_PLACEHOLDER|${{ env.REGION }}-docker.pkg.dev/${{ env.PROJECT_ID }}/${{ env.REPOSITORY }}/${{ env.SERVICE_NAME }}:${{ github.sha }}|g" infra/transformer-config.yaml
           sed -i "s|PROJECT_ID_PLACEHOLDER|${{ env.PROJECT_ID }}|g" infra/transformer-config.yaml
           sed -i "s|BUCKET_NAME_PLACEHOLDER|${{ env.PROJECT_ID }}-eduscale-uploads|g" infra/transformer-config.yaml
+          sed -i "s|SERVICE_ACCOUNT_PLACEHOLDER|cloud-run-engine@${{ env.PROJECT_ID }}.iam.gserviceaccount.com|g" infra/transformer-config.yaml
 
       - name: Deploy to Cloud Run
         run: |
