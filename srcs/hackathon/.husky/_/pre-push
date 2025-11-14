@@ -1,0 +1,28 @@
+#!/bin/sh
+
+# Get the current branch name
+current_branch=$(git rev-parse --abbrev-ref HEAD)
+
+# The combined regex for all valid GitFlow branch names, including SemVer for releases.
+valid_branch_regex="^(main|develop|(feature|hotfix|bugfix|chore)\/.*|release\/v?[0-9]+\.[0-9]+\.[0-9]+)$"
+
+# Check if the current branch name matches the allowed pattern.
+if ! echo "$current_branch" | grep -Eq "$valid_branch_regex"; then
+  # If it doesn't match, print an error message and exit with an error code to block the push.
+  echo "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"
+  echo "!!! ABORTING PUSH: Invalid Branch Name: '$current_branch'"
+  echo "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"
+  echo "Please adhere to the GitFlow naming conventions:"
+  echo "  - main"
+  echo "  - develop"
+  echo "  - feature/<description>"
+  echo "  - bugfix/<description>"
+  echo "  - hotfix/<description>"
+  echo "  - chore/<description>"
+  echo "  - release/vX.Y.Z (e.g., release/1.2.3 or release/v1.2.3)"
+  echo "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"
+  exit 1
+fi
+
+# If the branch name is valid, exit successfully and allow the push.
+exit 0
