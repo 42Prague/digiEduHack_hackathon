@@ -1,71 +1,180 @@
-# 42Prague DigiEduHack Hackathon
+# EduScale Engine
 
-> Welcome! This is the main repository for submitting your team's solution for the DigiEduHack Hackathon at 42Prague.
+**DigiEduHack 2025 Submission** - Open-source data infrastructure for scaling educational impact across 5,000+ Czech schools.
 
-## ⚠️ First Steps: Read the Guidelines & Get Data
+## 🚀 Quick Start
 
-Before you start, please **carefully read all documents** in the `resources/` folder. They contain the rules, guidelines, data samples, and the template you must fill out.
+### Prerequisites
+- Docker and Docker Compose
+- Node.js 18+ (for local frontend development)
+- Python 3.10+ (for local backend development)
 
-* `resources/DigiEduHack_solution_guidelines.pdf`: Contains all rules, guidelines, and judging criteria.
-* `resources/Digi_Edu_Hack_Solution_Canvas_2025.pdf`: This is the **mandatory template** you must fill out and send to the [DigiEduHack submission platform](https://digieduhack.com/host/submit-solution?relatedChallenge=106879). Only 1 team member is submitting the solution.
-* **[Download Data Samples](https://drive.google.com/drive/folders/1KVzBOg1ktjgJd16rlyVDPniwRMDWNYYt?usp=sharing)**: Contains data samples provided for the challenge.
+### Installation
 
----
+1. **Clone the repository**
+   ```bash
+   git clone <repository-url>
+   cd digiEduHack_hackathon
+   ```
 
-## 🚀 How to Submit Your Solution
+2. **Set up environment variables**
+   ```bash
+   cp .env.example .env
+   # Edit .env and set your FEATHERLESS_API_KEY
+   ```
 
-We use the standard GitHub **Fork & Pull Request** workflow. This is the only way to submit your project. Follow these steps carefully.
+3. **Start the application**
+   ```bash
+   docker compose up -d
+   ```
 
+4. **Access the application**
+   - Frontend: http://localhost:3000
+   - Backend API: http://localhost:8000
+   - API Docs: http://localhost:8000/docs
 
+## 📋 Features
 
-### Step 1: Fork This Repository
+### Data Ingestion
+- **Multi-format support**: CSV, Excel, JSON, TXT, Markdown, DOCX
+- **Audio/Transcript upload**: Support for audio files and transcript text
+- **Metadata validation**: Enforced validation of all required fields
+- **Automatic data quality scoring**: DQ reports generated automatically
 
-Click the **"Fork"** button at the top-right corner of this page. This will create a complete copy of this repository under your personal GitHub account.
+### Cultural Analysis
+- **AI-powered analysis**: Uses Featherless.ai (Meta-Llama 3.1) for cultural insights
+- **Comprehensive scoring**: Mindset shift, collaboration, teacher confidence, municipality cooperation, sentiment
+- **Theme extraction**: Automatic identification of key themes
+- **Impact summaries**: AI-generated summaries of practical and mindset changes
 
-### Step 2: Create Your Branch
+### Analytics & Insights
+- **School comparison**: Compare schools across multiple dimensions
+- **Region insights**: Aggregate analysis by region
+- **Trend analysis**: Time-series analysis of cultural metrics
+- **Recommendations**: AI-powered actionable recommendations
 
-On **your forked repository**, create a new branch to hold your work. **Please name this branch after your team.**
+### Data Quality
+- **Automatic DQ scoring**: Schema validation, missing values, PII detection
+- **Quarantine system**: Isolate problematic data
+- **Normalization**: Automatic data cleaning and standardization
 
-You can do this locally on your computer after cloning your fork:
+## 🏗️ Architecture
 
-```bash
-# Clone your fork (replace YOUR-USERNAME)
-git clone [https://github.com/YOUR-USERNAME/42Prague_digiEduHack_hackathon.git](https://github.com/YOUR-USERNAME/42Prague_digiEduHack_hackathon.git)
-cd 42Prague_digiEduHack_hackathon
+- **Backend**: FastAPI (Python 3.10+)
+- **Frontend**: React + TypeScript + Vite
+- **Database**: PostgreSQL 15
+- **AI**: Featherless.ai (Meta-Llama 3.1-8B-Instruct)
 
-# Create and switch to your new branch (replace with your team name)
-git checkout -b your-team-name
+## 📁 Project Structure
+
+```
+digiEduHack_hackathon/
+├── src/
+│   ├── backend/          # FastAPI backend
+│   │   ├── swx_api/      # Main application code
+│   │   ├── migrations/   # Database migrations
+│   │   └── Dockerfile
+│   └── frontend/         # React frontend
+│       ├── src/
+│       └── Dockerfile
+├── docker-compose.yml    # Docker orchestration
+├── requirements.txt      # Python dependencies
+└── .env.example         # Environment variables template
 ```
 
-### Step 3: Add Your Project Files
+## 🔧 Configuration
 
-Now it's time to build! Add all your project components to your branch:
+### Required Environment Variables
 
-1.  **Your Solution:** Add all your source code, folders, dependencies (e.g., `requirements.txt`, `package.json`), and any files needed to run your solution. You can use the `srcs/` folder or create your own structure.
-2.  **Solution Canvas:** Fill out the `Digi_Edu_Hack_Solution_Canvas_2025.pdf` template. Add the completed PDF to the root of your branch.
-3.  **Pitch Deck:** Add your final pitch (PDF or PPTX format) to the `pitch/` folder.
+- `FEATHERLESS_API_KEY`: API key for Featherless.ai (required for AI features)
+- `DB_HOST`: Database host (default: `db` in Docker, `localhost` locally)
+- `DB_USER`: Database username (default: `swx_user`)
+- `DB_PASSWORD`: Database password
+- `DB_NAME`: Database name (default: `swx_db`)
 
-### Step 4: Commit & Push Your Work
+See `.env.example` for all available configuration options.
 
-As you work, commit your changes and push them to your fork on GitHub.
+## 📊 API Endpoints
 
+### Ingestion
+- `POST /api/ingestion/ingest` - Upload data files
+- `POST /api/ingestion/upload_audio` - Upload audio/transcript with metadata
+- `GET /api/ingestion/datasets` - List all datasets
+- `GET /api/ingestion/dq_report/{dataset_id}` - Get data quality report
+
+### Transcripts
+- `GET /api/transcripts` - List transcripts (with filters)
+- `GET /api/transcripts/{id}` - Get transcript details
+
+### Analytics
+- `GET /api/analytics/summary` - Get analytics summary
+- `GET /api/analytics/region_insights?region_id={id}` - Get region insights
+- `GET /api/analytics/recommendations?school_id={id}` - Get recommendations
+- `GET /api/analytics/trends?metric={name}` - Get metric trends
+
+### Schools
+- `GET /api/schools/compare?school_id_1={id}&school_id_2={id}&metric={name}` - Compare schools
+- `GET /api/schools/compare_by_dimension?dimension={type}` - Compare by dimension
+
+## 🧪 Testing
+
+### Backend Tests
 ```bash
-# After making your changes
-git add .
-git commit -m "Add project files and solution canvas"
-
-# Push your branch to your fork (replace with your team name)
-git push origin your-team-name
+cd src/backend
+pytest tests/
 ```
 
-### Step 5: Open a Pull Request
+### Frontend Tests
+```bash
+cd src/frontend
+npm test
+```
 
-When your submission is complete, it's time to create the Pull Request.
+## 📝 License
 
-1.  Go to your forked repository on GitHub.
-2.  You will see a green button that says **"Compare & pull request"**. Click it.
-3.  **Important:** Make sure the "base repository" is `42Prague/42Prague_digiEduHack_hackathon` and the "head repository" is `YOUR-USERNAME/42Prague_digiEduHack_hackathon` (from your team branch).
-4.  Use your **Team Name** as the title for the Pull Request.
-5.  Click **"Create pull request"**.
+MIT LICENSE
 
-That's it! Your submission is now in the queue for review.
+## 👥 Team
+
+- Aliyu Abdulbasit Ayinde -  Lead AI Engineer & System Architect
+- Štěpán Kapko -  Frontend / UI
+- Husam Ahmad - AI Engineer & Marketing 
+- Sridharan Kaliyamoorthy - Data Analysis, Audio Data Ingestion & Validation
+
+
+## 🙏 Acknowledgments
+
+- Eduzměna Foundation
+- DigiEduHack 2025 organizers
+- Featherless.ai for AI infrastructure
+
+
+## 🎯 Demo Data
+
+This package includes **pre-generated demo data** for immediate demonstration:
+
+### Quick Load Demo Data
+
+```bash
+# 1. Start services
+docker compose up -d
+
+# 2. Run migrations (creates tables)
+docker compose exec backend alembic upgrade head
+
+# 3. Load demo data
+docker compose exec -T db psql -U swx_user -d swx_db < mock_data/insert_transcripts.sql
+docker compose exec -T db psql -U swx_user -d swx_db < mock_data/insert_cultural_analysis.sql
+
+# 4. Verify
+docker compose exec db psql -U swx_user -d swx_db -c "SELECT COUNT(*) FROM transcripts;"
+```
+
+### Demo Data Includes
+
+- **15 Transcripts** from 7 regions, 4 school types, 5 intervention types
+- **15 Cultural Analyses** with complete scoring
+- **5 DQ Reports** showing various quality scenarios
+- **API Response Examples** for testing
+
+See `DEMO_DATA_INSTRUCTIONS.md` for detailed demo setup and screenshot opportunities.

@@ -1,0 +1,1793 @@
+[
+  {
+    "language_code": "en",
+    "key": "actions_menu_edit",
+    "value": "Edit"
+  },
+  {
+    "language_code": "cz",
+    "key": "actions_menu_edit",
+    "value": "Upravit"
+  },
+  {
+    "language_code": "en",
+    "key": "actions_menu_delete",
+    "value": "Delete"
+  },
+  {
+    "language_code": "cz",
+    "key": "actions_menu_delete",
+    "value": "Smazat"
+  },
+  {
+    "language_code": "en",
+    "key": "feature_not_available_title",
+    "value": "Not Available"
+  },
+  {
+    "language_code": "cz",
+    "key": "feature_not_available_title",
+    "value": "Není dostupné"
+  },
+  {
+    "language_code": "en",
+    "key": "feature_not_available_body",
+    "value": "The {feature} feature is currently disabled."
+  },
+  {
+    "language_code": "cz",
+    "key": "feature_not_available_body",
+    "value": "Funkce {feature} je momentálně nedostupná."
+  },
+  {
+    "language_code": "en",
+    "key": "delete_alert_header",
+    "value": "Delete {type}?"
+  },
+  {
+    "language_code": "cz",
+    "key": "delete_alert_header",
+    "value": "Smazat {type}?"
+  },
+  {
+    "language_code": "en",
+    "key": "delete_alert_user_warning",
+    "value": "Deleting a user is permanent and cannot be undone."
+  },
+  {
+    "language_code": "cz",
+    "key": "delete_alert_user_warning",
+    "value": "Smazání uživatele je trvalé a nelze ho vrátit zpět."
+  },
+  {
+    "language_code": "en",
+    "key": "delete_alert_confirmation",
+    "value": "Are you sure you want to continue?"
+  },
+  {
+    "language_code": "cz",
+    "key": "delete_alert_confirmation",
+    "value": "Opravdu chcete pokračovat?"
+  },
+  {
+    "language_code": "en",
+    "key": "delete_button",
+    "value": "Delete"
+  },
+  {
+    "language_code": "cz",
+    "key": "delete_button",
+    "value": "Smazat"
+  },
+  {
+    "language_code": "en",
+    "key": "cancel_button",
+    "value": "Cancel"
+  },
+  {
+    "language_code": "cz",
+    "key": "cancel_button",
+    "value": "Zrušit"
+  },
+  {
+    "language_code": "en",
+    "key": "notfound_oops",
+    "value": "Oops! Something went wrong."
+  },
+  {
+    "language_code": "cz",
+    "key": "notfound_oops",
+    "value": "Jejda! Něco se pokazilo."
+  },
+  {
+    "language_code": "en",
+    "key": "notfound_page_not_found",
+    "value": "We couldn't find the page you're looking for."
+  },
+  {
+    "language_code": "cz",
+    "key": "notfound_page_not_found",
+    "value": "Stránku, kterou hledáte, jsme nenašli."
+  },
+  {
+    "language_code": "en",
+    "key": "notfound_button_go_back",
+    "value": "Go back home"
+  },
+  {
+    "language_code": "cz",
+    "key": "notfound_button_go_back",
+    "value": "Zpět na hlavní stránku"
+  },
+  {
+    "language_code": "en",
+    "key": "oauth_success_welcome",
+    "value": "Welcome!"
+  },
+  {
+    "language_code": "cz",
+    "key": "oauth_success_welcome",
+    "value": "Vítejte!"
+  },
+  {
+    "language_code": "en",
+    "key": "oauth_success_message",
+    "value": "You have successfully logged in."
+  },
+  {
+    "language_code": "cz",
+    "key": "oauth_success_message",
+    "value": "Úspěšně jste se přihlásili."
+  },
+  {
+    "language_code": "en",
+    "key": "oauth_error_title",
+    "value": "Login Failed"
+  },
+  {
+    "language_code": "cz",
+    "key": "oauth_error_title",
+    "value": "Přihlášení selhalo"
+  },
+  {
+    "language_code": "en",
+    "key": "oauth_error_message",
+    "value": "Missing or invalid tokens."
+  },
+  {
+    "language_code": "cz",
+    "key": "oauth_error_message",
+    "value": "Chybějící nebo neplatné tokeny."
+  },
+  {
+    "language_code": "en",
+    "key": "oauth_processing",
+    "value": "Processing login..."
+  },
+  {
+    "language_code": "cz",
+    "key": "oauth_processing",
+    "value": "Zpracováváme přihlášení..."
+  },
+  {
+    "language_code": "en",
+    "key": "pagination_previous",
+    "value": "Previous"
+  },
+  {
+    "language_code": "cz",
+    "key": "pagination_previous",
+    "value": "Předchozí"
+  },
+  {
+    "language_code": "en",
+    "key": "pagination_next",
+    "value": "Next"
+  },
+  {
+    "language_code": "cz",
+    "key": "pagination_next",
+    "value": "Další"
+  },
+  {
+    "language_code": "en",
+    "key": "pagination_page",
+    "value": "Page {page}"
+  },
+  {
+    "language_code": "cz",
+    "key": "pagination_page",
+    "value": "Stránka {page}"
+  },
+  {
+    "language_code": "en",
+    "key": "sidebar_dashboard",
+    "value": "Dashboard"
+  },
+  {
+    "language_code": "cz",
+    "key": "sidebar_dashboard",
+    "value": "Přehled"
+  },
+  {
+    "language_code": "en",
+    "key": "sidebar_api_keys",
+    "value": "API Keys"
+  },
+  {
+    "language_code": "cz",
+    "key": "sidebar_api_keys",
+    "value": "API Klíče"
+  },
+  {
+    "language_code": "en",
+    "key": "sidebar_user_settings",
+    "value": "Settings"
+  },
+  {
+    "language_code": "cz",
+    "key": "sidebar_user_settings",
+    "value": "Nastavení"
+  },
+  {
+    "language_code": "en",
+    "key": "sidebar_logout",
+    "value": "Log Out"
+  },
+  {
+    "language_code": "cz",
+    "key": "sidebar_logout",
+    "value": "Odhlásit se"
+  },
+  {
+    "language_code": "en",
+    "key": "sidebar_logged_in_as",
+    "value": "Logged in as"
+  },
+  {
+    "language_code": "cz",
+    "key": "sidebar_logged_in_as",
+    "value": "Přihlášen jako"
+  },
+  {
+    "language_code": "en",
+    "key": "social_continue_with_google",
+    "value": "Continue with Google"
+  },
+  {
+    "language_code": "cz",
+    "key": "social_continue_with_google",
+    "value": "Pokračovat přes Google"
+  },
+  {
+    "language_code": "en",
+    "key": "social_continue_with_facebook",
+    "value": "Continue with Facebook"
+  },
+  {
+    "language_code": "cz",
+    "key": "social_continue_with_facebook",
+    "value": "Pokračovat přes Facebook"
+  },
+  {
+    "language_code": "en",
+    "key": "user_menu_my_profile",
+    "value": "My Profile"
+  },
+  {
+    "language_code": "cz",
+    "key": "user_menu_my_profile",
+    "value": "Můj profil"
+  },
+  {
+    "language_code": "en",
+    "key": "user_menu_log_out",
+    "value": "Log Out"
+  },
+  {
+    "language_code": "cz",
+    "key": "user_menu_log_out",
+    "value": "Odhlásit se"
+  },
+  {
+    "language_code": "en",
+    "key": "about_title",
+    "value": "About"
+  },
+  {
+    "language_code": "cz",
+    "key": "about_title",
+    "value": "O nás"
+  },
+  {
+    "language_code": "en",
+    "key": "about_heading",
+    "value": "Building the intelligent layer for Czech public services."
+  },
+  {
+    "language_code": "cz",
+    "key": "about_heading",
+    "value": "Budujeme inteligentní vrstvu pro české veřejné služby."
+  },
+  {
+    "language_code": "en",
+    "key": "about_subtitle",
+    "value": "CzechFabric unifies fragmented Czech APIs—like PID transport, eGovernment portals, and healthcare systems—into one context-aware foundation for AI assistants, apps, and workflows."
+  },
+  {
+    "language_code": "cz",
+    "key": "about_subtitle",
+    "value": "CzechFabric sjednocuje roztříštěná česká API – jako PID doprava, eGovernment portály a zdravotnické systémy – do jediné kontextově orientované platformy pro AI asistenty, aplikace a pracovní toky."
+  },
+  {
+    "language_code": "en",
+    "key": "cta_title",
+    "value": "Start exploring CzechFabric today"
+  },
+  {
+    "language_code": "cz",
+    "key": "cta_title",
+    "value": "Začněte objevovat CzechFabric ještě dnes"
+  },
+  {
+    "language_code": "en",
+    "key": "cta_subtitle",
+    "value": "Bring context, clarity, and connectivity to public services."
+  },
+  {
+    "language_code": "cz",
+    "key": "cta_subtitle",
+    "value": "Přineste kontext, přehlednost a propojení do veřejných služeb."
+  },
+  {
+    "language_code": "en",
+    "key": "cta_button",
+    "value": "Try CzechFabric"
+  },
+  {
+    "language_code": "cz",
+    "key": "cta_button",
+    "value": "Vyzkoušet CzechFabric"
+  },
+  {
+    "language_code": "en",
+    "key": "promo_title",
+    "value": "Watch CzechFabric in Action"
+  },
+  {
+    "language_code": "cz",
+    "key": "promo_title",
+    "value": "Podívejte se na CzechFabric v akci"
+  },
+  {
+    "language_code": "en",
+    "key": "promo_description",
+    "value": "See how CzechFabric transforms public service integration with AI."
+  },
+  {
+    "language_code": "cz",
+    "key": "promo_description",
+    "value": "Podívejte se, jak CzechFabric mění integraci veřejných služeb pomocí AI."
+  },
+  {
+    "language_code": "en",
+    "key": "about_readiness_badge",
+    "value": "Why now?"
+  },
+  {
+    "language_code": "cz",
+    "key": "about_readiness_badge",
+    "value": "Proč teď?"
+  },
+  {
+    "language_code": "en",
+    "key": "about_readiness_title",
+    "value": "Czech public services are not LLM-ready."
+  },
+  {
+    "language_code": "cz",
+    "key": "about_readiness_title",
+    "value": "České veřejné služby nejsou připraveny na LLM."
+  },
+  {
+    "language_code": "en",
+    "key": "about_readiness_subtitle",
+    "value": "Assistants struggle with outdated formats, local nuances, and disconnected endpoints. CzechFabric gives them real context and usable tools."
+  },
+  {
+    "language_code": "cz",
+    "key": "about_readiness_subtitle",
+    "value": "Asistenti si neporadí se zastaralými formáty, místními specifiky a nepropojenými rozhraními. CzechFabric jim poskytuje skutečný kontext a použitelné nástroje."
+  },
+  {
+    "language_code": "en",
+    "key": "about_story_heading",
+    "value": "Our Story"
+  },
+  {
+    "language_code": "cz",
+    "key": "about_story_heading",
+    "value": "Náš příběh"
+  },
+  {
+    "language_code": "en",
+    "key": "about_story_paragraph",
+    "value": "We built CzechFabric to bridge the gap between scattered Czech public APIs and the future of AI interaction. Instead of forcing every app or assistant to learn local APIs, we created one shared context layer: a unified system of reusable tools, voice-ready endpoints, and smart agents."
+  },
+  {
+    "language_code": "cz",
+    "key": "about_story_paragraph",
+    "value": "CzechFabric vznikl jako most mezi roztříštěnými českými veřejnými API a budoucností interakce s AI. Místo toho, aby každá aplikace nebo asistent museli zvlášť porozumět lokálním rozhraním, jsme vytvořili sdílenou kontextovou vrstvu – jednotný systém nástrojů, hlasových rozhraní a chytrých agentů."
+  },
+  {
+    "language_code": "en",
+    "key": "values_title",
+    "value": "Our Core Values"
+  },
+  {
+    "language_code": "cz",
+    "key": "values_title",
+    "value": "Naše základní hodnoty"
+  },
+  {
+    "language_code": "en",
+    "key": "values_subtitle",
+    "value": "Guiding principles behind CzechFabric’s mission."
+  },
+  {
+    "language_code": "cz",
+    "key": "values_subtitle",
+    "value": "Vedení principy naší mise CzechFabric."
+  },
+  {
+    "language_code": "en",
+    "key": "values_innovation",
+    "value": "Innovation"
+  },
+  {
+    "language_code": "cz",
+    "key": "values_innovation",
+    "value": "Inovace"
+  },
+  {
+    "language_code": "en",
+    "key": "values_innovation_desc",
+    "value": "We’re pushing the boundaries of AI in civic infrastructure."
+  },
+  {
+    "language_code": "cz",
+    "key": "values_innovation_desc",
+    "value": "Posouváme hranice AI v občanské infrastruktuře."
+  },
+  {
+    "language_code": "en",
+    "key": "values_transparency",
+    "value": "Transparency"
+  },
+  {
+    "language_code": "cz",
+    "key": "values_transparency",
+    "value": "Transparentnost"
+  },
+  {
+    "language_code": "en",
+    "key": "values_transparency_desc",
+    "value": "We believe in clear, trustworthy services powered by data."
+  },
+  {
+    "language_code": "cz",
+    "key": "values_transparency_desc",
+    "value": "Věříme v jasné, důvěryhodné služby poháněné daty."
+  },
+  {
+    "language_code": "en",
+    "key": "values_inclusion",
+    "value": "Inclusion"
+  },
+  {
+    "language_code": "cz",
+    "key": "values_inclusion",
+    "value": "Inkluze"
+  },
+  {
+    "language_code": "en",
+    "key": "values_inclusion_desc",
+    "value": "Built for everyone – inclusive, multilingual, and fair."
+  },
+  {
+    "language_code": "cz",
+    "key": "values_inclusion_desc",
+    "value": "Vytvořeno pro všechny – inkluzivní, vícejazyčné a férové."
+  },
+  {
+    "language_code": "en",
+    "key": "about_vision_connect_heading",
+    "value": "Connect"
+  },
+  {
+    "language_code": "cz",
+    "key": "about_vision_connect_heading",
+    "value": "Propojit"
+  },
+  {
+    "language_code": "en",
+    "key": "about_vision_connect_text",
+    "value": "Link Czech public services into a shared context layer."
+  },
+  {
+    "language_code": "cz",
+    "key": "about_vision_connect_text",
+    "value": "Propojte české veřejné služby do sdílené kontextové vrstvy."
+  },
+  {
+    "language_code": "en",
+    "key": "about_vision_context_heading",
+    "value": "Context"
+  },
+  {
+    "language_code": "cz",
+    "key": "about_vision_context_heading",
+    "value": "Kontext"
+  },
+  {
+    "language_code": "en",
+    "key": "about_vision_context_text",
+    "value": "Wrap endpoints with human-friendly reasoning and metadata."
+  },
+  {
+    "language_code": "cz",
+    "key": "about_vision_context_text",
+    "value": "Obalte rozhraní lidsky srozumitelným vysvětlením a metadaty."
+  },
+  {
+    "language_code": "en",
+    "key": "about_vision_clarity_heading",
+    "value": "Clarity"
+  },
+  {
+    "language_code": "cz",
+    "key": "about_vision_clarity_heading",
+    "value": "Přehlednost"
+  },
+  {
+    "language_code": "en",
+    "key": "about_vision_clarity_text",
+    "value": "Make Czech data usable across assistants and devices."
+  },
+  {
+    "language_code": "cz",
+    "key": "about_vision_clarity_text",
+    "value": "Zajistěte použitelnost českých dat napříč asistenty a zařízeními."
+  },
+  {
+    "language_code": "en",
+    "key": "hero_title",
+    "value": "CzechFabric: Smart Tools for Public Services"
+  },
+  {
+    "language_code": "cz",
+    "key": "hero_title",
+    "value": "CzechFabric: Chytré nástroje pro veřejné služby"
+  },
+  {
+    "language_code": "en",
+    "key": "hero_subtitle",
+    "value": "Connect to Czech public data with powerful, developer-friendly tools built for AI assistants, apps, and bots."
+  },
+  {
+    "language_code": "cz",
+    "key": "hero_subtitle",
+    "value": "Připojte se k českým veřejným datům pomocí výkonných nástrojů pro vývojáře – navržených pro AI asistenty, aplikace a boty."
+  },
+  {
+    "language_code": "en",
+    "key": "hero_get_started",
+    "value": "Get Started"
+  },
+  {
+    "language_code": "cz",
+    "key": "hero_get_started",
+    "value": "Začít"
+  },
+  {
+    "language_code": "en",
+    "key": "hero_learn_more",
+    "value": "Learn More"
+  },
+  {
+    "language_code": "cz",
+    "key": "hero_learn_more",
+    "value": "Zjistit více"
+  },
+  {
+    "language_code": "en",
+    "key": "features_intro",
+    "value": "Core Features"
+  },
+  {
+    "language_code": "cz",
+    "key": "features_intro",
+    "value": "Hlavní funkce"
+  },
+  {
+    "language_code": "en",
+    "key": "features_heading",
+    "value": "Bridge AI and Czech public infrastructure with powerful developer tools."
+  },
+  {
+    "language_code": "cz",
+    "key": "features_heading",
+    "value": "Propojte AI a českou veřejnou infrastrukturu pomocí výkonných vývojářských nástrojů."
+  },
+  {
+    "language_code": "en",
+    "key": "features_transport_title",
+    "value": "Smart Transport Tools"
+  },
+  {
+    "language_code": "cz",
+    "key": "features_transport_title",
+    "value": "Chytré dopravní nástroje"
+  },
+  {
+    "language_code": "en",
+    "key": "features_transport_desc",
+    "value": "Real-time data and queries across Prague's PID, stops, and schedules."
+  },
+  {
+    "language_code": "cz",
+    "key": "features_transport_desc",
+    "value": "Reálná data a dotazy napříč PID Prahou, zastávkami a jízdními řády."
+  },
+  {
+    "language_code": "en",
+    "key": "features_transport_link",
+    "value": "Explore Transport"
+  },
+  {
+    "language_code": "cz",
+    "key": "features_transport_link",
+    "value": "Prozkoumat dopravu"
+  },
+  {
+    "language_code": "en",
+    "key": "features_context_title",
+    "value": "Context-Aware Prompts"
+  },
+  {
+    "language_code": "cz",
+    "key": "features_context_title",
+    "value": "Kontextové dotazy"
+  },
+  {
+    "language_code": "en",
+    "key": "features_context_desc",
+    "value": "Localized LLM tools with metadata and multilingual support."
+  },
+  {
+    "language_code": "cz",
+    "key": "features_context_desc",
+    "value": "Lokalizované nástroje pro LLM s metadaty a vícejazyčnou podporou."
+  },
+  {
+    "language_code": "en",
+    "key": "features_context_link",
+    "value": "See Context Layer"
+  },
+  {
+    "language_code": "cz",
+    "key": "features_context_link",
+    "value": "Zobrazit kontext"
+  },
+  {
+    "language_code": "en",
+    "key": "features_sdk_title",
+    "value": "Open SDK & Tools"
+  },
+  {
+    "language_code": "cz",
+    "key": "features_sdk_title",
+    "value": "Otevřené SDK a nástroje"
+  },
+  {
+    "language_code": "en",
+    "key": "features_sdk_desc",
+    "value": "SDK and integrations for web, chatbots, assistants, and voice apps."
+  },
+  {
+    "language_code": "cz",
+    "key": "features_sdk_desc",
+    "value": "SDK a integrace pro weby, chatboty, asistenty a hlasové aplikace."
+  },
+  {
+    "language_code": "en",
+    "key": "features_sdk_link",
+    "value": "Use SDK"
+  },
+  {
+    "language_code": "cz",
+    "key": "features_sdk_link",
+    "value": "Použít SDK"
+  },
+  {
+    "language_code": "en",
+    "key": "why_heading",
+    "value": "Why CzechFabric is Built for Modern Civic AI"
+  },
+  {
+    "language_code": "cz",
+    "key": "why_heading",
+    "value": "Proč je CzechFabric stavěný pro moderní občanskou AI"
+  },
+  {
+    "language_code": "en",
+    "key": "why_privacy_title",
+    "value": "Privacy First"
+  },
+  {
+    "language_code": "cz",
+    "key": "why_privacy_title",
+    "value": "Ochrana soukromí"
+  },
+  {
+    "language_code": "en",
+    "key": "why_privacy_desc",
+    "value": "All tools are built with data protection and GDPR compliance in mind."
+  },
+  {
+    "language_code": "cz",
+    "key": "why_privacy_desc",
+    "value": "Všechny nástroje jsou navrženy s ohledem na ochranu údajů a GDPR."
+  },
+  {
+    "language_code": "en",
+    "key": "why_transparency_title",
+    "value": "Transparent by Design"
+  },
+  {
+    "language_code": "cz",
+    "key": "why_transparency_title",
+    "value": "Transparentní od základu"
+  },
+  {
+    "language_code": "en",
+    "key": "why_transparency_desc",
+    "value": "Our APIs and responses are open, explainable, and easy to audit."
+  },
+  {
+    "language_code": "cz",
+    "key": "why_transparency_desc",
+    "value": "Naše API a odpovědi jsou otevřené, vysvětlitelné a snadno ověřitelné."
+  },
+  {
+    "language_code": "en",
+    "key": "why_open_title",
+    "value": "Open Integration"
+  },
+  {
+    "language_code": "cz",
+    "key": "why_open_title",
+    "value": "Otevřená integrace"
+  },
+  {
+    "language_code": "en",
+    "key": "why_open_desc",
+    "value": "Flexible SDKs and endpoints work with any LLM, platform, or interface."
+  },
+  {
+    "language_code": "cz",
+    "key": "why_open_desc",
+    "value": "Flexibilní SDK a rozhraní fungují s jakýmkoliv LLM, platformou nebo rozhraním."
+  },
+  {
+    "language_code": "en",
+    "key": "sdk_heading",
+    "value": "Built for Developers, Designers & AI Platforms"
+  },
+  {
+    "language_code": "cz",
+    "key": "sdk_heading",
+    "value": "Vytvořeno pro vývojáře, designéry a AI platformy"
+  },
+  {
+    "language_code": "en",
+    "key": "sdk_intro",
+    "value": "Whether you’re building a chatbot, AI assistant, or dashboard—CzechFabric gives you intelligent context, normalized APIs, and plug-and-play integration across Czechia."
+  },
+  {
+    "language_code": "cz",
+    "key": "sdk_intro",
+    "value": "Ať už vytváříte chatboty, AI asistenty nebo dashboardy—CzechFabric vám poskytne inteligentní kontext, normalizovaná API a snadnou integraci po celé ČR."
+  },
+  {
+    "language_code": "en",
+    "key": "sdk_faq_q1",
+    "value": "What is CzechFabric SDK?"
+  },
+  {
+    "language_code": "cz",
+    "key": "sdk_faq_q1",
+    "value": "Co je CzechFabric SDK?"
+  },
+  {
+    "language_code": "en",
+    "key": "sdk_faq_a1",
+    "value": "It's a toolkit that lets developers easily connect to Czech public services with AI-ready tools."
+  },
+  {
+    "language_code": "cz",
+    "key": "sdk_faq_a1",
+    "value": "Je to sada nástrojů, která umožňuje vývojářům snadno se připojit k českým veřejným službám s podporou AI."
+  },
+  {
+    "language_code": "en",
+    "key": "sdk_faq_q2",
+    "value": "Who can use the SDK?"
+  },
+  {
+    "language_code": "cz",
+    "key": "sdk_faq_q2",
+    "value": "Kdo může SDK používat?"
+  },
+  {
+    "language_code": "en",
+    "key": "sdk_faq_a2",
+    "value": "Anyone building assistants, bots, apps, or services that interact with Czech systems."
+  },
+  {
+    "language_code": "cz",
+    "key": "sdk_faq_a2",
+    "value": "Kdokoliv, kdo vytváří asistenty, boty, aplikace nebo služby pro interakci s českými systémy."
+  },
+  {
+    "language_code": "en",
+    "key": "sdk_faq_q3",
+    "value": "Is the SDK open source?"
+  },
+  {
+    "language_code": "cz",
+    "key": "sdk_faq_q3",
+    "value": "Je SDK open-source?"
+  },
+  {
+    "language_code": "en",
+    "key": "sdk_faq_a3",
+    "value": "Yes, the core SDK is open-source under a permissive license."
+  },
+  {
+    "language_code": "cz",
+    "key": "sdk_faq_a3",
+    "value": "Ano, jádro SDK je open-source s volnou licencí."
+  },
+  {
+    "language_code": "en",
+    "key": "sdk_faq_q4",
+    "value": "What platforms are supported?"
+  },
+  {
+    "language_code": "cz",
+    "key": "sdk_faq_q4",
+    "value": "Jaké platformy jsou podporovány?"
+  },
+  {
+    "language_code": "en",
+    "key": "sdk_faq_a4",
+    "value": "It works with web apps, mobile apps, chat interfaces, and LLMs."
+  },
+  {
+    "language_code": "cz",
+    "key": "sdk_faq_a4",
+    "value": "Funguje s webovými aplikacemi, mobilními aplikacemi, chatovacími rozhraními a LLM."
+  },
+  {
+    "language_code": "en",
+    "key": "sdk_faq_q5",
+    "value": "Can I contribute to CzechFabric?"
+  },
+  {
+    "language_code": "cz",
+    "key": "sdk_faq_q5",
+    "value": "Mohu přispět do CzechFabric?"
+  },
+  {
+    "language_code": "en",
+    "key": "sdk_faq_a5",
+    "value": "Absolutely! Contributions, feedback, and new integrations are welcome."
+  },
+  {
+    "language_code": "cz",
+    "key": "sdk_faq_a5",
+    "value": "Rozhodně! Přivítáme příspěvky, zpětnou vazbu i nové integrace."
+  },
+  {
+    "language_code": "en",
+    "key": "sdk_faq_q6",
+    "value": "Do I need an API key?"
+  },
+  {
+    "language_code": "cz",
+    "key": "sdk_faq_q6",
+    "value": "Potřebuji API klíč?"
+  },
+  {
+    "language_code": "en",
+    "key": "sdk_faq_a6",
+    "value": "Yes, you can generate one from your CzechFabric dashboard."
+  },
+  {
+    "language_code": "cz",
+    "key": "sdk_faq_a6",
+    "value": "Ano, můžete si ho vygenerovat ve svém CzechFabric dashboardu."
+  },
+  {
+    "language_code": "en",
+    "key": "sdk_faq_q7",
+    "value": "Is there support for speech or voice assistants?"
+  },
+  {
+    "language_code": "cz",
+    "key": "sdk_faq_q7",
+    "value": "Je k dispozici podpora pro hlasové asistenty?"
+  },
+  {
+    "language_code": "en",
+    "key": "sdk_faq_a7",
+    "value": "Yes! CzechFabric supports voice-ready endpoints and audio input/output."
+  },
+  {
+    "language_code": "cz",
+    "key": "sdk_faq_a7",
+    "value": "Ano! CzechFabric podporuje hlasová rozhraní a vstup/výstup zvuku."
+  },
+
+  {
+    "language_code": "en",
+    "key": "cta_title",
+    "value": "Join the CzechFabric Early Access Pilot"
+  },
+  {
+    "language_code": "cz",
+    "key": "cta_title",
+    "value": "Připojte se k pilotnímu programu CzechFabric"
+  },
+  {
+    "language_code": "en",
+    "key": "cta_description",
+    "value": "Help shape the AI-powered infrastructure layer for Czech public services. Whether you're a developer, designer, or city tech leader — your feedback drives our future."
+  },
+  {
+    "language_code": "cz",
+    "key": "cta_description",
+    "value": "Pomozte nám vytvářet AI infrastrukturu pro veřejné služby v Česku. Ať už jste vývojář, designér nebo městský technolog – vaše zpětná vazba ovlivní budoucnost."
+  },
+  {
+    "language_code": "en",
+    "key": "cta_input_placeholder",
+    "value": "Your email address"
+  },
+  {
+    "language_code": "cz",
+    "key": "cta_input_placeholder",
+    "value": "Vaše e-mailová adresa"
+  },
+  {
+    "language_code": "en",
+    "key": "cta_button",
+    "value": "Request Early Access"
+  },
+  {
+    "language_code": "cz",
+    "key": "cta_button",
+    "value": "Požádat o přístup"
+  },
+  {
+    "language_code": "en",
+    "key": "cta_disclaimer",
+    "value": "No spam. Just focused updates and early access to CzechFabric tools."
+  },
+  {
+    "language_code": "cz",
+    "key": "cta_disclaimer",
+    "value": "Žádný spam. Jen důležité novinky a přístup k nástrojům CzechFabric."
+  },
+  {
+    "language_code": "en",
+    "key": "footer_about",
+    "value": "CzechFabric is the intelligence layer for public services in Czechia. It connects transport, government, and national APIs into one unified, AI-ready system."
+  },
+  {
+    "language_code": "cz",
+    "key": "footer_about",
+    "value": "CzechFabric je inteligentní vrstva pro veřejné služby v Česku. Spojuje dopravu, státní správu a národní API do jednoho sjednoceného systému připraveného na AI."
+  },
+  {
+    "language_code": "en",
+    "key": "footer_explore",
+    "value": "Explore"
+  },
+  {
+    "language_code": "cz",
+    "key": "footer_explore",
+    "value": "Prozkoumat"
+  },
+  {
+    "language_code": "en",
+    "key": "footer_contact",
+    "value": "Contact"
+  },
+  {
+    "language_code": "cz",
+    "key": "footer_contact",
+    "value": "Kontakt"
+  },
+  {
+    "language_code": "en",
+    "key": "footer_resources",
+    "value": "Resources"
+  },
+  {
+    "language_code": "cz",
+    "key": "footer_resources",
+    "value": "Zdroje"
+  },
+  {
+    "language_code": "en",
+    "key": "nav_home",
+    "value": "Home"
+  },
+  {
+    "language_code": "cz",
+    "key": "nav_home",
+    "value": "Domů"
+  },
+  {
+    "language_code": "en",
+    "key": "nav_about",
+    "value": "About"
+  },
+  {
+    "language_code": "cz",
+    "key": "nav_about",
+    "value": "O nás"
+  },
+  {
+    "language_code": "en",
+    "key": "nav_features",
+    "value": "Features"
+  },
+  {
+    "language_code": "cz",
+    "key": "nav_features",
+    "value": "Funkce"
+  },
+  {
+    "language_code": "en",
+    "key": "nav_video",
+    "value": "Promo Video"
+  },
+  {
+    "language_code": "cz",
+    "key": "nav_video",
+    "value": "Promo Video"
+  },
+  {
+    "language_code": "en",
+    "key": "nav_try_now",
+    "value": "Try Now"
+  },
+  {
+    "language_code": "cz",
+    "key": "nav_try_now",
+    "value": "Vyzkoušet"
+  },
+  {
+    "language_code": "en",
+    "key": "nav_why",
+    "value": "Why"
+  },
+  {
+    "language_code": "cz",
+    "key": "nav_why",
+    "value": "Proč"
+  },
+  {
+    "language_code": "en",
+    "key": "nav_promo",
+    "value": "Promo"
+  },
+  {
+    "language_code": "cz",
+    "key": "nav_promo",
+    "value": "Promo"
+  },
+  {
+    "language_code": "en",
+    "key": "promo_video_title",
+    "value": "Watch CzechFabric in Action"
+  },
+  {
+    "language_code": "cz",
+    "key": "promo_video_title",
+    "value": "Podívejte se na CzechFabric v akci"
+  },
+  {
+    "language_code": "en",
+    "key": "testimonials_title",
+    "value": "What Early Users Say"
+  },
+  {
+    "language_code": "cz",
+    "key": "testimonials_title",
+    "value": "Co říkají první uživatelé"
+  },
+  {
+    "language_code": "cz",
+    "key": "api_key_tab_list",
+    "value": "Vaše klíče"
+  },
+  {
+    "language_code": "en",
+    "key": "api_key_tab_list",
+    "value": "Your Keys"
+  },
+  {
+    "language_code": "cz",
+    "key": "api_key_tab_create",
+    "value": "Vytvořit klíč"
+  },
+  {
+    "language_code": "en",
+    "key": "api_key_tab_create",
+    "value": "Create Key"
+  },
+  {
+    "language_code": "cz",
+    "key": "api_key_management_heading",
+    "value": "Správa API klíčů"
+  },
+  {
+    "language_code": "en",
+    "key": "api_key_management_heading",
+    "value": "API Key Management"
+  },
+  {
+    "language_code": "cz",
+    "key": "appearance_heading",
+    "value": "Vzhled aplikace"
+  },
+  {
+    "language_code": "en",
+    "key": "appearance_heading",
+    "value": "App Appearance"
+  },
+  {
+    "language_code": "cz",
+    "key": "appearance_light_mode",
+    "value": "Světlý režim"
+  },
+  {
+    "language_code": "en",
+    "key": "appearance_light_mode",
+    "value": "Light Mode"
+  },
+  {
+    "language_code": "cz",
+    "key": "appearance_dark_mode",
+    "value": "Tmavý režim"
+  },
+  {
+    "language_code": "en",
+    "key": "appearance_dark_mode",
+    "value": "Dark Mode"
+  },
+  {
+    "language_code": "cz",
+    "key": "appearance_system_default",
+    "value": "Systémový výchozí"
+  },
+  {
+    "language_code": "en",
+    "key": "appearance_system_default",
+    "value": "System Default"
+  },
+  {
+    "language_code": "cz",
+    "key": "appearance_default_badge",
+    "value": "Výchozí"
+  },
+  {
+    "language_code": "en",
+    "key": "appearance_default_badge",
+    "value": "Default"
+  },
+  {
+    "language_code": "cz",
+    "key": "change_password_heading",
+    "value": "Změna hesla"
+  },
+  {
+    "language_code": "en",
+    "key": "change_password_heading",
+    "value": "Change Password"
+  },
+  {
+    "language_code": "cz",
+    "key": "change_password_success_title",
+    "value": "Úspěch"
+  },
+  {
+    "language_code": "en",
+    "key": "change_password_success_title",
+    "value": "Success"
+  },
+  {
+    "language_code": "cz",
+    "key": "change_password_success_message",
+    "value": "Vaše heslo bylo úspěšně změněno."
+  },
+  {
+    "language_code": "en",
+    "key": "change_password_success_message",
+    "value": "Your password was changed successfully."
+  },
+  {
+    "language_code": "cz",
+    "key": "change_password_social_error",
+    "value": "Nemůžete změnit heslo pro účet přihlášený přes sociální síť."
+  },
+  {
+    "language_code": "en",
+    "key": "change_password_social_error",
+    "value": "You cannot change password for social login accounts."
+  },
+  {
+    "language_code": "cz",
+    "key": "form_label_current_password",
+    "value": "Současné heslo"
+  },
+  {
+    "language_code": "en",
+    "key": "form_label_current_password",
+    "value": "Current Password"
+  },
+  {
+    "language_code": "cz",
+    "key": "form_label_new_password",
+    "value": "Nové heslo"
+  },
+  {
+    "language_code": "en",
+    "key": "form_label_new_password",
+    "value": "New Password"
+  },
+  {
+    "language_code": "cz",
+    "key": "form_label_confirm_password",
+    "value": "Potvrdit heslo"
+  },
+  {
+    "language_code": "en",
+    "key": "form_label_confirm_password",
+    "value": "Confirm Password"
+  },
+  {
+    "language_code": "cz",
+    "key": "form_validation_passwords_do_not_match",
+    "value": "Hesla se neshodují."
+  },
+  {
+    "language_code": "en",
+    "key": "form_validation_passwords_do_not_match",
+    "value": "Passwords do not match."
+  },
+  {
+    "language_code": "cz",
+    "key": "button_save",
+    "value": "Uložit"
+  },
+  {
+    "language_code": "en",
+    "key": "button_save",
+    "value": "Save"
+  },
+  {
+    "language_code": "cz",
+    "key": "button_cancel",
+    "value": "Zrušit"
+  },
+  {
+    "language_code": "en",
+    "key": "button_cancel",
+    "value": "Cancel"
+  },
+  {
+    "language_code": "cz",
+    "key": "button_edit",
+    "value": "Upravit"
+  },
+  {
+    "language_code": "en",
+    "key": "button_edit",
+    "value": "Edit"
+  },
+  {
+    "language_code": "cz",
+    "key": "user_information_heading",
+    "value": "Osobní údaje"
+  },
+  {
+    "language_code": "en",
+    "key": "user_information_heading",
+    "value": "User Information"
+  },
+  {
+    "language_code": "cz",
+    "key": "form_label_full_name",
+    "value": "Celé jméno"
+  },
+  {
+    "language_code": "en",
+    "key": "form_label_full_name",
+    "value": "Full Name"
+  },
+  {
+    "language_code": "cz",
+    "key": "form_label_email",
+    "value": "E-mail"
+  },
+  {
+    "language_code": "en",
+    "key": "form_label_email",
+    "value": "Email"
+  },
+  {
+    "language_code": "cz",
+    "key": "form_label_preferred_language",
+    "value": "Preferovaný jazyk"
+  },
+  {
+    "language_code": "en",
+    "key": "form_label_preferred_language",
+    "value": "Preferred Language"
+  },
+  {
+    "language_code": "cz",
+    "key": "form_text_na",
+    "value": "Není dostupné"
+  },
+  {
+    "language_code": "en",
+    "key": "form_text_na",
+    "value": "Not available"
+  },
+  {
+    "language_code": "cz",
+    "key": "language_english",
+    "value": "Angličtina"
+  },
+  {
+    "language_code": "en",
+    "key": "language_english",
+    "value": "English"
+  },
+  {
+    "language_code": "cz",
+    "key": "language_czech",
+    "value": "Čeština"
+  },
+  {
+    "language_code": "en",
+    "key": "language_czech",
+    "value": "Czech"
+  },
+  {
+    "language_code": "en",
+    "key": "dashboard_hi",
+    "value": "Hi, {name}"
+  },
+  {
+    "language_code": "cz",
+    "key": "dashboard_hi",
+    "value": "Ahoj, {name}"
+  },
+  {
+    "language_code": "en",
+    "key": "dashboard_welcome_back",
+    "value": "Welcome back!"
+  },
+  {
+    "language_code": "cz",
+    "key": "dashboard_welcome_back",
+    "value": "Vítej zpět!"
+  },
+  {
+    "language_code": "en",
+    "key": "settings_user_settings",
+    "value": "User Settings"
+  },
+  {
+    "language_code": "cz",
+    "key": "settings_user_settings",
+    "value": "Uživatelské nastavení"
+  },
+  {
+    "language_code": "en",
+    "key": "settings_my_profile",
+    "value": "My Profile"
+  },
+  {
+    "language_code": "cz",
+    "key": "settings_my_profile",
+    "value": "Můj profil"
+  },
+  {
+    "language_code": "en",
+    "key": "settings_password",
+    "value": "Password"
+  },
+  {
+    "language_code": "cz",
+    "key": "settings_password",
+    "value": "Heslo"
+  },
+  {
+    "language_code": "en",
+    "key": "settings_appearance",
+    "value": "Appearance"
+  },
+  {
+    "language_code": "cz",
+    "key": "settings_appearance",
+    "value": "Vzhled"
+  },
+  {
+    "language_code": "en",
+    "key": "settings_danger_zone",
+    "value": "Danger Zone"
+  },
+  {
+    "language_code": "cz",
+    "key": "settings_danger_zone",
+    "value": "Nebezpečná zóna"
+  },
+  {
+    "language_code": "en",
+    "key": "login_username_required",
+    "value": "Username or email is required."
+  },
+  {
+    "language_code": "cz",
+    "key": "login_username_required",
+    "value": "Uživatelské jméno nebo e-mail je povinný."
+  },
+  {
+    "language_code": "en",
+    "key": "login_email_or_username_placeholder",
+    "value": "Email or username"
+  },
+  {
+    "language_code": "cz",
+    "key": "login_email_or_username_placeholder",
+    "value": "E-mail nebo uživatelské jméno"
+  },
+  {
+    "language_code": "en",
+    "key": "login_password_required",
+    "value": "Password is required."
+  },
+  {
+    "language_code": "cz",
+    "key": "login_password_required",
+    "value": "Heslo je povinné."
+  },
+  {
+    "language_code": "en",
+    "key": "login_password_placeholder",
+    "value": "Enter your password"
+  },
+  {
+    "language_code": "cz",
+    "key": "login_password_placeholder",
+    "value": "Zadejte heslo"
+  },
+  {
+    "language_code": "en",
+    "key": "login_forgot_password",
+    "value": "Forgot password?"
+  },
+  {
+    "language_code": "cz",
+    "key": "login_forgot_password",
+    "value": "Zapomenuté heslo?"
+  },
+  {
+    "language_code": "en",
+    "key": "login_button",
+    "value": "Sign In"
+  },
+  {
+    "language_code": "cz",
+    "key": "login_button",
+    "value": "Přihlásit se"
+  },
+  {
+    "language_code": "en",
+    "key": "login_no_account",
+    "value": "Don't have an account?"
+  },
+  {
+    "language_code": "cz",
+    "key": "login_no_account",
+    "value": "Nemáte účet?"
+  },
+  {
+    "language_code": "en",
+    "key": "login_signup",
+    "value": "Sign Up"
+  },
+  {
+    "language_code": "cz",
+    "key": "login_signup",
+    "value": "Zaregistrovat se"
+  },
+  {
+    "language_code": "en",
+    "key": "recover_password_heading",
+    "value": "Reset Password"
+  },
+  {
+    "language_code": "cz",
+    "key": "recover_password_heading",
+    "value": "Obnovit heslo"
+  },
+  {
+    "language_code": "en",
+    "key": "recover_password_text",
+    "value": "Enter your email to receive a reset link."
+  },
+  {
+    "language_code": "cz",
+    "key": "recover_password_text",
+    "value": "Zadejte svůj e-mail pro odkaz na obnovení hesla."
+  },
+  {
+    "language_code": "en",
+    "key": "recover_email_required",
+    "value": "Email is required."
+  },
+  {
+    "language_code": "cz",
+    "key": "recover_email_required",
+    "value": "E-mail je povinný."
+  },
+  {
+    "language_code": "en",
+    "key": "recover_email_placeholder",
+    "value": "Enter your email"
+  },
+  {
+    "language_code": "cz",
+    "key": "recover_email_placeholder",
+    "value": "Zadejte svůj e-mail"
+  },
+  {
+    "language_code": "en",
+    "key": "recover_email_sent_title",
+    "value": "Email sent"
+  },
+  {
+    "language_code": "cz",
+    "key": "recover_email_sent_title",
+    "value": "E-mail odeslán"
+  },
+  {
+    "language_code": "en",
+    "key": "recover_email_sent_message",
+    "value": "Check your inbox for the reset link."
+  },
+  {
+    "language_code": "cz",
+    "key": "recover_email_sent_message",
+    "value": "Zkontrolujte svůj e-mail pro odkaz na obnovení."
+  },
+  {
+    "language_code": "en",
+    "key": "recover_reset_link_button",
+    "value": "Send Reset Link"
+  },
+  {
+    "language_code": "cz",
+    "key": "recover_reset_link_button",
+    "value": "Odeslat odkaz"
+  },
+  {
+    "language_code": "en",
+    "key": "back_to_login",
+    "value": "Back to Login"
+  },
+  {
+    "language_code": "cz",
+    "key": "back_to_login",
+    "value": "Zpět na přihlášení"
+  },
+  {
+    "language_code": "en",
+    "key": "back_to_signup",
+    "value": "Sign Up"
+  },
+  {
+    "language_code": "cz",
+    "key": "back_to_signup",
+    "value": "Zaregistrovat se"
+  },
+  {
+    "language_code": "en",
+    "key": "reset_password_heading",
+    "value": "Set New Password"
+  },
+  {
+    "language_code": "cz",
+    "key": "reset_password_heading",
+    "value": "Nastavit nové heslo"
+  },
+  {
+    "language_code": "en",
+    "key": "reset_password_text",
+    "value": "Choose a secure new password."
+  },
+  {
+    "language_code": "cz",
+    "key": "reset_password_text",
+    "value": "Zadejte nové bezpečné heslo."
+  },
+  {
+    "language_code": "en",
+    "key": "reset_new_password_label",
+    "value": "New Password"
+  },
+  {
+    "language_code": "cz",
+    "key": "reset_new_password_label",
+    "value": "Nové heslo"
+  },
+  {
+    "language_code": "en",
+    "key": "reset_new_password_placeholder",
+    "value": "Enter new password"
+  },
+  {
+    "language_code": "cz",
+    "key": "reset_new_password_placeholder",
+    "value": "Zadejte nové heslo"
+  },
+  {
+    "language_code": "en",
+    "key": "reset_confirm_password_label",
+    "value": "Confirm Password"
+  },
+  {
+    "language_code": "cz",
+    "key": "reset_confirm_password_label",
+    "value": "Potvrdit heslo"
+  },
+  {
+    "language_code": "en",
+    "key": "reset_confirm_password_placeholder",
+    "value": "Re-enter password"
+  },
+  {
+    "language_code": "cz",
+    "key": "reset_confirm_password_placeholder",
+    "value": "Zadejte heslo znovu"
+  },
+  {
+    "language_code": "en",
+    "key": "reset_password_button",
+    "value": "Reset Password"
+  },
+  {
+    "language_code": "cz",
+    "key": "reset_password_button",
+    "value": "Obnovit heslo"
+  },
+  {
+    "language_code": "en",
+    "key": "reset_success_title",
+    "value": "Success"
+  },
+  {
+    "language_code": "cz",
+    "key": "reset_success_title",
+    "value": "Úspěch"
+  },
+  {
+    "language_code": "en",
+    "key": "reset_success_message",
+    "value": "Your password has been reset."
+  },
+  {
+    "language_code": "cz",
+    "key": "reset_success_message",
+    "value": "Vaše heslo bylo obnoveno."
+  },
+  {
+    "language_code": "en",
+    "key": "form_validation_full_name_required",
+    "value": "Full name is required."
+  },
+  {
+    "language_code": "cz",
+    "key": "form_validation_full_name_required",
+    "value": "Celé jméno je povinné."
+  },
+  {
+    "language_code": "en",
+    "key": "form_placeholder_full_name",
+    "value": "Enter your full name"
+  },
+  {
+    "language_code": "cz",
+    "key": "form_placeholder_full_name",
+    "value": "Zadejte své celé jméno"
+  },
+  {
+    "language_code": "en",
+    "key": "form_label_set_password",
+    "value": "Set Password"
+  },
+  {
+    "language_code": "cz",
+    "key": "form_label_set_password",
+    "value": "Nastavit heslo"
+  },
+  {
+    "language_code": "en",
+    "key": "form_placeholder_password",
+    "value": "Enter a secure password"
+  },
+  {
+    "language_code": "cz",
+    "key": "form_placeholder_password",
+    "value": "Zadejte bezpečné heslo"
+  },
+  {
+    "language_code": "en",
+    "key": "form_validation_confirm_password_required",
+    "value": "Please confirm your password."
+  },
+  {
+    "language_code": "cz",
+    "key": "form_validation_confirm_password_required",
+    "value": "Potvrďte své heslo."
+  },
+  {
+    "language_code": "en",
+    "key": "login_already_have_account",
+    "value": "Already have an account?"
+  },
+  {
+    "language_code": "cz",
+    "key": "login_already_have_account",
+    "value": "Máte již účet?"
+  },
+  {
+    "language_code": "en",
+    "key": "login_signin",
+    "value": "Sign In"
+  },
+  {
+    "language_code": "cz",
+    "key": "login_signin",
+    "value": "Přihlásit se"
+  },
+  {
+    "language_code": "en",
+    "key": "logo_alt",
+    "value": "CzechFabric Logo"
+  },
+  {
+    "language_code": "cz",
+    "key": "logo_alt",
+    "value": "Logo CzechFabric"
+  }
+]
