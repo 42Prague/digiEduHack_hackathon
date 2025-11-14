@@ -15,6 +15,8 @@ let socket = null;
 let reconnectAttempts = 0;
 const maxReconnectAttempts = 5;
 let currentBotMessage = null; // Current bot message element being streamed to
+let currentRole = null; // Track current role to detect role changes
+let thinkingMessage = null; // "Thinking..." message element
 
 /**
  * Get value from object using dot notation path
@@ -89,13 +91,59 @@ function appendMessage(text, sender, isError = false) {
 }
 
 /**
- * Append text to current streaming message (or create new one)
+ * Show "Thinking..." message
  */
-function appendToStreamingMessage(text, sender = "bot") {
+function showThinking() {
+    if (!thinkingMessage) {
+        thinkingMessage = createMessageElement("bot");
+        thinkingMessage.textContent = "Thinking...";
+        thinkingMessage.style.opacity = "0.6";
+        thinkingMessage.style.fontStyle = "italic";
+    }
+}
+
+/**
+ * Remove "Thinking..." message
+ */
+function removeThinking() {
+    if (thinkingMessage) {
+        thinkingMessage.remove();
+        thinkingMessage = null;
+    }
+}
+
+/**
+ * Append text to current streaming message (or create new one if role changed)
+ */
+function appendToStreamingMessage(text, role = null, sender = "bot") {
+    // Check if role changed - if so, start a new message
+    if (role && role !== currentRole && currentBotMessage) {
+        // Finish current message and start new one
+        currentBotMessage = null;
+        currentRole = role;
+    } else if (role) {
+        currentRole = role;
+    }
+    
+    // Remove thinking message when we start receiving content
+    removeThinking();
+    
+    // Create new message if needed
     if (!currentBotMessage) {
         currentBotMessage = createMessageElement(sender);
     }
-    currentBotMessage.textContent += text;
+    
+    // Handle tools role specially
+    if (role === "tools") {
+        // Don't append the dump, just show that it looked through local data
+        if (!currentBotMessage.textContent.includes("Looking through local data")) {
+            currentBotMessage.textContent = "Looking through local data...";
+        }
+    } else {
+        // Append text normally
+        currentBotMessage.textContent += text;
+    }
+    
     chatWindow.scrollTop = chatWindow.scrollHeight;
 }
 
@@ -103,7 +151,9 @@ function appendToStreamingMessage(text, sender = "bot") {
  * Finish current streaming message
  */
 function finishStreamingMessage() {
+    removeThinking();
     currentBotMessage = null;
+    currentRole = null;
 }
 
 /**
@@ -155,9 +205,19 @@ function connect() {
                     return; // Exit early, don't process this message
                 }
                 
+                // Get role from the message (ModelResponse has 'role' field)
+                const role = json.role || null;
+                
                 // Extract text from chunk (ModelResponse has 'content' field)
                 // The backend sends: { role: "...", content: "text chunk" }
                 let chunkText = null;
+                
+                // Handle tools role - don't show the dump
+                if (role === "tools") {
+                    // Just show that it's looking through local data
+                    appendToStreamingMessage("", role);
+                    return;
+                }
                 
                 // Try to get content directly (most common case)
                 if (json.content != null) {
@@ -168,8 +228,9 @@ function connect() {
                 }
                 
                 // Append to current streaming message (joins all chunks together)
+                // Role changes will trigger new message creation
                 if (chunkText) {
-                    appendToStreamingMessage(chunkText);
+                    appendToStreamingMessage(chunkText, role);
                 }
             } catch (e) {
                 console.error("Error processing message:", e);
@@ -206,6 +267,9 @@ function sendMessage() {
     // Remove status on first message
     const status = chatWindow.querySelector('.status-message');
     if (status) status.remove();
+    
+    // Show "Thinking..." while waiting for response
+    showThinking();
     
     // Prepare for new bot response (will be created when first chunk arrives)
 }
