@@ -62,6 +62,25 @@
     background: var(--color-bg-light);
 }
 
+.message.system {
+    align-self: center;
+    max-width: 90%;
+    font-size: calc(var(--font-size-base) * 0.85);
+    opacity: 0.8;
+    font-style: italic;
+}
+
+.message.error {
+    background: #fee2e2;
+    border-color: #ef4444;
+    color: #991b1b;
+}
+
+.message.bot.error {
+    background: #fee2e2;
+    color: #991b1b;
+}
+
 /* Input Area */
 .chat-input-wrapper {
     margin-top: var(--spacing-lg);
