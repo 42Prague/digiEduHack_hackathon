@@ -1,0 +1,41 @@
+{
+    "chart_type": "boxplot",
+    "data": [
+        {
+            "city": "Ostrava",
+            "satisfaction": [
+                4.68,
+                3.37,
+                3.18,
+                3.14,
+                4.67,
+                4.44
+            ]
+        },
+        {
+            "city": "Prague",
+            "satisfaction": [
+                3.81,
+                4.92,
+                3.84,
+                4.54,
+                3.87,
+                4.83,
+                3.97
+            ]
+        },
+        {
+            "city": "Brno",
+            "satisfaction": [
+                3.71,
+                4.9,
+                3.79,
+                4.91,
+                3.27
+            ]
+        }
+    ],
+    "x": "city",
+    "y": "satisfaction",
+    "title": "Satisfaction Variability by City"
+}

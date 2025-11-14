@@ -1,0 +1,31 @@
+[project]
+name = "digieduhack-hackathon"
+version = "0.1.0"
+description = "Very cool web app to generate reports"
+authors = []
+readme = "README.md"
+requires-python = ">=3.12"
+dependencies = [
+    "fastapi (>=0.121.2,<0.122.0)",
+    "numpy (>=2.3.4,<3.0.0)",
+    "qdrant-client (>=1.15.1,<2.0.0)",
+    "pymongo (>=4.15.4,<5.0.0)",
+    "openai (>=2.8.0,<3.0.0)",
+    "ffmpeg (>=1.4,<2.0)",
+    "pandas (>=2.3.3,<3.0.0)",
+    "vosk @ https://github.com/alphacep/vosk-api/releases/download/v0.3.45/vosk-0.3.45-py3-none-manylinux2014_aarch64.whl",
+    "unicorn (>=2.1.4,<3.0.0)",
+    "uvicorn (>=0.38.0,<0.39.0)",
+    "pypdf2 (>=3.0.1,<4.0.0)",
+    "python-docx (>=1.2.0,<2.0.0)",
+    "python-multipart (>=0.0.20,<0.0.21)",
+    "sentence-transformers (>=5.1.2,<6.0.0)"
+]
+
+
+[build-system]
+requires = ["poetry-core>=2.0.0,<3.0.0"]
+build-backend = "poetry.core.masonry.api"
+
+[tool.poetry]
+package-mode = false

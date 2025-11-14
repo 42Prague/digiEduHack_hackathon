@@ -1,0 +1,15 @@
+version: '1.0'
+services:
+  mongo:
+    image: mongo
+    container_name: mongohackathon
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: mongoadmin
+      MONGO_INITDB_ROOT_PASSWORD: Hackathon2025
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongodata:/data/db
+volumes:
+  mongodata:
+    driver: local
