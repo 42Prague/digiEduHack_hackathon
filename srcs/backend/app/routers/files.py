@@ -1,6 +1,6 @@
 from typing import Optional, List
 from fastapi import APIRouter, Depends, HTTPException
-from sqlmodel import Session, select, SQLModel, Field
+from sqlmodel import Session, select, SQLModel
 from ..db import get_session
 from ..models import FileMeta, School
 
@@ -37,3 +37,29 @@ def create_file(
 @router.get("", response_model=List[FileMeta])
 def list_files(session: Session = Depends(get_session)):
     return session.exec(select(FileMeta)).all()
+
+
+@router.post("/{file_id}/retry", response_model=FileMeta)
+def retry_file(
+    file_id: int,
+    session: Session = Depends(get_session),
+):
+    file_meta = session.get(FileMeta, file_id)
+    if not file_meta:
+        raise HTTPException(status_code=404, detail="File not found")
+
+    # Reset analysis metadata
+    file_meta.analysis_status = "pending"
+    file_meta.analysis_error = None
+    file_meta.analysis_started_at = None
+    file_meta.analysis_finished_at = None
+
+    # Optional: clear transcript & llm summary if you want to re-generate everything
+    # file_meta.transcript_text = None
+    # file_meta.llm_summary = None
+
+    session.add(file_meta)
+    session.commit()
+    session.refresh(file_meta)
+
+    return file_meta

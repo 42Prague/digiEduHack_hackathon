@@ -63,5 +63,8 @@ export const schoolsApi = {
 
 export const filesApi = {
     list: () => request('/files'),
-    create: (payload) => request('/files', { method: 'POST', body: JSON.stringify(payload) })
+    create: (payload) => request('/files', { method: 'POST', body: JSON.stringify(payload) }),
+    retry: (id) => request(`/files/${id}/retry`, {
+        method: 'POST',
+    }),
 }

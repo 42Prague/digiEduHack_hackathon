@@ -203,9 +203,13 @@ function renderFiles() {
                     </details>
                     ${transcriptPreview}
                 </div>
-                <div class="list-item-actions">
+                <div class="list-item-actions" style="display: flex; flex-direction: column; gap: 8px;">
                     <button class="btn btn-secondary" onclick="previewFile('${file.id}')">
                         Preview
+                    </button>
+
+                    <button class="btn btn-warning" onclick="retryFile('${file.id}')">
+                        Re-run analysis
                     </button>
                 </div>
             </div>
@@ -267,6 +271,19 @@ async function deleteRegion(id) {
     }
 }
 
+async function retryFile(id) {
+    if (!confirm('Re-run analysis of this file?')) return
+
+    try {
+        await filesApi.retry(id)
+        showAlert('Analysis restarted', 'success')
+        await loadData()
+    } catch (err) {
+        console.error('Retry failed:', err)
+        showAlert('Failed to restart analysis', 'error')
+    }
+}
+
 async function deleteSchool(id) {
     if (!confirm('Are you sure you want to delete this school?')) {
         return
@@ -312,6 +329,7 @@ window.deleteRegion = deleteRegion
 window.deleteSchool = deleteSchool
 window.refreshFiles = () => loadData()
 window.previewFile = previewFile
+window.retryFile = retryFile
 
 async function init() {
     setupForms()
