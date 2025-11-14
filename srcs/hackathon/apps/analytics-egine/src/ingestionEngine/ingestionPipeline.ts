@@ -151,9 +151,9 @@ export async function runDocumentProcessing() {
   } finally {
     // This block will run whether the try block succeeded or failed
     if (db) { // Only try to close if the connection was established
-      console.log("Closing database connection...");
-      await closeMongo();
-      console.log("Database connection closed.");
+      // console.log("Closing database connection...");
+      // // await closeMongo();
+      // console.log("Database connection closed.");
     }
   }
 }
