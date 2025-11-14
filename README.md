@@ -34,10 +34,10 @@ No audio, transcripts, or identifiable educational data is transferred outside E
 ### **d. Monthly cost estimate**
 Component
 Estimated Cost
-**Gemini Pro (Vertex AI EU)**	~€50 / month
-**Network traffic**		~€20 / month
-**Speech-to-Text**		~$0.014 per minute (≈ €13 / 1000 minutes)
-**MongoDB Atlas (Free Tier)**		€0
+-   **Gemini Pro (Vertex AI EU)**	~€50 / month
+-   **Network traffic**		~€20 / month
+-   **Speech-to-Text**		~$0.014 per minute (≈ €13 / 1000 minutes)
+-   **MongoDB Atlas (Free Tier)**		€0
 Total typical cost: **€70–90/month + audio usage**.
 ----------
 ## **4. Prerequisites**
