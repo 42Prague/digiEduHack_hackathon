@@ -1,6 +1,8 @@
 # **AI-Powered Educational Data Analysis Platform**
 ## **1. One-Sentence Description**
+
 An AI-powered analytics platform that ingests diverse educational data, understands it using LLMs, and transforms it into actionable insights to improve learning outcomes and operational efficiency.
+
 ----------
 ## **2. Technology Stack**
 ### **Languages**
@@ -38,7 +40,7 @@ Estimated Cost
 -   **Network traffic**		~€20 / month
 -   **Speech-to-Text**		~$0.014 per minute (≈ €13 / 1000 minutes)
 -   **MongoDB Atlas (Free Tier)**		€0
-Total typical cost: **€70–90/month + audio usage**.
+-   Total typical cost: **€70–90/month + audio usage**.
 ----------
 ## **4. Prerequisites**
 ### **For Local Development**
@@ -75,7 +77,7 @@ In the srcs/hackaton folder run:
 -   gcloud CLI with docker containers
 
 ## **8. Known limitations**
-
+-   None
 
 
 
