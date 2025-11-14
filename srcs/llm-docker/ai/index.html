@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>LLM Chat</title>
+  <style>
+    body { font-family: sans-serif; max-width: 800px; margin: 24px auto; padding: 20px; }
+    .messages { border: 1px solid #e0e0e0; padding: 12px; height: 400px; overflow-y: auto; border-radius: 8px; background:#fafafa }
+    .message { margin-bottom: 10px; }
+    .message.user { text-align: right; }
+    .message .bubble { display: inline-block; padding: 8px 12px; border-radius: 12px; max-width: 80%; }
+    .message.user .bubble { background: #007bff; color: white; }
+    .message.assistant .bubble { background: #f0f0f0; color: #111; }
+    .input-row { margin-top: 12px; display:flex; gap:8px }
+    input[type="text"] { flex:1; padding:10px; font-size:1rem }
+    button { padding: 10px 16px; }
+  </style>
+</head>
+<body>
+  <h1>🗨️ LLM Chat</h1>
+
+  <div class="messages" id="messages"></div>
+
+  <div class="input-row">
+    <input id="input" type="text" placeholder="Say something..." />
+    <button id="send">Send</button>
+  </div>
+
+  <script>
+    // Simple client-side history handling; keep an array of {role, content}
+    const messagesEl = document.getElementById('messages')
+    const inputEl = document.getElementById('input')
+    const sendBtn = document.getElementById('send')
+
+    const history = [] // will store previous user/assistant messages
+
+    function appendMessage(role, text) {
+      const el = document.createElement('div')
+      el.className = 'message ' + (role === 'user' ? 'user' : 'assistant')
+      const bubble = document.createElement('div')
+      bubble.className = 'bubble'
+      bubble.innerText = text
+      el.appendChild(bubble)
+      messagesEl.appendChild(el)
+      messagesEl.scrollTop = messagesEl.scrollHeight
+    }
+
+    async function sendMessage() {
+      const text = inputEl.value.trim()
+      if (!text) return
+      appendMessage('user', text)
+      history.push({role: 'user', content: text})
+      inputEl.value = ''
+      appendMessage('assistant', '⏳ Thinking...')
+
+      try {
+        const res = await fetch('/chat', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ message: text, history: history })
+        })
+        const data = await res.json()
+        // remove the last 'Thinking...' bubble
+        const last = messagesEl.lastChild
+        if (last && last.querySelector('.bubble') && last.querySelector('.bubble').innerText === '⏳ Thinking...') {
+          messagesEl.removeChild(last)
+        }
+
+        if (data.reply) {
+          appendMessage('assistant', data.reply)
+          history.push({role: 'assistant', content: data.reply})
+        } else if (data.error) {
+          appendMessage('assistant', 'Error: ' + data.error)
+        } else {
+          appendMessage('assistant', 'No response')
+        }
+      } catch (err) {
+        appendMessage('assistant', 'Request failed: ' + err.message)
+      }
+    }
+
+    sendBtn.addEventListener('click', sendMessage)
+    inputEl.addEventListener('keydown', (e) => { if (e.key === 'Enter') sendMessage() })
+  </script>
+</body>
+</html>
