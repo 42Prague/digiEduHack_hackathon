@@ -55,8 +55,8 @@ jobs:
           sed -i "s|IMAGE_URL_PLACEHOLDER|${{ env.REGION }}-docker.pkg.dev/${{ env.PROJECT_ID }}/${{ env.REPOSITORY }}/${{ env.SERVICE_NAME }}:${{ github.sha }}|g" infra/mime-decoder-config.yaml
           sed -i "s|PROJECT_ID_PLACEHOLDER|${{ env.PROJECT_ID }}|g" infra/mime-decoder-config.yaml
           sed -i "s|BUCKET_NAME_PLACEHOLDER|${{ env.PROJECT_ID }}-eduscale-uploads|g" infra/mime-decoder-config.yaml
-          sed -i "s|TRANSFORMER_SERVICE_URL_PLACEHOLDER|https://transformer|g" infra/mime-decoder-config.yaml
-          sed -i "s|BACKEND_SERVICE_URL_PLACEHOLDER|https://jedouscale-engine|g" infra/mime-decoder-config.yaml
+          sed -i "s|TRANSFORMER_SERVICE_URL_PLACEHOLDER|https://transformer-${{ env.PROJECT_ID }}.${{ env.REGION }}.run.app|g" infra/mime-decoder-config.yaml
+          sed -i "s|BACKEND_SERVICE_URL_PLACEHOLDER|https://jedouscale-engine-${{ env.PROJECT_ID }}.${{ env.REGION }}.run.app|g" infra/mime-decoder-config.yaml
       
       - name: Deploy to Cloud Run
         run: |
