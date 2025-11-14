@@ -7,6 +7,14 @@ let regions = []
 let schools = []
 let files = []
 
+function escapeHtml(str) {
+    if (!str) return ''
+    return str
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+}
+
 function showAlert(message, type = 'success') {
     const alertContainer = document.getElementById('alert-container')
     const alert = document.createElement('div')
@@ -148,6 +156,17 @@ function renderFiles() {
             ? `<pre class="file-json-preview">${JSON.stringify(file.llm_summary, null, 2)}</pre>`
             : '<span class="text-muted">No LLM summary</span>'
 
+        const transcriptPreview = file.transcript_text
+            ? `
+                <details class="file-details">
+                    <summary>Transcript</summary>
+                    <pre class="file-json-preview file-transcript-preview">
+                        ${escapeHtml(file.transcript_text)}
+                    </pre>
+                </details>
+            `
+            : ''
+
         return `
             <div class="list-item">
                 <div class="list-item-info">
@@ -182,6 +201,7 @@ function renderFiles() {
                         <summary>LLM summary</summary>
                         ${llmSummaryPreview}
                     </details>
+                    ${transcriptPreview}
                 </div>
                 <div class="list-item-actions">
                     <button class="btn btn-secondary" onclick="previewFile('${file.id}')">

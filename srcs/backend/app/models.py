@@ -43,3 +43,5 @@ class FileMeta(SQLModel, table=True):
     llm_summary: Optional[Dict[str, Any]] = Field(
         default=None, sa_column=Column(JSON)
     )
+
+    transcript_text: Optional[str] = Field(default=None, sa_column_kwargs={"nullable": True})

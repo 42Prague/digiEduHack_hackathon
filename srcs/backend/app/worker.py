@@ -110,11 +110,9 @@ def main():
                     if is_audio_file(f):
                         transcript = transcribe_with_whisper(f)
 
-                        # Optional: persist transcript on the FileMeta if you add such a field
-                        if hasattr(f, "transcript_text"):
-                            f.transcript_text = transcript
-                            session.add(f)
-                            session.commit()
+                        f.transcript_text = transcript
+                        session.add(f)
+                        session.commit()
 
                         override_text = transcript
 
