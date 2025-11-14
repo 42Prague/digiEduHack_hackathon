@@ -1,7 +1,7 @@
 """Upload API routes."""
 
 import logging
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from uuid import uuid4
 
 from fastapi import APIRouter, Body, File, Form, HTTPException, Request, UploadFile
@@ -78,8 +78,8 @@ async def upload_file(
             logger.error(f"Failed to store file: {e}", exc_info=True)
             raise HTTPException(status_code=500, detail="Failed to store file")
 
-        # Create upload record with COMPLETED status
-        created_at = datetime.utcnow()
+        # Create upload record
+        created_at = datetime.now(timezone.utc)
         record = UploadRecord(
             file_id=file_id,
             region_id=region_id.strip(),

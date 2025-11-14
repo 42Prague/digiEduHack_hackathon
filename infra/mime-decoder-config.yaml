@@ -9,6 +9,7 @@ spec:
         autoscaling.knative.dev/minScale: '0'
         autoscaling.knative.dev/maxScale: '10'
     spec:
+      serviceAccountName: cloud-run-engine@PROJECT_ID_PLACEHOLDER.iam.gserviceaccount.com
       containerConcurrency: 80
       timeoutSeconds: 300
       containers:

@@ -2,20 +2,25 @@
 
 ## Introduction
 
-The Transformer Service is a processing microservice that converts various file formats into text representation. It receives requests from the MIME Decoder, retrieves files from Cloud Storage, performs format-specific transformations (text extraction, OCR, ASR, archive unpacking), saves the extracted text back to Cloud Storage, and forwards the text URI to the Tabular service for structured data analysis.
+The Transformer Service is a processing microservice that converts various file formats into text representation with rich metadata. It receives requests from the MIME Decoder, retrieves files from Cloud Storage, performs format-specific transformations (text extraction, ASR), and saves the extracted text with YAML frontmatter metadata to Cloud Storage. The Tabular service asynchronously discovers and processes these files via GCS Events.
 
-The Transformer operates as part of the pipeline: MIME Decoder → **Transformer** → Tabular → BigQuery.
+The Transformer operates as part of the pipeline: MIME Decoder → **Transformer** → Cloud Storage → [GCS Event] → Tabular → BigQuery.
 
 ## Glossary
 
 - **Transformer Service**: Microservice that converts files to text format
-- **Text Extraction**: Process of extracting text from documents (PDF, DOCX, etc.)
-- **OCR**: Optical Character Recognition for extracting text from images
+- **PDF Extraction**: Process of extracting text from PDF documents using pdfplumber
+- **DOCX Extraction**: Process of extracting text from Word documents (DOCX, DOC) using pandoc
+- **Excel Extraction**: Process of extracting text from Excel spreadsheets (XLSX, XLS) using openpyxl/xlrd
+- **ODF Extraction**: Process of extracting text from OpenDocument formats (ODT, ODS, ODP) using pandoc
+- **Text Extraction**: Process of reading plain text files without any transformation (TXT, CSV, MD, HTML, JSON, XML, RTF are plain text)
+- **Pandoc**: Universal document converter that handles DOCX, DOC, ODT, ODS, ODP and other formats
 - **ASR**: Automatic Speech Recognition for transcribing audio to text
-- **Archive Unpacking**: Extracting files from ZIP, TAR, and other archives
+- **Frontmatter**: YAML metadata block at the beginning of text files with file info, extraction details, and content metrics
+- **Streaming Upload**: Memory-efficient approach that writes chunks sequentially without loading entire content
 - **Text URI**: Cloud Storage URI pointing to extracted text (e.g., gs://bucket/text/file_id.txt)
-- **Tabular Service**: Downstream service that analyzes text structure and loads to BigQuery
-- **File Category**: Classification from MIME Decoder (text, image, audio, archive, other)
+- **Tabular Service**: Downstream service that monitors GCS, parses frontmatter, and loads text to BigQuery
+- **File Category**: Classification from MIME Decoder (pdf, docx, excel, odf, text, audio, other)
 
 ## Requirements
 
@@ -33,20 +38,72 @@ The Transformer operates as part of the pipeline: MIME Decoder → **Transformer
 
 
 
-### Requirement 2: Text Extraction from Documents
+### Requirement 2: PDF Extraction
 
-**User Story:** As a data engineer, I want text extracted from documents, so that tabular data can be analyzed.
+**User Story:** As a data engineer, I want text extracted from PDF documents, so that tabular data can be analyzed.
 
 #### Acceptance Criteria
 
-1. WHEN the file category is "text" and content type is application/pdf, THE Transformer SHALL extract text using PyPDF2 or pdfplumber
-2. WHEN the file category is "text" and content type is application/vnd.openxmlformats-officedocument.wordprocessingml.document, THE Transformer SHALL extract text using python-docx
-3. WHEN the file category is "text" and content type is text/*, THE Transformer SHALL read the file as plain text with UTF-8 encoding
-4. WHEN the file category is "text" and content type is application/vnd.ms-excel or CSV, THE Transformer SHALL preserve the raw text structure
-5. WHEN text extraction fails, THE Transformer SHALL log the error and return HTTP 500
+1. WHEN the file category is "pdf", THE Transformer SHALL extract text using pdfplumber
+2. WHEN PDF extraction completes, THE Transformer SHALL return lines (number of lines in resulting text file) and page_count (number of PDF pages in source) in metadata
+3. WHEN PDF extraction fails, THE Transformer SHALL log the error and return HTTP 500
+4. THE Transformer SHALL preserve line breaks and basic formatting in extracted text
+
+### Requirement 3: DOCX Extraction
+
+**User Story:** As a data engineer, I want text extracted from Word documents, so that document content can be analyzed.
+
+#### Acceptance Criteria
+
+1. WHEN the file category is "docx", THE Transformer SHALL extract text from DOCX files using pandoc
+2. WHEN the file category is "docx", THE Transformer SHALL extract text from DOC files using pandoc
+3. WHEN DOCX extraction completes, THE Transformer SHALL return lines (number of lines in resulting text file) in metadata
+4. WHEN the document contains tables, THE Transformer SHALL extract table content as text
+5. WHEN DOCX extraction fails, THE Transformer SHALL log the error and return HTTP 500
 6. THE Transformer SHALL preserve line breaks and basic formatting in extracted text
 
-### Requirement 3: ASR for Audio Files
+### Requirement 4: Excel Extraction
+
+**User Story:** As a data engineer, I want text extracted from Excel spreadsheets, so that tabular data can be analyzed.
+
+#### Acceptance Criteria
+
+1. WHEN the file category is "excel", THE Transformer SHALL extract text from XLSX files using openpyxl or pandas
+2. WHEN the file category is "excel", THE Transformer SHALL extract text from XLS files using xlrd or pandas
+3. WHEN Excel extraction completes, THE Transformer SHALL extract text from all sheets
+4. WHEN Excel extraction completes, THE Transformer SHALL return lines (number of lines in resulting text file), sheet_count (number of sheets in source), and row_count (total data rows in source) in metadata
+5. THE Transformer SHALL format output with sheet names as headers
+6. WHEN Excel extraction fails, THE Transformer SHALL log the error and return HTTP 500
+
+### Requirement 5: ODF Extraction
+
+**User Story:** As a data engineer, I want text extracted from OpenDocument formats, so that content can be analyzed.
+
+#### Acceptance Criteria
+
+1. WHEN the file category is "odf", THE Transformer SHALL extract text from ODT files using pandoc
+2. WHEN the file category is "odf", THE Transformer SHALL extract text from ODS files using pandoc
+3. WHEN the file category is "odf", THE Transformer SHALL extract text from ODP files using pandoc
+4. WHEN ODF extraction completes for ODS files, THE Transformer SHALL extract text from all sheets
+5. WHEN ODF extraction completes for ODP files, THE Transformer SHALL extract text from all slides
+6. WHEN ODF extraction completes, THE Transformer SHALL return lines (number of lines in resulting text file) in metadata
+7. WHEN ODF extraction fails, THE Transformer SHALL log the error and return HTTP 500
+8. THE Transformer SHALL preserve basic text structure in extracted content
+
+### Requirement 6: Text Extraction
+
+**User Story:** As a data engineer, I want text extracted from plain text files, so that content can be analyzed by AI.
+
+#### Acceptance Criteria
+
+1. WHEN the file category is "text", THE Transformer SHALL read the file as UTF-8 text (TXT, CSV, MD, HTML, JSON, XML, RTF)
+2. WHEN the file is plain text, THE Transformer SHALL NOT perform any transformation or parsing
+3. THE Transformer SHALL save the raw text with frontmatter to Cloud Storage for downstream processing
+4. WHEN UTF-8 decoding fails, THE Transformer SHALL try latin-1 as fallback
+5. THE Transformer SHALL return lines (number of lines in resulting text file) and row_count (number of lines in source) in metadata
+6. WHEN text reading fails, THE Transformer SHALL log the error and return HTTP 500
+
+### Requirement 7: ASR for Audio Files
 
 **User Story:** As a data engineer, I want audio transcribed to text, so that spoken content can be analyzed.
 
@@ -60,53 +117,50 @@ The Transformer operates as part of the pipeline: MIME Decoder → **Transformer
 6. WHEN ASR fails, THE Transformer SHALL log the error and return HTTP 500
 7. THE Transformer SHALL include audio metadata (duration, format) in logs
 
-### Requirement 4: Archive Unpacking
+### Requirement 8: Unsupported File Categories
 
-**User Story:** As a data engineer, I want archives unpacked and each file processed, so that bulk uploads are handled automatically.
-
-#### Acceptance Criteria
-
-1. WHEN the file category is "archive", THE Transformer SHALL unpack the archive to a temporary directory
-2. THE Transformer SHALL support ZIP, TAR, TAR.GZ, and RAR formats
-3. WHEN an archive is unpacked, THE Transformer SHALL process each file individually
-4. THE Transformer SHALL recursively unpack nested archives up to 2 levels deep
-5. WHEN processing archive contents, THE Transformer SHALL save each extracted text with a unique name (file_id_001.txt, file_id_002.txt)
-6. THE Transformer SHALL limit archive size to 500MB to prevent resource exhaustion
-7. WHEN unpacking fails, THE Transformer SHALL log the error and return HTTP 500
-
-
-
-### Requirement 5: Text Storage to Cloud Storage
-
-**User Story:** As a system architect, I want extracted text saved to Cloud Storage, so that it can be accessed by downstream services.
+**User Story:** As a system architect, I want unsupported file types handled gracefully, so that the system doesn't crash on unexpected inputs.
 
 #### Acceptance Criteria
 
-1. WHEN text extraction completes, THE Transformer SHALL save the text to Cloud Storage
-2. THE text file SHALL be saved to gs://{bucket}/text/{file_id}.txt
-3. WHEN processing archives, THE Transformer SHALL save multiple text files (file_id_001.txt, file_id_002.txt, etc.)
-4. THE Transformer SHALL use UTF-8 encoding for all text files
-5. THE Transformer SHALL set appropriate metadata on the Cloud Storage object (content type, original file info)
-6. WHEN saving fails, THE Transformer SHALL log the error and return HTTP 500
-7. THE Transformer SHALL return the text_uri (or list of text_uris for archives) in the response
+1. WHEN the file category is "other", THE Transformer SHALL return HTTP 400 with error message "Unsupported file type"
+2. WHEN the file category is "other", THE Transformer SHALL log a warning with file_id, content_type, and category
+3. WHEN the file category is not one of (pdf, docx, excel, odf, text, audio), THE Transformer SHALL return HTTP 400
+4. THE Transformer SHALL NOT attempt to process files with unsupported categories
+5. THE response SHALL include clear error message indicating which file types are supported
 
-### Requirement 6: Tabular Service Integration
+### Requirement 9: Text Storage with Frontmatter to Cloud Storage
 
-**User Story:** As a system architect, I want the Transformer to forward text to the Tabular service, so that structured data can be extracted.
+**User Story:** As a system architect, I want extracted text with rich metadata saved to Cloud Storage, so that downstream services have full context for AI processing.
 
 #### Acceptance Criteria
 
-1. WHEN text is saved to Cloud Storage, THE Transformer SHALL call the Tabular service with the text_uri
-2. THE Transformer SHALL send file_id, region_id, text_uri, and original_content_type to Tabular
-3. WHEN processing archives, THE Transformer SHALL call Tabular for each extracted text file
-4. THE Transformer SHALL use HTTP POST to invoke the Tabular service endpoint
-5. WHEN the Tabular service returns success, THE Transformer SHALL include the Tabular response in its own response
-6. WHEN the Tabular service returns an error, THE Transformer SHALL log the error but still return success (text extraction succeeded)
-7. THE Transformer SHALL set a timeout of 600 seconds for Tabular calls
+1. WHEN text extraction completes, THE Transformer SHALL build YAML frontmatter with comprehensive metadata
+2. THE frontmatter SHALL include: file_id, region_id, event_id, text_uri, original file info, extraction details, content metrics, and document-specific metadata
+3. THE Transformer SHALL stream the frontmatter + extracted text to Cloud Storage using memory-efficient approach
+4. THE text file SHALL be saved to gs://{bucket}/text/{file_id}.txt
+5. THE Transformer SHALL use UTF-8 encoding for all text files
+6. THE streaming upload SHALL yield frontmatter first, then separator, then extracted text
+7. WHEN saving fails, THE Transformer SHALL log the error and return HTTP 500
+8. THE Transformer SHALL return the text_uri in the response
+9. THE Transformer SHALL use streaming upload to avoid loading large texts into memory
 
+### Requirement 10: Decoupled Tabular Service Integration
 
+**User Story:** As a system architect, I want the Transformer decoupled from the Tabular service, so that the system is more scalable and resilient.
 
-### Requirement 7: Error Handling and Logging
+#### Acceptance Criteria
+
+1. WHEN text with frontmatter is saved to Cloud Storage, THE Transformer SHALL complete its processing and return success
+2. THE Transformer SHALL NOT make direct HTTP calls to the Tabular service
+3. THE Tabular service SHALL independently monitor the `text/` prefix in Cloud Storage via GCS Events (Eventarc)
+4. WHEN a new text file is created, GCS SHALL emit an event that triggers the Tabular service
+5. THE Tabular service SHALL download the file, parse the YAML frontmatter, and process the text
+6. THE Transformer SHALL include ALL relevant metadata in the frontmatter for AI processing
+7. THE decoupled architecture SHALL allow Tabular to reprocess files independently of Transformer
+8. THE Transformer response SHALL NOT include Tabular service status (async processing)
+
+### Requirement 11: Error Handling and Logging
 
 **User Story:** As a DevOps engineer, I want comprehensive error logging, so that I can debug transformation failures.
 
@@ -118,8 +172,11 @@ The Transformer operates as part of the pipeline: MIME Decoder → **Transformer
 4. WHEN a file cannot be processed, THE Transformer SHALL return HTTP 500 to trigger MIME Decoder retry
 5. THE Transformer SHALL include processing duration in all logs
 6. THE Transformer SHALL include correlation IDs for request tracing
+7. WHEN returning HTTP 4xx error, THE Transformer SHALL log at WARN level with error details
+8. WHEN returning HTTP 5xx error, THE Transformer SHALL log at ERROR level with error details and stack trace
+9. THE logging SHALL be mandatory for ALL HTTP error responses (4xx and 5xx), with no exceptions
 
-### Requirement 8: Health Check and Monitoring
+### Requirement 12: Health Check and Monitoring
 
 **User Story:** As a DevOps engineer, I want health check endpoints, so that Cloud Run can monitor service health.
 
@@ -128,34 +185,29 @@ The Transformer operates as part of the pipeline: MIME Decoder → **Transformer
 1. THE Transformer SHALL expose a GET /health endpoint
 2. WHEN the service is healthy, THE /health endpoint SHALL return HTTP 200 with status "healthy"
 3. THE /health endpoint SHALL check connectivity to Cloud Storage
-4. THE /health endpoint SHALL check connectivity to Tabular service
-5. WHEN dependencies are unavailable, THE /health endpoint SHALL return HTTP 503
-6. THE /health endpoint SHALL respond within 10 seconds
+4. WHEN Cloud Storage is unavailable, THE /health endpoint SHALL return HTTP 503
+5. THE /health endpoint SHALL respond within 10 seconds
 
-
-
-### Requirement 10: Configuration Management
+### Requirement 13: Configuration Management
 
 **User Story:** As a DevOps engineer, I want configuration via environment variables, so that I can deploy to different environments.
 
 #### Acceptance Criteria
 
-1. THE Transformer SHALL read TABULAR_SERVICE_URL from environment variables
-2. THE Transformer SHALL read GCP_PROJECT_ID, GCP_REGION, and GCS_BUCKET_NAME from environment variables
-3. THE Transformer SHALL read TESSERACT_LANG for OCR language configuration with default "eng+ces"
-4. THE Transformer SHALL read MAX_FILE_SIZE_MB with default 100MB
-5. THE Transformer SHALL read MAX_ARCHIVE_SIZE_MB with default 500MB
-6. THE Transformer SHALL read LOG_LEVEL from environment variables with default "INFO"
-7. THE configuration SHALL be validated at startup and log errors for missing required variables
+1. THE Transformer SHALL read GCP_PROJECT_ID, GCP_REGION, and GCS_BUCKET_NAME from environment variables
+2. THE Transformer SHALL read MAX_FILE_SIZE_MB with default 100MB
+3. THE Transformer SHALL read LOG_LEVEL from environment variables with default "INFO"
+4. THE Transformer SHALL read SPEECH_LANGUAGE_EN and SPEECH_LANGUAGE_CS for audio transcription
+5. THE configuration SHALL be validated at startup and log errors for missing required variables
 
-### Requirement 11: Cloud Run Deployment
+### Requirement 14: Cloud Run Deployment
 
 **User Story:** As a DevOps engineer, I want the Transformer deployed on Cloud Run, so that it scales with processing load.
 
 #### Acceptance Criteria
 
 1. THE Transformer SHALL be deployed as a Cloud Run service in the EU region
-2. THE Cloud Run service SHALL be configured with 2GB memory minimum (for OCR and document processing)
+2. THE Cloud Run service SHALL be configured with 2GB memory minimum (for document processing and ASR)
 3. THE Cloud Run service SHALL be configured with 2 vCPUs
 4. THE Cloud Run service SHALL scale from 0 to 20 instances based on request load
 5. THE Cloud Run service SHALL have a request timeout of 900 seconds (15 minutes for large files)

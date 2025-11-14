@@ -26,6 +26,26 @@ resource "google_cloud_run_service_iam_member" "eventarc_invoker" {
   project  = var.project_id
 }
 
+# Data source to reference the existing Transformer service
+# Only created when enable_eventarc is true
+data "google_cloud_run_service" "transformer" {
+  count    = var.enable_eventarc ? 1 : 0
+  name     = var.transformer_service_name
+  location = var.region
+  project  = var.project_id
+}
+
+# Grant cloud-run-engine service account permission to invoke Transformer
+# This allows MIME Decoder (running as cloud-run-engine) to call Transformer
+resource "google_cloud_run_service_iam_member" "transformer_invoker" {
+  count    = var.enable_eventarc ? 1 : 0
+  service  = data.google_cloud_run_service.transformer[0].name
+  location = data.google_cloud_run_service.transformer[0].location
+  role     = "roles/run.invoker"
+  member   = "serviceAccount:${google_service_account.cloud_run_engine.email}"
+  project  = var.project_id
+}
+
 # Allow unauthenticated access to MIME Decoder if configured
 # Note: In production, this should be false and only Eventarc should invoke the service
 resource "google_cloud_run_service_iam_member" "mime_decoder_public_access" {

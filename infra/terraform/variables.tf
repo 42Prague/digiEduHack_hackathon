@@ -93,6 +93,12 @@ variable "mime_decoder_service_name" {
   default     = "mime-decoder"
 }
 
+variable "transformer_service_name" {
+  description = "The name of the Transformer Cloud Run service"
+  type        = string
+  default     = "transformer"
+}
+
 variable "enable_eventarc" {
   description = "Enable Eventarc trigger and MIME Decoder IAM. Set to false on first run, then true after deploying mime-decoder via GitHub Actions."
   type        = bool

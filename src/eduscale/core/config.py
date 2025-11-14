@@ -43,6 +43,11 @@ class Settings(BaseSettings):
     MAX_EXTRACTED_FILE_SIZE_MB: int = 500
     UPLOADS_BUCKET: str = ""  # GCS bucket name for uploads
 
+    # Transformer Service Configuration
+    MAX_FILE_SIZE_MB: int = 100
+    SPEECH_LANGUAGE_EN: str = "en-US"
+    SPEECH_LANGUAGE_CS: str = "cs-CZ"
+
     @property
     def allowed_mime_types(self) -> list[str] | None:
         """Parse ALLOWED_UPLOAD_MIME_TYPES into a list."""

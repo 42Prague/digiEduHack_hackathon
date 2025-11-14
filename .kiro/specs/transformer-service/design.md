@@ -2,11 +2,11 @@
 
 ## Overview
 
-The Transformer Service converts various file formats into text representation. It receives requests from the MIME Decoder, retrieves files from Cloud Storage, performs format-specific transformations (text extraction, ASR, archive unpacking), saves extracted text to Cloud Storage, and forwards text URIs to the Tabular service for structured data analysis.
+The Transformer Service converts various file formats into text representation. It receives requests from the MIME Decoder, retrieves files from Cloud Storage, performs format-specific transformations (text extraction, ASR, document decoding), and saves extracted text with rich YAML frontmatter metadata to Cloud Storage. The Tabular service independently monitors GCS for new text files and processes them asynchronously.
 
 ### Key Design Principles
 
-1. **Format-Specific Processing**: Different handlers for text, audio, archives
+1. **Format-Specific Processing**: Different handlers for PDF, DOCX, Excel, ODF, text, and audio
 2. **Streaming for Large Files**: Memory-efficient processing
 3. **Async Processing**: Non-blocking I/O for Cloud Storage and API calls
 4. **Fail-Fast**: Clear errors for unprocessable files
@@ -22,15 +22,29 @@ MIME Decoder → Transformer
 Retrieve file from Cloud Storage
     ↓
 Route to format-specific handler:
-  - Text Handler (PDF, DOCX, TXT, CSV)
+  - PDF Handler (PDF) → pdfplumber
+  - DOCX Handler (DOCX, DOC) → python-docx / antiword
+  - Excel Handler (XLSX, XLS) → openpyxl / pandas
+  - ODF Handler (ODT, ODS, ODP) → odfpy
+  - Text Handler (TXT, CSV, MD, HTML, JSON, XML, RTF) → plain text
   - Audio Handler (MP3, WAV, M4A) → ASR
-  - Archive Handler (ZIP, TAR) → Unpack → Process each
+  - Other → Return 400 error (unsupported, includes PPTX/PPT)
     ↓
-Save extracted text to Cloud Storage (text/{file_id}.txt)
+Build YAML frontmatter with rich metadata:
+  - File identifiers (file_id, region_id, event_id)
+  - Original file info (filename, content_type, size, bucket, path, upload time)
+  - Extraction details (method, timestamp, duration)
+  - Content metrics (text_length, word_count, character_count)
+  - Document-specific metadata (page_count, sheet_count, slide_count)
+  - Audio-specific metadata (duration, sample_rate, channels, confidence, language)
     ↓
-Call Tabular service with text_uri
+Stream frontmatter + extracted text to Cloud Storage (text/{file_id}.txt)
     ↓
 Return status to MIME Decoder
+    ↓
+[Async] Tabular service detects new file via GCS Event
+    ↓
+[Async] Tabular reads file, parses frontmatter, processes text
 ```
 
 ### Module Structure
@@ -41,9 +55,12 @@ src/eduscale/
 │   ├── __init__.py
 │   ├── handlers/
 │   │   ├── __init__.py
-│   │   ├── text_handler.py      # PDF, DOCX, TXT extraction
-│   │   ├── audio_handler.py     # ASR for audio files
-│   │   └── archive_handler.py   # ZIP, TAR unpacking
+│   │   ├── pdf_handler.py       # PDF extraction
+│   │   ├── docx_handler.py      # DOCX, DOC extraction
+│   │   ├── excel_handler.py     # XLSX, XLS extraction
+│   │   ├── odf_handler.py       # ODT, ODS, ODP extraction
+│   │   ├── text_handler.py      # Plain text (TXT, CSV, MD, HTML, JSON, XML, RTF)
+│   │   └── audio_handler.py     # ASR for audio files
 │   ├── storage.py               # Cloud Storage operations
 │   └── orchestrator.py          # Main processing logic
 ├── api/
@@ -69,24 +86,25 @@ class TransformRequest(BaseModel):
     bucket: str = Field(..., description="GCS bucket name")
     object_name: str = Field(..., description="GCS object path")
     content_type: str = Field(..., description="MIME type")
-    file_category: Literal["text", "audio", "archive", "other"]
+    file_category: Literal["pdf", "docx", "excel", "odf", "text", "audio", "other"]
     size: int = Field(..., description="File size in bytes")
 
 class TransformResponse(BaseModel):
     status: Literal["INGESTED", "FAILED"]
-    text_uri: str | list[str]  # Single URI or list for archives
+    text_uri: str
     processing_time_ms: int
-    tabular_status: dict | None = None
     metadata: dict = Field(default_factory=dict)
     warnings: list[str] = Field(default_factory=list)
 
 class ExtractionMetadata(BaseModel):
-    extraction_method: str  # "pdfplumber", "python-docx", "speech-to-text", etc.
-    word_count: int | None = None
-    page_count: int | None = None
-    duration_seconds: float | None = None  # For audio
-    confidence: float | None = None  # For ASR
-    language: str | None = None
+    """Metadata for logging purposes only. Not sent to Tabular service."""
+    lines: int | None = None  # Number of lines in resulting text file
+    page_count: int | None = None  # PDF: number of pages in source
+    row_count: int | None = None  # Excel/CSV: number of data rows in source
+    sheet_count: int | None = None  # Excel: number of sheets in source
+    duration_seconds: float | None = None  # Audio: duration in seconds
+    confidence: float | None = None  # ASR: transcription confidence score (0-1)
+    language: str | None = None  # Audio: language code (en-US, cs-CZ)
 ```
 
 ## Components and Interfaces
@@ -110,26 +128,38 @@ class TransformRequest:
 @dataclass
 class TransformResponse:
     status: Literal["INGESTED", "FAILED"]
-    text_uri: str | list[str]  # Single or multiple for archives
+    text_uri: str
     processing_time_ms: int
-    tabular_status: dict | None
+    metadata: dict
 
 @router.post("/api/v1/transformer/transform")
 async def transform_file(request: TransformRequest) -> TransformResponse:
-    """Transform file to text and forward to Tabular."""
+    """Transform file to text with frontmatter metadata."""
 ```
 
 ### 2. Storage Client (storage.py)
 
-**Purpose**: Handle Cloud Storage operations
+**Purpose**: Handle Cloud Storage operations with memory-efficient streaming
 
 **Interface**:
 ```python
 async def download_file(bucket: str, object_name: str, local_path: str) -> None:
     """Download file from Cloud Storage."""
 
-async def upload_text(bucket: str, text_uri: str, content: str) -> str:
-    """Upload extracted text to Cloud Storage."""
+async def upload_text_streaming(
+    bucket: str,
+    object_name: str,
+    text_chunks: Iterator[str],
+    content_type: str = "text/plain"
+) -> str:
+    """Upload text to Cloud Storage using streaming approach.
+
+    Memory-efficient upload that writes chunks sequentially without
+    loading entire content into memory. Ideal for large documents.
+
+    Args:
+        text_chunks: Iterator/generator yielding text chunks (frontmatter, then content)
+    """
 
 async def stream_large_file(bucket: str, object_name: str) -> AsyncIterator[bytes]:
     """Stream large file from Cloud Storage."""
@@ -137,38 +167,133 @@ async def stream_large_file(bucket: str, object_name: str) -> AsyncIterator[byte
 
 
 
-### 3. Text Handler (handlers/text_handler.py)
+### 3. PDF Handler (handlers/pdf_handler.py)
 
-**Purpose**: Extract text from documents
+**Purpose**: Extract text from PDF documents
 
 **Interface**:
 ```python
-async def extract_text_from_pdf(file_path: str) -> str:
-    """Extract text from PDF using PyPDF2 or pdfplumber."""
-
-async def extract_text_from_docx(file_path: str) -> str:
-    """Extract text from DOCX using python-docx."""
-
-async def extract_text_from_plain(file_path: str) -> str:
-    """Read plain text file with UTF-8 encoding."""
-
-async def extract_text(file_path: str, content_type: str) -> tuple[str, dict]:
-    """Route to appropriate extraction method and return text + metadata."""
+async def extract_text_from_pdf(file_path: str) -> tuple[str, dict]:
+    """Extract text from PDF using pdfplumber."""
 ```
 
 **Implementation Details**:
-- PDF: Use pdfplumber for better text extraction quality
-- DOCX: Use python-docx to extract paragraphs and tables
-- Plain text: Read with UTF-8 encoding, fallback to latin-1
-- CSV/Excel: Read as plain text to preserve structure
-- Return metadata: page count, word count, extraction method
+- Use pdfplumber for better text extraction quality
+- Extract text from all pages
+- Preserve line breaks and basic formatting
+- Return metadata (for logging only, not sent to Tabular):
+  - `lines`: Number of lines in resulting text file
+  - `page_count`: Number of PDF pages in source
 
 **Libraries**:
-- pdfplumber for PDF (better than PyPDF2)
-- python-docx for Word documents
-- Built-in file I/O for plain text
+- pdfplumber for PDF extraction
 
-### 4. Audio Handler (handlers/audio_handler.py)
+### 4. DOCX Handler (handlers/docx_handler.py)
+
+**Purpose**: Extract text from Word documents
+
+**Interface**:
+```python
+async def extract_text_from_word(file_path: str) -> tuple[str, dict]:
+    """Extract text from DOCX or DOC using pandoc."""
+```
+
+**Implementation Details**:
+- Use pandoc for both DOCX and DOC formats (universal converter)
+- Pandoc automatically detects format and converts to plain text
+- Preserves table structure and basic formatting
+- Return metadata (for logging only, not sent to Tabular):
+  - `lines`: Number of lines in resulting text file
+
+**Libraries**:
+- pypandoc (Python wrapper for pandoc)
+
+### 5. Excel Handler (handlers/excel_handler.py)
+
+**Purpose**: Extract text from Excel spreadsheets
+
+**Interface**:
+```python
+async def extract_text_from_xlsx(file_path: str) -> tuple[str, dict]:
+    """Extract text from XLSX using openpyxl or pandas."""
+
+async def extract_text_from_xls(file_path: str) -> tuple[str, dict]:
+    """Extract text from XLS using xlrd or pandas."""
+```
+
+**Implementation Details**:
+- XLSX: Use openpyxl or pandas to extract from all sheets
+- XLS: Use xlrd or pandas for legacy format
+- Format output with sheet names as headers
+- Count total rows across all sheets (excluding headers)
+- Return metadata (for logging only, not sent to Tabular):
+  - `lines`: Number of lines in resulting text file
+  - `sheet_count`: Number of sheets in source workbook
+  - `row_count`: Total data rows in source (across all sheets)
+
+**Libraries**:
+- openpyxl or pandas for Excel spreadsheets (XLSX)
+- xlrd or pandas for legacy Excel (XLS)
+
+### 6. Text Handler (handlers/text_handler.py)
+
+**Purpose**: Read plain text files without any transformation
+
+**Interface**:
+```python
+async def read_plain_text(file_path: str) -> tuple[str, dict]:
+    """Read plain text file (TXT, CSV, MD, HTML, JSON, XML, RTF) with UTF-8 encoding.
+
+    No transformation or parsing. Returns raw text for AI analysis.
+    Fallback to latin-1 if UTF-8 fails.
+    """
+```
+
+**Implementation Details**:
+- Simple `file.read()` with UTF-8 encoding
+- Fallback to latin-1 if UTF-8 decoding fails
+- No transformation or parsing - pass raw text to downstream services
+- Count lines in source file
+- Return metadata (for logging only, not sent to Tabular):
+  - `lines`: Number of lines in resulting text file (same as source for plain text)
+  - `row_count`: Number of lines in source (for CSV/TXT context)
+
+**Supported Formats**:
+- TXT: Plain text files
+- CSV: Comma-separated values (no parsing, just raw text)
+- MD: Markdown files
+- HTML: HTML files (no rendering, just source)
+- JSON: JSON files (no parsing, just raw text)
+- XML: XML files (no parsing, just raw text)
+- RTF: Rich Text Format (as plain text, no escape sequence processing)
+
+**Libraries**:
+- Built-in file I/O only (no external dependencies)
+
+### 7. ODF Handler (handlers/odf_handler.py)
+
+**Purpose**: Extract text from OpenDocument Format files
+
+**Interface**:
+```python
+async def extract_text_from_odf(file_path: str, content_type: str) -> tuple[str, dict]:
+    """Extract text from ODT, ODS, or ODP using pandoc."""
+```
+
+**Implementation Details**:
+- Use pandoc for all OpenDocument formats (universal converter)
+- ODT: Extract text from paragraphs and tables
+- ODS: Extract text from all sheets
+- ODP: Extract text from all slides
+- Pandoc automatically handles ZIP structure and XML parsing
+- Preserve basic text structure
+- Return metadata (for logging only, not sent to Tabular):
+  - `lines`: Number of lines in resulting text file
+
+**Libraries**:
+- pypandoc (Python wrapper for pandoc)
+
+### 8. Audio Handler (handlers/audio_handler.py)
 
 **Purpose**: Transcribe audio to text using ASR
 
@@ -187,60 +312,19 @@ async def get_audio_metadata(file_path: str) -> dict:
 - For files > 60 seconds, use long-running recognition
 - For files < 60 seconds, use synchronous recognition
 - Convert audio to LINEAR16 if needed (using pydub)
-- Return metadata: duration, format, sample rate, confidence scores
+- Return metadata (for logging only, not sent to Tabular):
+  - `lines`: Number of lines in resulting text file
+  - `duration_seconds`: Audio duration in source
+  - `confidence`: ASR confidence score (0-1)
+  - `language`: Language code used (en-US, cs-CZ)
 
 **Libraries**:
 - google-cloud-speech for ASR
 - pydub for audio format conversion
 - mutagen for metadata extraction
 
-### 5. Archive Handler (handlers/archive_handler.py)
 
-**Purpose**: Unpack archives and process contents
-
-**Interface**:
-```python
-async def unpack_and_process(
-    file_path: str, 
-    file_id: str, 
-    bucket: str,
-    region_id: str,
-    depth: int = 0
-) -> list[dict]:
-    """Unpack archive and return list of processed file results."""
-
-async def detect_archive_format(file_path: str) -> str:
-    """Detect archive format from file signature."""
-```
-
-**Implementation Details**:
-- Support formats: ZIP, TAR, TAR.GZ, TAR.BZ2
-- Unpack to temporary directory with unique name
-- Process each file by detecting its MIME type
-- Recursively handle nested archives (max depth: 2)
-- Generate unique text URIs: gs://bucket/text/{file_id}_001.txt
-- Clean up temporary files after processing
-- Return list of results with metadata for each file
-
-**Algorithm**:
-1. Detect archive format using magic bytes
-2. Unpack to /tmp/{file_id}_{timestamp}/
-3. Iterate through extracted files
-4. For each file:
-   - Detect MIME type
-   - Route to appropriate handler (text/audio/archive)
-   - Save extracted text with sequential naming
-5. Clean up temporary directory
-6. Return list of text URIs and metadata
-
-**Libraries**:
-- zipfile (built-in) for ZIP
-- tarfile (built-in) for TAR formats
-- python-magic for MIME detection
-
-
-
-### 6. Orchestrator (orchestrator.py)
+### 8. Orchestrator (orchestrator.py)
 
 **Purpose**: Coordinate transformation flow
 
@@ -250,10 +334,10 @@ async def transform_file(request: TransformRequest) -> TransformResponse:
     """Main orchestration function."""
 
 async def route_to_handler(
-    file_path: str, 
-    file_category: str, 
+    file_path: str,
+    file_category: str,
     content_type: str
-) -> tuple[str | list[str], dict]:
+) -> tuple[str, dict]:
     """Route file to appropriate handler based on category."""
 ```
 
@@ -262,13 +346,15 @@ async def route_to_handler(
 - Check file size limits before processing
 - Download file to temporary location
 - Route based on file_category:
+  - "pdf" → pdf_handler
+  - "docx" → docx_handler
+  - "excel" → excel_handler
+  - "odf" → odf_handler
   - "text" → text_handler
   - "audio" → audio_handler
-  - "archive" → archive_handler
-  - "other" → attempt text extraction
-- Handle both single and multiple text outputs (archives)
-- Upload extracted text(s) to Cloud Storage
-- Call Tabular service for each text URI
+  - "other" → return 400 error (unsupported, includes PPTX/PPT)
+- Build YAML frontmatter with comprehensive metadata
+- Stream frontmatter + extracted text to Cloud Storage
 - Aggregate results and return response
 - Clean up temporary files in finally block
 
@@ -277,74 +363,109 @@ async def route_to_handler(
 2. Check file size against MAX_FILE_SIZE_MB
 3. Download file from GCS to /tmp/{file_id}_{ext}
 4. Route to handler based on file_category
-5. Extract text (single or multiple)
-6. For each extracted text:
-   - Upload to gs://{bucket}/text/{file_id}[_NNN].txt
-   - Call Tabular service with text_uri
-7. Aggregate Tabular responses
-8. Return TransformResponse with status and text_uri(s)
+5. Extract text and metadata
+6. Build YAML frontmatter with all available metadata
+7. Stream to gs://{bucket}/text/{file_id}.txt:
+   a. Yield frontmatter
+   b. Yield separator (\n)
+   c. Yield extracted text
+8. Return TransformResponse with status and text_uri
 9. Clean up temporary files
 
 **Error Handling**:
 - Wrap in try/except with detailed logging
 - Return 500 for retryable errors (GCS, extraction)
 - Return 400 for permanent errors (invalid format, too large)
-- Log all errors with full context
+- **MANDATORY**: Log ALL errors before returning HTTP response
+  - 4xx errors → WARN level with error details
+  - 5xx errors → ERROR level with error details and stack trace
+- Log all errors with full context (file_id, region_id, operation, duration_ms, http_status)
+- Include stack trace for all 5xx errors
 - Ensure cleanup in finally block
+- Use structured JSON logging format
 
-### 7. Tabular Client
+### 9. Frontmatter Builder
 
-**Purpose**: Forward text to Tabular service
+**Purpose**: Generate YAML frontmatter with comprehensive metadata for AI processing
 
 **Interface**:
 ```python
-async def call_tabular(
-    file_id: str, 
-    region_id: str, 
-    text_uri: str, 
-    original_content_type: str,
-    extraction_metadata: dict
-) -> dict:
-    """Call Tabular service to analyze text."""
+def build_text_frontmatter(
+    file_id: str,
+    region_id: str,
+    text_uri: str,
+    file_category: str,
+    extraction_metadata: ExtractionMetadata,
+    original_filename: str | None = None,
+    original_content_type: str | None = None,
+    original_size_bytes: int | None = None,
+    bucket: str | None = None,
+    object_path: str | None = None,
+    event_id: str | None = None,
+    uploaded_at: str | None = None,
+    extraction_duration_ms: int | None = None,
+) -> str:
+    """Build YAML frontmatter for text documents."""
+
+def build_audio_frontmatter(
+    file_id: str,
+    region_id: str,
+    text_uri: str,
+    file_category: str,
+    audio_metadata: AudioMetadata,
+    transcript_text: str,
+    # ... same optional parameters as above
+) -> str:
+    """Build YAML frontmatter for audio transcriptions."""
 ```
 
-**Implementation Details**:
-- Use httpx.AsyncClient for async HTTP calls
-- Set timeout to 600 seconds (10 minutes)
-- Include authentication headers for Cloud Run service-to-service
-- Retry on transient failures (503, connection errors)
-- Log request and response for debugging
-- Return full response including status and any warnings
+**Frontmatter Format**:
+```yaml
+---
+file_id: "abc123"
+region_id: "region-cz-01"
+event_id: "cloudevent-xyz"
+text_uri: "gs://bucket/text/abc123.txt"
 
-**Request to Tabular**:
-```json
-{
-  "file_id": "abc123",
-  "region_id": "region-cz-01",
-  "text_uri": "gs://bucket/text/abc123.txt",
-  "original_content_type": "application/pdf",
-  "extraction_metadata": {
-    "pages": 5,
-    "word_count": 1234,
-    "extraction_method": "pdfplumber"
-  }
-}
+original:
+  filename: "document.pdf"
+  content_type: "application/pdf"
+  size_bytes: 123456
+  bucket: "bucket-name"
+  object_path: "uploads/region/abc123.pdf"
+  uploaded_at: "2025-01-14T10:30:00Z"
+
+file_category: "text"
+
+extraction:
+  method: "pdfplumber"
+  timestamp: "2025-01-14T10:31:00Z"
+  duration_ms: 1234
+  success: true
+
+content:
+  text_length: 5432
+  word_count: 987
+  character_count: 5432
+
+document:
+  page_count: 15
+---
 ```
 
-**Response from Tabular**:
-```json
-{
-  "status": "INGESTED",
-  "rows_loaded": 42,
-  "issues": [],
-  "warnings": ["Missing header row"]
-}
-```
+**How it works**:
+1. Transformer builds frontmatter with ALL available metadata
+2. Frontmatter is streamed to GCS before the extracted text
+3. Tabular service monitors GCS `text/` prefix via Eventarc/GCS Events
+4. Tabular receives notification when new file is created
+5. Tabular downloads file, parses YAML frontmatter, processes text
+6. All metadata is available to Tabular for AI-enhanced processing
 
-**Error Handling**:
-- Catch httpx exceptions (timeout, connection errors)
-- Log Tabular errors but don't fail the Transformer request
-- Return None if Tabular call fails (text extraction still succeeded)
+**Benefits**:
+- Decoupled architecture: Transformer doesn't wait for Tabular
+- Retry resilience: Tabular can reprocess files independently
+- Rich context: AI has full metadata about original file
+- Scalable: GCS Events handle notification delivery
 
 ## Configuration
 
@@ -353,22 +474,18 @@ async def call_tabular(
 ```python
 class TransformerSettings(BaseSettings):
     # Required
-    TABULAR_SERVICE_URL: str  # e.g., https://tabular-service-xyz.run.app
     GCP_PROJECT_ID: str
     GCS_BUCKET_NAME: str
-    
+
     # Optional with defaults
     GCP_REGION: str = "europe-west1"
     MAX_FILE_SIZE_MB: int = 100
-    MAX_ARCHIVE_SIZE_MB: int = 500
-    TESSERACT_LANG: str = "eng+ces"  # For OCR (future)
     LOG_LEVEL: str = "INFO"
-    REQUEST_TIMEOUT: int = 600
-    
+
     # Speech-to-Text
     SPEECH_LANGUAGE_EN: str = "en-US"
     SPEECH_LANGUAGE_CS: str = "cs-CZ"
-    
+
     class Config:
         env_file = ".env"
         case_sensitive = True
@@ -378,7 +495,6 @@ class TransformerSettings(BaseSettings):
 
 - Validate at startup that required environment variables are set
 - Log configuration (excluding sensitive values) at startup
-- Fail fast if TABULAR_SERVICE_URL is not accessible
 - Check GCS bucket exists and is accessible
 
 ## Deployment
@@ -401,8 +517,7 @@ ingress: internal  # Only accessible from within GCP
 
 The Transformer service account needs:
 - `storage.objects.get` - Read files from GCS
-- `storage.objects.create` - Write extracted text to GCS
-- `cloudrun.services.invoke` - Call Tabular service
+- `storage.objects.create` - Write extracted text with frontmatter to GCS
 - `speech.recognize` - Use Speech-to-Text API
 
 ### Docker Configuration
@@ -414,6 +529,8 @@ FROM python:3.11-slim
 RUN apt-get update && apt-get install -y \
     ffmpeg \
     libmagic1 \
+    pandoc \
+    poppler-utils \
     && rm -rf /var/lib/apt/lists/*
 
 WORKDIR /app
@@ -439,17 +556,16 @@ google-cloud-speech==2.21.0
 
 # Document processing
 pdfplumber==0.10.3
-python-docx==1.1.0
+pypandoc>=1.12
+openpyxl==3.1.2
+xlrd==2.0.1
 
 # Audio processing
 pydub==0.25.1
 mutagen==1.47.0
 
-# Archive handling
-python-magic==0.4.27
-
-# HTTP client
-httpx==0.25.2
+# Metadata format
+PyYAML>=6.0.1
 
 # Logging
 structlog==23.2.0
@@ -470,23 +586,22 @@ structlog==23.2.0
 
 ### Error Categories
 
-| Error Type | HTTP Status | Action | Retry |
-|------------|-------------|--------|-------|
-| File not found in GCS | 500 | Log and return error | Yes (transient) |
-| File too large | 400 | Log and return error | No (permanent) |
-| Invalid file format | 400 | Log and return error | No (permanent) |
-| Extraction failed | 500 | Log with details | Yes (may succeed) |
-| GCS upload failed | 500 | Log and return error | Yes (transient) |
-| Tabular call failed | 200 | Log warning only | N/A (non-blocking) |
-| Invalid request params | 400 | Return validation error | No (bad input) |
-| Archive too large | 400 | Log and return error | No (permanent) |
-| Nested archive depth exceeded | 400 | Log and skip | No (by design) |
+| Error Type | HTTP Status | Log Level | Action | Retry |
+|------------|-------------|-----------|--------|-------|
+| File not found in GCS | 500 | ERROR | Log with stack trace and return error | Yes (transient) |
+| File too large | 400 | WARN | Log error details and return error | No (permanent) |
+| Invalid file format | 400 | WARN | Log error details and return error | No (permanent) |
+| Unsupported file category | 400 | WARN | Log warning and return error | No (permanent) |
+| Extraction failed | 500 | ERROR | Log with stack trace and details | Yes (may succeed) |
+| GCS upload failed | 500 | ERROR | Log with stack trace and return error | Yes (transient) |
+| Frontmatter build failed | 500 | ERROR | Log with stack trace and return error | Yes (should succeed) |
+| Invalid request params | 400 | WARN | Log validation error and return error | No (bad input) |
 
 ### Retry Strategy
 
-- Transformer returns 500 for retryable errors (GCS, extraction)
+- Transformer returns 500 for retryable errors (GCS, extraction, frontmatter)
 - MIME Decoder will retry via Eventarc (exponential backoff)
-- Tabular failures don't fail the Transformer request (text extraction succeeded)
+- Tabular processes files asynchronously via GCS Events (decoupled)
 - Maximum 3 retries for transient errors
 
 ### Logging Strategy
@@ -499,13 +614,20 @@ All logs include:
 - `operation` - Current operation (download, extract, upload, etc.)
 - `duration_ms` - Operation duration
 - `error` - Error message and stack trace (if applicable)
+- `http_status` - HTTP status code for error responses
 
 **Log Levels**:
 - INFO: Successful operations, processing milestones
-- WARNING: Partial failures (Tabular errors, skipped files in archives)
-- ERROR: Complete failures (extraction failed, GCS errors)
+- WARNING: Partial failures (Tabular errors, skipped files in archives), **ALL 4xx errors**
+- ERROR: Complete failures (extraction failed, GCS errors), **ALL 5xx errors**
 
-**Example Log Entry**:
+**Mandatory Logging for HTTP Errors**:
+- EVERY 4xx response MUST be logged at WARN level with error details
+- EVERY 5xx response MUST be logged at ERROR level with error details and stack trace
+- No exceptions - all HTTP errors must have corresponding log entries
+- Logs MUST use structured JSON format for Cloud Logging integration
+
+**Example Log Entry (Success)**:
 ```json
 {
   "timestamp": "2024-01-15T10:30:45.123Z",
@@ -521,6 +643,44 @@ All logs include:
     "pages": 5,
     "word_count": 1234
   }
+}
+```
+
+**Example Log Entry (4xx Error)**:
+```json
+{
+  "timestamp": "2024-01-15T10:31:12.456Z",
+  "level": "WARNING",
+  "message": "File size exceeds maximum allowed limit",
+  "file_id": "def456",
+  "region_id": "region-cz-02",
+  "file_category": "pdf",
+  "content_type": "application/pdf",
+  "operation": "validate_file_size",
+  "duration_ms": 12,
+  "http_status": 400,
+  "error": "File size 157286400 bytes exceeds limit of 104857600 bytes",
+  "file_size_bytes": 157286400,
+  "max_size_bytes": 104857600
+}
+```
+
+**Example Log Entry (5xx Error)**:
+```json
+{
+  "timestamp": "2024-01-15T10:32:30.789Z",
+  "level": "ERROR",
+  "message": "Failed to extract text from PDF",
+  "file_id": "ghi789",
+  "region_id": "region-cz-03",
+  "file_category": "pdf",
+  "content_type": "application/pdf",
+  "operation": "extract_pdf",
+  "duration_ms": 5432,
+  "http_status": 500,
+  "error": "PDFSyntaxError: PDF file is corrupted or encrypted",
+  "stack_trace": "Traceback (most recent call last):\n  File \"pdf_handler.py\", line 42, in extract_text_from_pdf\n    ...",
+  "retry_count": 0
 }
 ```
 
@@ -548,12 +708,38 @@ class StorageError(TransformerException):
 
 ### Unit Tests
 
+**test_pdf_handler.py**
+- Test PDF extraction with various PDF types (text-based)
+- Test page count and word count extraction
+- Test error handling for corrupted PDFs
+
+**test_docx_handler.py**
+- Test DOCX extraction with tables and formatting using pandoc
+- Test DOC extraction using pandoc
+- Test word count and character count extraction
+- Test error handling for corrupted DOCX files
+- Mock pypandoc for unit tests
+
+**test_excel_handler.py**
+- Test XLSX extraction from multiple sheets
+- Test XLS extraction with xlrd
+- Test sheet count and row count extraction
+- Test error handling for corrupted Excel files
+
 **test_text_handler.py**
-- Test PDF extraction with various PDF types (text-based, scanned)
-- Test DOCX extraction with tables and formatting
-- Test plain text with different encodings (UTF-8, latin-1)
-- Test CSV/Excel preservation
-- Test error handling for corrupted files
+- Test plain text reading (TXT, CSV, MD, HTML, JSON, XML, RTF)
+- Test UTF-8 and latin-1 fallback
+- Test that plain text is NOT transformed or parsed
+- Test word count and character count extraction
+- Test error handling for unreadable files
+
+**test_odf_handler.py**
+- Test ODT extraction with paragraphs and tables using pandoc
+- Test ODS extraction from multiple sheets using pandoc
+- Test ODP extraction from multiple slides using pandoc
+- Test word count and character count extraction
+- Test error handling for corrupted ODF files
+- Mock pypandoc for unit tests
 
 **test_audio_handler.py**
 - Test ASR with short audio files (< 60s)
@@ -563,14 +749,6 @@ class StorageError(TransformerException):
 - Test metadata extraction
 - Test error handling for invalid audio
 
-**test_archive_handler.py**
-- Test ZIP unpacking with various file types
-- Test TAR/TAR.GZ unpacking
-- Test nested archive handling (depth limit)
-- Test sequential naming (file_id_001.txt, etc.)
-- Test error handling for corrupted archives
-- Test size limit enforcement
-
 **test_storage.py**
 - Test file download from GCS
 - Test text upload to GCS
@@ -579,10 +757,11 @@ class StorageError(TransformerException):
 - Mock GCS client for unit tests
 
 **test_orchestrator.py**
-- Test routing to correct handler based on file_category
-- Test single file processing flow
-- Test archive processing flow (multiple outputs)
-- Test Tabular service integration
+- Test routing to correct handler based on file_category (pdf, docx, excel, odf, text, audio)
+- Test file processing flow with frontmatter generation
+- Test "other" category returns 400 error (includes PPTX/PPT)
+- Test frontmatter is correctly built and streamed
+- Test streaming upload to GCS
 - Test error handling and cleanup
 - Test file size validation
 
@@ -592,15 +771,10 @@ class StorageError(TransformerException):
 - End-to-end test with real PDF file
 - End-to-end test with real DOCX file
 - End-to-end test with real audio file
-- End-to-end test with real archive
-- Test with mock GCS and Tabular service
+- Test with mock GCS
+- Test frontmatter is included in uploaded file
+- Verify YAML frontmatter can be parsed
 - Test error responses
-
-**test_tabular_integration.py**
-- Test successful Tabular call
-- Test Tabular timeout handling
-- Test Tabular error handling (non-blocking)
-- Test authentication headers
 
 ### Test Fixtures
 
@@ -612,8 +786,6 @@ tests/fixtures/
 ├── sample.csv           # CSV with headers
 ├── sample.mp3           # 30-second audio
 ├── sample_long.mp3      # 90-second audio
-├── sample.zip           # Archive with mixed files
-├── nested.zip           # Archive with nested archive
 ├── corrupted.pdf        # Invalid PDF for error testing
 └── empty.txt            # Empty file
 ```

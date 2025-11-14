@@ -35,6 +35,14 @@ resource "google_project_service" "iam_credentials" {
   disable_on_destroy = false
 }
 
+# Enable Cloud Speech-to-Text API (for audio transcription)
+resource "google_project_service" "speech" {
+  project = var.project_id
+  service = "speech.googleapis.com"
+
+  disable_on_destroy = false
+}
+
 # Artifact Registry Repository for Docker Images
 resource "google_artifact_registry_repository" "jedouscale_repo" {
   location      = var.region
@@ -118,6 +126,13 @@ resource "google_storage_bucket_iam_member" "cloud_run_engine_storage" {
 resource "google_project_iam_member" "cloud_run_engine_token_creator" {
   project = var.project_id
   role    = "roles/iam.serviceAccountTokenCreator"
+  member  = "serviceAccount:${google_service_account.cloud_run_engine.email}"
+}
+
+# Grant Speech API User role (needed for audio transcription)
+resource "google_project_iam_member" "cloud_run_engine_speech_user" {
+  project = var.project_id
+  role    = "roles/ml.developer"
   member  = "serviceAccount:${google_service_account.cloud_run_engine.email}"
 }
 

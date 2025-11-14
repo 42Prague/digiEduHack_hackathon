@@ -1,6 +1,6 @@
 """Tests for upload store."""
 
-from datetime import datetime
+from datetime import datetime, timezone
 
 import pytest
 
@@ -25,7 +25,7 @@ def sample_record():
         storage_backend="local",
         storage_path="data/uploads/raw/test-uuid-123/test.csv",
         status=UploadStatus.COMPLETED,
-        created_at=datetime.utcnow(),
+        created_at=datetime.now(timezone.utc),
     )
 
 
@@ -63,7 +63,7 @@ def test_list_all_with_records(upload_store):
         storage_backend="local",
         storage_path="path1",
         status=UploadStatus.COMPLETED,
-        created_at=datetime.utcnow(),
+        created_at=datetime.now(timezone.utc),
     )
     record2 = UploadRecord(
         file_id="id-2",
@@ -74,7 +74,7 @@ def test_list_all_with_records(upload_store):
         storage_backend="local",
         storage_path="path2",
         status=UploadStatus.COMPLETED,
-        created_at=datetime.utcnow(),
+        created_at=datetime.now(timezone.utc),
     )
 
     upload_store.create(record1)
@@ -100,7 +100,7 @@ def test_overwrite_record(upload_store, sample_record):
         storage_backend="gcs",
         storage_path="gs://bucket/path",
         status=UploadStatus.PENDING,
-        created_at=datetime.utcnow(),
+        created_at=datetime.now(timezone.utc),
     )
     upload_store.create(new_record)
 
