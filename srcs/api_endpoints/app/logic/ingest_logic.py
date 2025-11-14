@@ -11,7 +11,7 @@ def split_sentences(text: str) -> List[str]:
     return [s.strip() for s in sentences if s.strip()]
 
 
-def chunk_text(text: str, chunk_size_words: int = 200, overlap_words: int = 20) -> List[str]:
+def chunk_text(text: str, chunk_size_words: int = 75, overlap_words: int = 10) -> List[str]:
     sentences = split_sentences(text)
     chunks = []
     current_chunk = []

@@ -96,7 +96,7 @@ def extract_text_from_file(path: Path) -> str:
         return path.read_text(encoding="utf-8", errors="ignore")
 
     elif suffix == ".docx":
-        from docx import Document
+        #from docx import Document
         doc = Document(str(path))
         return "\n".join(p.text for p in doc.paragraphs)
 
