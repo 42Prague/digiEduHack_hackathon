@@ -1,0 +1,13 @@
+---
+file_id: "test-tsv-456"
+region_id: "region-cz-01"
+text_uri: "gs://bucket/text/test-tsv-456.txt"
+
+original:
+  filename: "data.tsv"
+  content_type: "text/tab-separated-values"
+  size_bytes: 256
+---
+student_id	student_name	test_score	date
+S001	Jan Novák	85	2025-01-10
+S002	Petra Svobodová	92	2025-01-10

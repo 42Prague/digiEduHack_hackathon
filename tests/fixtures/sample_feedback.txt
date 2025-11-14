@@ -1,0 +1,48 @@
+---
+file_id: "sample-pdf-003"
+region_id: "region-cz-01"
+text_uri: "gs://test-bucket/text/sample-pdf-003.txt"
+event_id: "event-pdf-003"
+file_category: "pdf"
+
+original:
+  filename: "teacher_report.pdf"
+  content_type: "application/pdf"
+  size_bytes: 123456
+  bucket: "test-bucket"
+  object_path: "uploads/region-cz-01/sample-pdf-003_teacher_report.pdf"
+  uploaded_at: "2025-01-14T12:00:00Z"
+
+extraction:
+  method: "pdfplumber"
+  timestamp: "2025-01-14T12:01:00Z"
+  success: true
+  duration_ms: 2000
+
+content:
+  text_length: 5000
+  word_count: 800
+  character_count: 5000
+
+document:
+  page_count: 10
+---
+Zpráva o výuce matematiky v regionu Praha
+
+Učitelka Petra Svobodová vyučuje matematiku na základní škole v Praze. 
+Její přístup k výuce je velmi pozitivní a studenti dosahují výborných výsledků.
+
+Student Jan Novák ukázal významný pokrok v posledním čtvrtletí. 
+Jeho známky se zlepšily z průměru 3 na průměr 1.
+
+Spolupráce s rodiči je výborná. Rodiče aktivně podporují vzdělávání svých dětí 
+a pravidelně komunikují s učiteli.
+
+Doporučení:
+- Pokračovat v současném přístupu k výuce
+- Zvýšit počet praktických cvičení
+- Organizovat více skupinových projektů
+
+Závěr:
+Výuka matematiky v tomto regionu je na velmi dobré úrovni. 
+Studenti jsou motivovaní a učitelé jsou dobře připravení.

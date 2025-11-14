@@ -48,6 +48,40 @@ class Settings(BaseSettings):
     SPEECH_LANGUAGE_EN: str = "en-US"
     SPEECH_LANGUAGE_CS: str = "cs-CZ"
 
+    # Tabular Service Configuration
+    BIGQUERY_PROJECT_ID: str = ""  # If not set, defaults to GCP_PROJECT_ID
+    BIGQUERY_DATASET_ID: str = "jedouscale_core"
+    BIGQUERY_STAGING_DATASET_ID: str = ""  # Defaults to BIGQUERY_DATASET_ID
+    CLEAN_LAYER_BASE_PATH: str = "./data/clean"
+    CONCEPT_CATALOG_PATH: str = "./config/concepts.yaml"
+
+    # AI Models Configuration
+    EMBEDDING_MODEL_NAME: str = "BAAI/bge-m3"  # BGE-M3 for embeddings
+    LLM_MODEL_NAME: str = "llama3.2:1b"  # Llama 3.2 1B via Ollama
+    LLM_ENDPOINT: str = "http://localhost:11434"  # Ollama in same container
+    LLM_ENABLED: bool = True
+
+    # Ingestion Configuration
+    INGEST_MAX_ROWS: int = 200_000
+    PSEUDONYMIZE_IDS: bool = False
+
+    # AI Analysis Settings
+    FEEDBACK_ANALYSIS_ENABLED: bool = True
+    ENTITY_RESOLUTION_THRESHOLD: float = 0.85  # Fuzzy matching threshold
+    FEEDBACK_TARGET_THRESHOLD: float = 0.65  # Embedding similarity threshold
+    MAX_TARGETS_PER_FEEDBACK: int = 10  # Max FeedbackTarget records per feedback
+    ENTITY_CACHE_TTL_SECONDS: int = 3600  # Cache entity lookups for 1 hour
+
+    @property
+    def bigquery_project(self) -> str:
+        """Get BigQuery project ID, defaulting to GCP_PROJECT_ID."""
+        return self.BIGQUERY_PROJECT_ID or self.GCP_PROJECT_ID
+
+    @property
+    def bigquery_staging_dataset(self) -> str:
+        """Get staging dataset, defaulting to main dataset."""
+        return self.BIGQUERY_STAGING_DATASET_ID or self.BIGQUERY_DATASET_ID
+
     @property
     def allowed_mime_types(self) -> list[str] | None:
         """Parse ALLOWED_UPLOAD_MIME_TYPES into a list."""

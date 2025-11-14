@@ -1,0 +1,119 @@
+name: Build and Deploy Tabular Service to Cloud Run
+
+on:
+  workflow_dispatch:
+    inputs:
+      image_tag:
+        description: 'Docker image tag'
+        required: false
+        default: 'latest'
+  push:
+    branches:
+      - main
+    paths:
+      - 'src/eduscale/tabular/**'
+      - 'src/eduscale/api/v1/routes_tabular.py'
+      - 'docker/Dockerfile.tabular'
+      - 'config/concepts.yaml'
+      - '.github/workflows/deploy-tabular.yml'
+
+env:
+  PROJECT_ID: ${{ secrets.GCP_PROJECT_ID }}
+  REGION: europe-west1
+  SERVICE_NAME: tabular-service
+  REPOSITORY: jedouscale-engine-repo
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+
+    permissions:
+      contents: read
+      id-token: write
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Authenticate to Google Cloud
+        uses: google-github-actions/auth@v2
+        with:
+          credentials_json: ${{ secrets.GCP_SA_KEY }}
+
+      - name: Set up Cloud SDK
+        uses: google-github-actions/setup-gcloud@v2
+
+      - name: Configure Docker for Artifact Registry
+        run: |
+          gcloud auth configure-docker ${{ env.REGION }}-docker.pkg.dev
+
+      - name: Build Docker image
+        run: |
+          docker build -f docker/Dockerfile.tabular \
+            -t ${{ env.REGION }}-docker.pkg.dev/${{ env.PROJECT_ID }}/${{ env.REPOSITORY }}/${{ env.SERVICE_NAME }}:${{ github.sha }} \
+            -t ${{ env.REGION }}-docker.pkg.dev/${{ env.PROJECT_ID }}/${{ env.REPOSITORY }}/${{ env.SERVICE_NAME }}:latest \
+            .
+
+      - name: Push Docker image
+        run: |
+          docker push ${{ env.REGION }}-docker.pkg.dev/${{ env.PROJECT_ID }}/${{ env.REPOSITORY }}/${{ env.SERVICE_NAME }}:${{ github.sha }}
+          docker push ${{ env.REGION }}-docker.pkg.dev/${{ env.PROJECT_ID }}/${{ env.REPOSITORY }}/${{ env.SERVICE_NAME }}:latest
+
+      - name: Prepare Cloud Run configuration
+        run: |
+          sed -i "s|gcr.io/PROJECT_ID/tabular-service:latest|${{ env.REGION }}-docker.pkg.dev/${{ env.PROJECT_ID }}/${{ env.REPOSITORY }}/${{ env.SERVICE_NAME }}:${{ github.sha }}|g" infra/tabular-config.yaml
+          sed -i "s|PROJECT_ID|${{ env.PROJECT_ID }}|g" infra/tabular-config.yaml
+          sed -i "s|BUCKET_NAME|${{ env.PROJECT_ID }}-eduscale-uploads|g" infra/tabular-config.yaml
+
+      - name: Deploy to Cloud Run
+        run: |
+          gcloud run services replace infra/tabular-config.yaml \
+            --region ${{ env.REGION }} \
+            --platform managed
+
+      - name: Set Cloud Run IAM (Eventarc access)
+        run: |
+          gcloud run services add-iam-policy-binding ${{ env.SERVICE_NAME }} \
+            --region ${{ env.REGION }} \
+            --member="serviceAccount:eventarc-trigger@${{ env.PROJECT_ID }}.iam.gserviceaccount.com" \
+            --role="roles/run.invoker"
+
+      - name: Get service URL
+        id: get-url
+        run: |
+          SERVICE_URL=$(gcloud run services describe ${{ env.SERVICE_NAME }} \
+            --region ${{ env.REGION }} \
+            --format='value(status.url)')
+          echo "SERVICE_URL=$SERVICE_URL" >> $GITHUB_OUTPUT
+          echo "Tabular Service URL: $SERVICE_URL"
+
+      - name: Run smoke tests
+        run: |
+          echo "Running smoke tests..."
+          
+          # Test health endpoint
+          curl -f ${{ steps.get-url.outputs.SERVICE_URL }}/health || exit 1
+          echo "✓ Health check passed"
+          
+          # Verify response contains expected fields
+          HEALTH_RESPONSE=$(curl -s ${{ steps.get-url.outputs.SERVICE_URL }}/health)
+          echo "$HEALTH_RESPONSE" | grep -q '"status":"ok"' || exit 1
+          echo "$HEALTH_RESPONSE" | grep -q '"service":"tabular-service"' || exit 1
+          echo "✓ Health response validation passed"
+          
+          echo "All smoke tests passed!"
+
+      - name: Deployment summary
+        run: |
+          echo "## Deployment Summary" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "- **Service**: ${{ env.SERVICE_NAME }}" >> $GITHUB_STEP_SUMMARY
+          echo "- **Region**: ${{ env.REGION }}" >> $GITHUB_STEP_SUMMARY
+          echo "- **Image**: ${{ env.REGION }}-docker.pkg.dev/${{ env.PROJECT_ID }}/${{ env.REPOSITORY }}/${{ env.SERVICE_NAME }}:${{ github.sha }}" >> $GITHUB_STEP_SUMMARY
+          echo "- **URL**: ${{ steps.get-url.outputs.SERVICE_URL }}" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### Configuration" >> $GITHUB_STEP_SUMMARY
+          echo "- Memory: 4GB" >> $GITHUB_STEP_SUMMARY
+          echo "- CPU: 2 vCPUs" >> $GITHUB_STEP_SUMMARY
+          echo "- Concurrency: 5" >> $GITHUB_STEP_SUMMARY
+          echo "- AI Models: BGE-M3 + Llama 3.2 1B" >> $GITHUB_STEP_SUMMARY

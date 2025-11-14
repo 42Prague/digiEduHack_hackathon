@@ -6,7 +6,7 @@ This implementation plan breaks down the Tabular Ingestion Pipeline into increme
 ## Task List
 
 - [ ] 1. Project setup and configuration
-- [ ] 1.1 Extend core/config.py with Tabular Service settings
+- [x] 1.1 Extend core/config.py with Tabular Service settings
   - Add BIGQUERY_PROJECT_ID, BIGQUERY_DATASET_ID, BIGQUERY_STAGING_DATASET_ID
   - Add CLEAN_LAYER_BASE_PATH, CONCEPT_CATALOG_PATH
   - Add AI models: EMBEDDING_MODEL_NAME="BAAI/bge-m3", LLM_MODEL_NAME="llama3.2:1b", LLM_ENDPOINT="http://localhost:11434", LLM_ENABLED=True
@@ -15,13 +15,13 @@ This implementation plan breaks down the Tabular Ingestion Pipeline into increme
   - Add computed properties: bigquery_project, bigquery_staging_dataset
   - _Requirements: Requirement 10, Requirement 12_
 
-- [ ] 1.2 Create concepts catalog YAML file
+- [x] 1.2 Create concepts catalog YAML file
   - Create config/concepts.yaml with 5 table types (ATTENDANCE, ASSESSMENT, FEEDBACK, INTERVENTION, RELATIONSHIP)
   - Define all concepts from class-diagram.puml with multilingual synonyms (EN + CS)
   - Include entity IDs, names, temporal fields, assessment, intervention, experiment, criteria, rule, feedback, analysis, junction fields
   - _Requirements: Requirement 11_
 
-- [ ] 1.3 Update requirements.txt with new dependencies
+- [x] 1.3 Update requirements.txt with new dependencies
   - Add sentence-transformers>=2.3.0 (for BGE-M3), pandas>=2.0.0, pyarrow>=12.0.0
   - Add pandera>=0.17.0, python-Levenshtein>=0.21.0, rapidfuzz>=3.0.0
   - Add requests>=2.31.0 (for Ollama API calls)
@@ -30,7 +30,7 @@ This implementation plan breaks down the Tabular Ingestion Pipeline into increme
   - _Requirements: Dependencies section_
 
 - [ ] 2. Concepts catalog and embeddings module
-- [ ] 2.1 Implement concepts.py module
+- [x] 2.1 Implement concepts.py module
   - Create Concept and TableType dataclasses
   - Implement load_concepts_catalog() to parse YAML
   - Implement init_embeddings() for lazy BGE-M3 model loading
@@ -40,14 +40,14 @@ This implementation plan breaks down the Tabular Ingestion Pipeline into increme
   - Model returns 1024-dimensional embeddings
   - _Requirements: Requirement 11, Requirement 12_
 
-- [ ]* 2.2 Write unit tests for concepts module
+- [x]* 2.2 Write unit tests for concepts module
   - Test YAML loading with sample concepts_test.yaml
   - Test embedding generation for sample texts
   - Test model caching behavior
   - _Requirements: Requirement 15_
 
 - [ ] 3. YAML frontmatter parsing
-- [ ] 3.1 Implement frontmatter parsing in pipeline.py
+- [x] 3.1 Implement frontmatter parsing in pipeline.py
   - Create FrontmatterData dataclass with top-level and nested fields
   - Implement parse_frontmatter() to extract metadata from text files
   - Parse top-level fields: file_id, region_id, text_uri, event_id, file_category
@@ -59,14 +59,14 @@ This implementation plan breaks down the Tabular Ingestion Pipeline into increme
   - Return (frontmatter_data, clean_text)
   - _Requirements: Requirement 21_
 
-- [ ]* 3.2 Write unit tests for frontmatter parsing
+- [x]* 3.2 Write unit tests for frontmatter parsing
   - Test with sample text files containing YAML frontmatter
   - Test with missing frontmatter
   - Test with malformed YAML
   - _Requirements: Requirement 15_
 
 - [ ] 4. DataFrame loading for tabular data
-- [ ] 4.1 Implement load_dataframe_from_text() in pipeline.py
+- [x] 4.1 Implement load_dataframe_from_text() in pipeline.py
   - Load CSV/TSV using pandas.read_csv with detected delimiter
   - Handle UTF-8 and cp1250 encodings
   - Load JSON using pandas.json_normalize or line-by-line for JSONL
@@ -75,14 +75,14 @@ This implementation plan breaks down the Tabular Ingestion Pipeline into increme
   - Check INGEST_MAX_ROWS limit
   - _Requirements: Requirement 3_
 
-- [ ]* 4.2 Write unit tests for DataFrame loading
+- [x]* 4.2 Write unit tests for DataFrame loading
   - Test with sample CSV, TSV, JSON, JSONL text files
   - Test encoding handling
   - Test row limit enforcement
   - _Requirements: Requirement 15_
 
 - [ ] 5. AI table classification
-- [ ] 5.1 Implement classifier.py module
+- [x] 5.1 Implement classifier.py module
   - Implement classify_table() function
   - Extract features from column headers and sample values
   - Generate embeddings for features
@@ -92,14 +92,14 @@ This implementation plan breaks down the Tabular Ingestion Pipeline into increme
   - Log decision with contributing features
   - _Requirements: Requirement 3_
 
-- [ ]* 5.2 Write unit tests for table classification
+- [x]* 5.2 Write unit tests for table classification
   - Test with synthetic DataFrames for each table type
   - Test low confidence scenarios
   - Test logging output
   - _Requirements: Requirement 15_
 
 - [ ] 6. AI column mapping
-- [ ] 6.1 Implement mapping.py module
+- [x] 6.1 Implement mapping.py module
   - Create ColumnMapping dataclass
   - Implement map_columns() function
   - Generate column descriptions with samples
@@ -110,14 +110,14 @@ This implementation plan breaks down the Tabular Ingestion Pipeline into increme
   - Store top-3 candidates for explainability
   - _Requirements: Requirement 4_
 
-- [ ]* 6.2 Write unit tests for column mapping
+- [x]* 6.2 Write unit tests for column mapping
   - Test with known column names and expected concepts
   - Test type matching logic
   - Test confidence thresholds
   - _Requirements: Requirement 15_
 
 - [ ] 7. Entity resolution module
-- [ ] 7.1 Implement entity_resolver.py in analysis/ module
+- [x] 7.1 Implement entity_resolver.py in analysis/ module
   - Create EntityMatch and EntityCache dataclasses
   - Implement normalize_name() for name standardization
   - Implement expand_initials() for initial expansion
@@ -128,7 +128,7 @@ This implementation plan breaks down the Tabular Ingestion Pipeline into increme
   - Implement load_entity_cache() to query BigQuery dimension tables
   - _Requirements: Requirement 24, Requirement 28_
 
-- [ ]* 7.2 Write unit tests for entity resolution
+- [x]* 7.2 Write unit tests for entity resolution
   - Test exact name matches
   - Test fuzzy matches with typos
   - Test initial expansion ("И. Петров" → candidates)
@@ -137,7 +137,7 @@ This implementation plan breaks down the Tabular Ingestion Pipeline into increme
   - _Requirements: Requirement 15_
 
 - [ ] 8. Data normalization
-- [ ] 8.1 Implement normalize.py module
+- [x] 8.1 Implement normalize.py module
   - Implement normalize_dataframe() function
   - Rename columns per AUTO/LOW_CONFIDENCE mappings
   - Cast types: dates (pd.to_datetime), numbers (pd.to_numeric), strings (strip)
@@ -147,7 +147,7 @@ This implementation plan breaks down the Tabular Ingestion Pipeline into increme
   - Preserve original values in metadata for audit
   - _Requirements: Requirement 6_
 
-- [ ]* 8.2 Write unit tests for normalization
+- [x]* 8.2 Write unit tests for normalization
   - Test column renaming
   - Test type casting
   - Test metadata addition
@@ -155,7 +155,7 @@ This implementation plan breaks down the Tabular Ingestion Pipeline into increme
   - _Requirements: Requirement 15_
 
 - [ ] 9. Pandera validation schemas
-- [ ] 9.1 Implement schemas.py module
+- [x] 9.1 Implement schemas.py module
   - Define ATTENDANCE_SCHEMA with required columns and constraints
   - Define ASSESSMENT_SCHEMA with required columns and constraints
   - Define FEEDBACK_SCHEMA with required columns and constraints
@@ -174,7 +174,7 @@ This implementation plan breaks down the Tabular Ingestion Pipeline into increme
   - _Requirements: Requirement 15_
 
 - [ ] 10. Clean layer storage
-- [ ] 10.1 Implement clean_layer.py module
+- [x] 10.1 Implement clean_layer.py module
   - Create CleanLocation dataclass
   - Implement write_clean_parquet() function
   - Compute deterministic path: {table_type}/region={region_id}/file_id={file_id}.parquet
@@ -191,7 +191,7 @@ This implementation plan breaks down the Tabular Ingestion Pipeline into increme
   - _Requirements: Requirement 15_
 
 - [ ] 11. BigQuery DWH client
-- [ ] 11.1 Implement dwh/client.py module
+- [x] 11.1 Implement dwh/client.py module
   - Create DwhClient class
   - Implement load_parquet_to_staging() to load from GCS to staging table
   - Implement merge_staging_to_core() to MERGE staging → core tables
@@ -209,7 +209,7 @@ This implementation plan breaks down the Tabular Ingestion Pipeline into increme
   - _Requirements: Requirement 15_
 
 - [ ] 12. Ingest runs tracking
-- [ ] 12.1 Implement runs_store.py module
+- [x] 12.1 Implement runs_store.py module
   - Create IngestRun dataclass
   - Create RunsStore class
   - Implement start_run() to create ingest_runs record in BigQuery
@@ -226,7 +226,7 @@ This implementation plan breaks down the Tabular Ingestion Pipeline into increme
   - _Requirements: Requirement 15_
 
 - [ ] 13. Free-form text processing
-- [ ] 13.1 Implement free-form text processing in pipeline.py
+- [x] 13.1 Implement free-form text processing in pipeline.py
   - Detect FREE_FORM content type
   - Extract entity mentions using LLM (llm_client.extract_entities)
   - Apply entity resolution to each mention
@@ -243,7 +243,7 @@ This implementation plan breaks down the Tabular Ingestion Pipeline into increme
   - _Requirements: Requirement 15_
 
 - [ ] 14. Feedback analysis module
-- [ ] 14.1 Implement feedback_analyzer.py in analysis/ module
+- [x] 14.1 Implement feedback_analyzer.py in analysis/ module
   - Create FeedbackTarget dataclass
   - Implement analyze_feedback_batch() function
   - Extract entity mentions from feedback text using LLM
@@ -262,7 +262,7 @@ This implementation plan breaks down the Tabular Ingestion Pipeline into increme
   - _Requirements: Requirement 15_
 
 - [ ] 16. LLM client for entity extraction and sentiment
-- [ ] 16.1 Implement llm_client.py in analysis/ module
+- [x] 16.1 Implement llm_client.py in analysis/ module
   - Create LLMClient class
   - Implement extract_entities() using Ollama API
   - Implement analyze_sentiment() using Ollama API
@@ -278,7 +278,7 @@ This implementation plan breaks down the Tabular Ingestion Pipeline into increme
   - _Requirements: Requirement 15_
 
 - [ ] 15. Pipeline orchestration
-- [ ] 15.1 Implement main pipeline orchestration in pipeline.py
+- [x] 15.1 Implement main pipeline orchestration in pipeline.py
   - Implement process_tabular_text() function
   - Parse frontmatter from text content
   - Detect content type (TABULAR vs FREE_FORM)
@@ -297,7 +297,7 @@ This implementation plan breaks down the Tabular Ingestion Pipeline into increme
   - _Requirements: Requirement 15_
 
 - [ ] 16. CloudEvents API endpoint
-- [ ] 16.1 Implement routes_tabular.py FastAPI endpoints
+- [x] 16.1 Implement routes_tabular.py FastAPI endpoints
   - Create POST / endpoint for CloudEvents from Eventarc
   - Parse CloudEvent to extract bucket, object_name, file_id, event_id
   - Filter for text/*.txt pattern
@@ -308,7 +308,7 @@ This implementation plan breaks down the Tabular Ingestion Pipeline into increme
   - Log all steps with event_id as correlation_id
   - _Requirements: Requirement 13, Requirement 22_
 
-- [ ] 16.2 Implement optional direct API endpoint for testing
+- [x] 16.2 Implement optional direct API endpoint for testing
   - Create POST /api/v1/tabular/analyze endpoint
   - Accept TabularRequest with text_uri and metadata
   - Download text from Cloud Storage
@@ -316,7 +316,7 @@ This implementation plan breaks down the Tabular Ingestion Pipeline into increme
   - Return TabularResponse with status and metrics
   - _Requirements: Requirement 14_
 
-- [ ] 16.3 Implement health check endpoint
+- [x] 16.3 Implement health check endpoint
   - Create GET /health endpoint
   - Return service status and model loading status
   - _Requirements: Requirement 14_
@@ -328,7 +328,7 @@ This implementation plan breaks down the Tabular Ingestion Pipeline into increme
   - _Requirements: Requirement 15_
 
 - [ ] 17. Deployment configuration
-- [ ] 17.1 Create Dockerfile with Ollama
+- [x] 17.1 Create Dockerfile with Ollama
   - Base image: python:3.11-slim
   - Install Ollama via curl script
   - Install Python dependencies (sentence-transformers, requests, etc.)
@@ -336,7 +336,7 @@ This implementation plan breaks down the Tabular Ingestion Pipeline into increme
   - Create startup script to start Ollama + pull Llama 3.2 1B + start FastAPI
   - _Requirements: Deployment Notes_
 
-- [ ] 17.2 Create Cloud Run configuration for Tabular service
+- [x] 17.2 Create Cloud Run configuration for Tabular service
   - Create infra/tabular-config.yaml
   - Configure memory: 4GB minimum (for BGE-M3 + Llama + overhead)
   - Configure CPU: 2 vCPUs
@@ -345,13 +345,13 @@ This implementation plan breaks down the Tabular Ingestion Pipeline into increme
   - Configure service account with BigQuery and GCS permissions
   - _Requirements: Deployment Notes_
 
-- [ ] 17.3 Create Eventarc trigger for text files
+- [x] 17.3 Create Eventarc trigger for text files
   - Add Eventarc trigger configuration to terraform
   - Filter on text/*.txt pattern in configured bucket
   - Route to Tabular service POST / endpoint
   - _Requirements: Requirement 13_
 
-- [ ] 17.4 Update CI/CD workflow
+- [x] 17.4 Update CI/CD workflow
   - Create .github/workflows/deploy-tabular.yml
   - Build Docker image with sentence-transformers
   - Deploy to Cloud Run
@@ -359,7 +359,7 @@ This implementation plan breaks down the Tabular Ingestion Pipeline into increme
   - _Requirements: Deployment Notes_
 
 - [ ] 18. Documentation and testing
-- [ ] 18.1 Create test fixtures
+- [x] 18.1 Create test fixtures
   - Create tests/fixtures/sample_text_csv.txt with frontmatter
   - Create tests/fixtures/sample_text_json.txt with frontmatter
   - Create tests/fixtures/sample_feedback.txt with entity mentions
@@ -367,7 +367,7 @@ This implementation plan breaks down the Tabular Ingestion Pipeline into increme
   - Create tests/fixtures/mock_entities.json
   - _Requirements: Requirement 15_
 
-- [ ] 18.2 Create README for Tabular service
+- [x] 18.2 Create README for Tabular service
   - Document service purpose and architecture
   - Document configuration options
   - Document API endpoints

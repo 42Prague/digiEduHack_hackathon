@@ -124,24 +124,24 @@ class ProcessingRequest(BaseModel):
             file_id = match.group(2)
             original_filename = match.group(3)
             logger.info(
-                f"Extracted metadata from path",
+                "Extracted metadata from path",
                 extra={
                     "object_path": object_path,
                     "region_id": region_id,
                     "file_id": file_id,
-                    "original_filename": original_filename
-                }
+                    "original_filename": original_filename,
+                },
             )
         else:
-            # File is outside the expected directory - skip it (not an error)
+            # File is outside the expected directory or pattern - skip it (not an error)
             logger.debug(
                 "File skipped: path does not match expected pattern",
                 extra={
                     "event_id": event.id,
                     "object_path": object_path,
                     "expected_pattern": "uploads/{region_id}/{file_id}_{filename}",
-                    "outcome": "skipped"
-                }
+                    "outcome": "skipped",
+                },
             )
             raise FileSkippedException(
                 f"File skipped: {object_path} does not match expected pattern"

@@ -1,0 +1,173 @@
+# Cloud Run configuration for Tabular Service
+# This service requires more resources due to AI models (BGE-M3 + Llama 3.2 1B)
+
+apiVersion: serving.knative.dev/v1
+kind: Service
+metadata:
+  name: tabular-service
+  labels:
+    cloud.googleapis.com/location: europe-west1
+  annotations:
+    run.googleapis.com/ingress: internal
+    run.googleapis.com/ingress-status: internal
+spec:
+  template:
+    metadata:
+      annotations:
+        # Resource configuration
+        run.googleapis.com/cpu-throttling: "false"  # Don't throttle CPU (needed for AI models)
+        run.googleapis.com/startup-cpu-boost: "true"  # Boost CPU during startup
+        
+        # Scaling configuration
+        autoscaling.knative.dev/minScale: "0"
+        autoscaling.knative.dev/maxScale: "10"
+        run.googleapis.com/max-instances: "10"
+        
+        # Execution environment
+        run.googleapis.com/execution-environment: gen2
+        
+    spec:
+      # Lower concurrency due to memory-intensive AI models
+      containerConcurrency: 5
+      
+      # Longer timeout for AI model loading
+      timeoutSeconds: 300
+      
+      # Service account with BigQuery and GCS permissions
+      serviceAccountName: tabular-service@PROJECT_ID.iam.gserviceaccount.com
+      
+      containers:
+      - name: tabular-service
+        image: gcr.io/PROJECT_ID/tabular-service:latest
+        
+        ports:
+        - name: http1
+          containerPort: 8080
+        
+        # Resource limits (4GB RAM, 2 vCPUs minimum for AI models)
+        resources:
+          limits:
+            cpu: "2000m"
+            memory: "4Gi"
+          requests:
+            cpu: "2000m"
+            memory: "4Gi"
+        
+        # Environment variables
+        env:
+        - name: ENV
+          value: "production"
+        
+        - name: SERVICE_NAME
+          value: "tabular-service"
+        
+        - name: SERVICE_VERSION
+          value: "1.0.0"
+        
+        # GCP Configuration
+        - name: GCP_PROJECT_ID
+          value: "PROJECT_ID"
+        
+        - name: GCP_REGION
+          value: "europe-west1"
+        
+        # Storage Configuration
+        - name: STORAGE_BACKEND
+          value: "gcs"
+        
+        - name: GCS_BUCKET_NAME
+          value: "BUCKET_NAME"
+        
+        # BigQuery Configuration
+        - name: BIGQUERY_PROJECT_ID
+          value: "PROJECT_ID"
+        
+        - name: BIGQUERY_DATASET_ID
+          value: "jedouscale_core"
+        
+        - name: BIGQUERY_STAGING_DATASET_ID
+          value: "jedouscale_staging"
+        
+        - name: CLEAN_LAYER_BASE_PATH
+          value: "gs://BUCKET_NAME/clean"
+        
+        - name: CONCEPT_CATALOG_PATH
+          value: "/app/config/concepts.yaml"
+        
+        # AI Models Configuration
+        - name: EMBEDDING_MODEL_NAME
+          value: "BAAI/bge-m3"
+        
+        - name: LLM_MODEL_NAME
+          value: "llama3.2:1b"
+        
+        - name: LLM_ENDPOINT
+          value: "http://localhost:11434"
+        
+        - name: LLM_ENABLED
+          value: "true"
+        
+        # Ingestion Configuration
+        - name: INGEST_MAX_ROWS
+          value: "200000"
+        
+        - name: PSEUDONYMIZE_IDS
+          value: "false"
+        
+        # AI Analysis Settings
+        - name: FEEDBACK_ANALYSIS_ENABLED
+          value: "true"
+        
+        - name: ENTITY_RESOLUTION_THRESHOLD
+          value: "0.85"
+        
+        - name: FEEDBACK_TARGET_THRESHOLD
+          value: "0.65"
+        
+        - name: MAX_TARGETS_PER_FEEDBACK
+          value: "10"
+        
+        - name: ENTITY_CACHE_TTL_SECONDS
+          value: "3600"
+        
+        # Logging
+        - name: LOG_LEVEL
+          value: "INFO"
+        
+        # Health check
+        livenessProbe:
+          httpGet:
+            path: /health
+            port: 8080
+          initialDelaySeconds: 60
+          periodSeconds: 30
+          timeoutSeconds: 10
+          failureThreshold: 3
+        
+        startupProbe:
+          httpGet:
+            path: /health
+            port: 8080
+          initialDelaySeconds: 30
+          periodSeconds: 10
+          timeoutSeconds: 10
+          failureThreshold: 6
+
+---
+# IAM Policy for Eventarc to invoke the service
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: tabular-service-iam
+data:
+  policy: |
+    {
+      "bindings": [
+        {
+          "role": "roles/run.invoker",
+          "members": [
+            "serviceAccount:eventarc-trigger@PROJECT_ID.iam.gserviceaccount.com"
+          ]
+        }
+      ]
+    }

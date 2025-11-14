@@ -23,3 +23,15 @@ google-cloud-speech>=2.21.0
 structlog>=23.2.0
 tenacity>=8.2.0
 PyYAML>=6.0.1
+
+# Tabular Service Dependencies
+sentence-transformers>=2.3.0  # For BGE-M3 embeddings
+pandas>=2.0.0
+pyarrow>=12.0.0
+pandera>=0.17.0
+python-Levenshtein>=0.21.0  # For fuzzy string matching
+rapidfuzz>=3.0.0  # Faster alternative to python-Levenshtein
+requests>=2.31.0  # For Ollama API calls
+google-cloud-bigquery>=3.11.0
+numpy>=1.24.0
+scikit-learn>=1.3.0  # For cosine_similarity

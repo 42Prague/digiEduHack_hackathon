@@ -1,0 +1,532 @@
+# Concepts Catalog for Tabular Ingestion Pipeline
+# Defines table types and canonical concepts for AI-powered classification and mapping
+
+table_types:
+  - name: ATTENDANCE
+    anchors:
+      - "student attendance records"
+      - "presence and absence tracking"
+      - "docházka žáků"
+      - "attendance tracking"
+  
+  - name: ASSESSMENT
+    anchors:
+      - "test scores and grades"
+      - "student performance evaluation"
+      - "hodnocení žáků"
+      - "exam results"
+  
+  - name: FEEDBACK
+    anchors:
+      - "student feedback and comments"
+      - "teacher observations"
+      - "zpětná vazba"
+      - "behavioral notes"
+  
+  - name: INTERVENTION
+    anchors:
+      - "intervention programs"
+      - "support activities"
+      - "intervence"
+      - "remedial actions"
+  
+  - name: RELATIONSHIP
+    anchors:
+      - "entity relationships and connections"
+      - "junction table data"
+      - "relační data"
+      - "student-teacher-subject assignments"
+      - "region-rule associations"
+      - "experiment-criteria mappings"
+
+concepts:
+  # Core Entity Identifiers
+  - key: student_id
+    description: "Unique student identifier"
+    expected_type: string
+    synonyms:
+      - "Student ID"
+      - "StudentID"
+      - "ID žáka"
+      - "Student Number"
+      - "Pupil ID"
+  
+  - key: teacher_id
+    description: "Unique teacher identifier"
+    expected_type: string
+    synonyms:
+      - "Teacher ID"
+      - "TeacherID"
+      - "ID učitele"
+      - "Instructor ID"
+      - "Educator ID"
+  
+  - key: parent_id
+    description: "Unique parent/guardian identifier"
+    expected_type: string
+    synonyms:
+      - "Parent ID"
+      - "ParentID"
+      - "ID rodiče"
+      - "Guardian ID"
+  
+  - key: region_id
+    description: "Geographic region identifier"
+    expected_type: string
+    synonyms:
+      - "Region"
+      - "Region ID"
+      - "Oblast"
+      - "District"
+      - "District ID"
+  
+  # Entity Names
+  - key: student_name
+    description: "Student full name"
+    expected_type: string
+    synonyms:
+      - "Student Name"
+      - "Student"
+      - "Jméno žáka"
+      - "Pupil Name"
+      - "Name"
+  
+  - key: teacher_name
+    description: "Teacher full name"
+    expected_type: string
+    synonyms:
+      - "Teacher Name"
+      - "Teacher"
+      - "Jméno učitele"
+      - "Instructor Name"
+      - "Educator"
+  
+  - key: parent_name
+    description: "Parent/guardian full name"
+    expected_type: string
+    synonyms:
+      - "Parent Name"
+      - "Parent"
+      - "Jméno rodiče"
+      - "Guardian Name"
+  
+  - key: school_name
+    description: "Name of the school"
+    expected_type: string
+    synonyms:
+      - "School"
+      - "School Name"
+      - "Škola"
+      - "Institution"
+  
+  - key: region_name
+    description: "Name of the region"
+    expected_type: string
+    synonyms:
+      - "Region Name"
+      - "Region"
+      - "Název oblasti"
+      - "District Name"
+  
+  - key: region_type
+    description: "Type of region (school, district, municipality)"
+    expected_type: categorical
+    synonyms:
+      - "Region Type"
+      - "Type"
+      - "Typ oblasti"
+      - "Administrative Level"
+  
+  # Temporal Fields
+  - key: date
+    description: "Date of the event or record"
+    expected_type: date
+    synonyms:
+      - "Date"
+      - "Datum"
+      - "Event Date"
+      - "Record Date"
+      - "Timestamp"
+  
+  - key: from_date
+    description: "Start date of a period or relationship"
+    expected_type: date
+    synonyms:
+      - "From"
+      - "From Date"
+      - "Start Date"
+      - "Od"
+      - "Začátek"
+  
+  - key: to_date
+    description: "End date of a period or relationship"
+    expected_type: date
+    synonyms:
+      - "To"
+      - "To Date"
+      - "End Date"
+      - "Do"
+      - "Konec"
+  
+  # Assessment Fields
+  - key: test_score
+    description: "Numeric test or assessment score"
+    expected_type: number
+    synonyms:
+      - "Score"
+      - "Test Score"
+      - "Grade"
+      - "Hodnocení"
+      - "Známka"
+      - "Points"
+      - "Mark"
+  
+  - key: subject
+    description: "Academic subject"
+    expected_type: categorical
+    synonyms:
+      - "Subject"
+      - "Předmět"
+      - "Course"
+      - "Class"
+      - "Subject Name"
+  
+  - key: subject_id
+    description: "Unique subject identifier"
+    expected_type: string
+    synonyms:
+      - "Subject ID"
+      - "SubjectID"
+      - "ID předmětu"
+      - "Course ID"
+  
+  # Intervention Fields
+  - key: intervention_type
+    description: "Type of intervention or support"
+    expected_type: categorical
+    synonyms:
+      - "Intervention"
+      - "Intervention Type"
+      - "Typ intervence"
+      - "Support Type"
+      - "Program"
+      - "Program Type"
+  
+  - key: intervention_id
+    description: "Unique intervention identifier"
+    expected_type: string
+    synonyms:
+      - "Intervention ID"
+      - "InterventionID"
+      - "ID intervence"
+      - "Program ID"
+  
+  - key: participants_count
+    description: "Number of participants"
+    expected_type: number
+    synonyms:
+      - "Participants"
+      - "Count"
+      - "Počet účastníků"
+      - "Number of Students"
+      - "Attendance Count"
+      - "Participant Count"
+  
+  # Experiment Fields
+  - key: experiment_id
+    description: "Unique experiment identifier"
+    expected_type: string
+    synonyms:
+      - "Experiment ID"
+      - "ExperimentID"
+      - "ID experimentu"
+      - "Trial ID"
+  
+  - key: experiment_name
+    description: "Name of the experiment"
+    expected_type: string
+    synonyms:
+      - "Experiment"
+      - "Experiment Name"
+      - "Název experimentu"
+      - "Trial Name"
+  
+  - key: experiment_status
+    description: "Status of the experiment"
+    expected_type: categorical
+    synonyms:
+      - "Status"
+      - "Experiment Status"
+      - "Stav experimentu"
+      - "State"
+  
+  # Criteria Fields
+  - key: criteria_id
+    description: "Unique criteria identifier"
+    expected_type: string
+    synonyms:
+      - "Criteria ID"
+      - "CriteriaID"
+      - "ID kritéria"
+      - "Metric ID"
+  
+  - key: criteria_name
+    description: "Name of the criteria"
+    expected_type: string
+    synonyms:
+      - "Criteria"
+      - "Criteria Name"
+      - "Název kritéria"
+      - "Metric Name"
+      - "KPI"
+  
+  - key: target_value
+    description: "Target value for a criteria"
+    expected_type: number
+    synonyms:
+      - "Target"
+      - "Target Value"
+      - "Cílová hodnota"
+      - "Goal"
+      - "Objective"
+  
+  - key: baseline_value
+    description: "Baseline value for a criteria"
+    expected_type: number
+    synonyms:
+      - "Baseline"
+      - "Baseline Value"
+      - "Výchozí hodnota"
+      - "Starting Value"
+  
+  # Rule Fields
+  - key: rule_id
+    description: "Unique rule identifier"
+    expected_type: string
+    synonyms:
+      - "Rule ID"
+      - "RuleID"
+      - "ID pravidla"
+      - "Policy ID"
+  
+  - key: rule_title
+    description: "Title of the rule"
+    expected_type: string
+    synonyms:
+      - "Rule"
+      - "Rule Title"
+      - "Název pravidla"
+      - "Policy Name"
+      - "Regulation"
+  
+  - key: rule_type
+    description: "Type of rule"
+    expected_type: categorical
+    synonyms:
+      - "Rule Type"
+      - "Type"
+      - "Typ pravidla"
+      - "Policy Type"
+      - "Category"
+  
+  # Feedback Fields
+  - key: feedback_id
+    description: "Unique feedback identifier"
+    expected_type: string
+    synonyms:
+      - "Feedback ID"
+      - "FeedbackID"
+      - "ID zpětné vazby"
+      - "Comment ID"
+  
+  - key: feedback_text
+    description: "Text content of feedback"
+    expected_type: string
+    synonyms:
+      - "Feedback"
+      - "Feedback Text"
+      - "Text zpětné vazby"
+      - "Comment"
+      - "Comments"
+      - "Notes"
+  
+  - key: sentiment_score
+    description: "Sentiment score of feedback"
+    expected_type: number
+    synonyms:
+      - "Sentiment"
+      - "Sentiment Score"
+      - "Skóre sentimentu"
+      - "Rating"
+      - "Mood Score"
+  
+  - key: feedback_category
+    description: "Category of feedback"
+    expected_type: categorical
+    synonyms:
+      - "Category"
+      - "Feedback Category"
+      - "Kategorie zpětné vazby"
+      - "Type"
+      - "Classification"
+  
+  - key: author_id
+    description: "ID of feedback author"
+    expected_type: string
+    synonyms:
+      - "Author ID"
+      - "AuthorID"
+      - "ID autora"
+      - "Submitted By"
+      - "User ID"
+  
+  - key: author_type
+    description: "Type of feedback author (student/teacher/parent)"
+    expected_type: categorical
+    synonyms:
+      - "Author Type"
+      - "Typ autora"
+      - "Role"
+      - "User Type"
+      - "Submitter Type"
+  
+  # Generic Description Field
+  - key: description
+    description: "General description or notes"
+    expected_type: string
+    synonyms:
+      - "Description"
+      - "Popis"
+      - "Notes"
+      - "Details"
+      - "Information"
+      - "Poznámky"
+  
+  # Analysis Result Fields
+  - key: analysis_id
+    description: "Unique analysis result identifier"
+    expected_type: string
+    synonyms:
+      - "Analysis ID"
+      - "AnalysisID"
+      - "ID analýzy"
+      - "Report ID"
+  
+  - key: analysis_timestamp
+    description: "Timestamp when analysis was performed"
+    expected_type: date
+    synonyms:
+      - "Analysis Timestamp"
+      - "Analysis Date"
+      - "Čas analýzy"
+      - "Report Date"
+  
+  - key: analysis_status
+    description: "Status of analysis (PROCESSING, COMPLETED, FAILED)"
+    expected_type: categorical
+    synonyms:
+      - "Analysis Status"
+      - "Status"
+      - "Stav analýzy"
+      - "Report Status"
+  
+  - key: analysis_report
+    description: "Text content of analysis report"
+    expected_type: string
+    synonyms:
+      - "Analysis Report"
+      - "Report"
+      - "Zpráva analýzy"
+      - "Analysis Text"
+      - "Findings"
+  
+  # Junction Table / Relationship Fields
+  - key: student_teacher_subject_id
+    description: "Unique identifier for student-teacher-subject relationship"
+    expected_type: string
+    synonyms:
+      - "Relationship ID"
+      - "Assignment ID"
+      - "ID vztahu"
+  
+  - key: weight
+    description: "Weight or importance factor"
+    expected_type: number
+    synonyms:
+      - "Weight"
+      - "Váha"
+      - "Importance"
+      - "Priority"
+  
+  - key: role
+    description: "Role in relationship or experiment"
+    expected_type: categorical
+    synonyms:
+      - "Role"
+      - "Role Type"
+      - "Úloha"
+      - "Function"
+  
+  - key: relevance_score
+    description: "Relevance score for feedback target"
+    expected_type: number
+    synonyms:
+      - "Relevance"
+      - "Relevance Score"
+      - "Skóre relevance"
+      - "Confidence"
+  
+  - key: impact_score
+    description: "Impact score for analysis impact"
+    expected_type: number
+    synonyms:
+      - "Impact"
+      - "Impact Score"
+      - "Skóre dopadu"
+      - "Effect Score"
+  
+  - key: target_type
+    description: "Type of polymorphic target entity"
+    expected_type: categorical
+    synonyms:
+      - "Target Type"
+      - "Entity Type"
+      - "Typ cíle"
+      - "Reference Type"
+  
+  - key: target_id
+    description: "ID of polymorphic target entity"
+    expected_type: string
+    synonyms:
+      - "Target ID"
+      - "Entity ID"
+      - "ID cíle"
+      - "Reference ID"
+  
+  - key: timestamp
+    description: "Generic timestamp field"
+    expected_type: date
+    synonyms:
+      - "Timestamp"
+      - "Time"
+      - "Čas"
+      - "DateTime"
+  
+  - key: source_url
+    description: "Source URL for rules or references"
+    expected_type: string
+    synonyms:
+      - "Source URL"
+      - "URL"
+      - "Zdrojová URL"
+      - "Link"
+      - "Reference URL"
+  
+  - key: status
+    description: "Generic status field for relationships and entities"
+    expected_type: categorical
+    synonyms:
+      - "Status"
+      - "Stav"
+      - "State"
+      - "Active Status"

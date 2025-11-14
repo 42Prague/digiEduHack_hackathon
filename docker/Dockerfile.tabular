@@ -1,0 +1,63 @@
+# Dockerfile for Tabular Service with Ollama and AI models
+# This service requires more resources due to BGE-M3 embeddings and Llama 3.2 1B
+
+FROM python:3.11-slim
+
+# Set environment variables
+ENV PYTHONUNBUFFERED=1 \
+    PYTHONDONTWRITEBYTECODE=1 \
+    PYTHONPATH=/app/src \
+    PORT=8080 \
+    OLLAMA_HOST=0.0.0.0:11434
+
+# Install system dependencies
+RUN apt-get update && apt-get install -y \
+    curl \
+    ca-certificates \
+    && rm -rf /var/lib/apt/lists/*
+
+WORKDIR /app
+
+# Install Ollama
+RUN curl -fsSL https://ollama.com/install.sh | sh
+
+# Copy requirements and install Python dependencies
+COPY requirements.txt .
+RUN pip install --no-cache-dir -r requirements.txt
+
+# Pre-download BGE-M3 model (speeds up first run)
+# This downloads ~2.2GB model during build
+RUN python -c "from sentence_transformers import SentenceTransformer; SentenceTransformer('BAAI/bge-m3')" || echo "BGE-M3 download failed, will retry at runtime"
+
+# Copy source code
+COPY src/ /app/src/
+COPY config/ /app/config/
+
+# Create startup script
+RUN echo '#!/bin/bash\n\
+set -e\n\
+\n\
+echo "Starting Ollama service..."\n\
+ollama serve &\n\
+OLLAMA_PID=$!\n\
+\n\
+echo "Waiting for Ollama to be ready..."\n\
+sleep 5\n\
+\n\
+echo "Pulling Llama 3.2 1B model..."\n\
+ollama pull llama3.2:1b || echo "Llama model pull failed, will retry at runtime"\n\
+\n\
+echo "Starting FastAPI application..."\n\
+exec uvicorn eduscale.main:app --host 0.0.0.0 --port ${PORT}\n\
+' > /start.sh && chmod +x /start.sh
+
+# Expose ports
+EXPOSE ${PORT}
+EXPOSE 11434
+
+# Health check
+HEALTHCHECK --interval=30s --timeout=10s --start-period=60s --retries=3 \
+    CMD curl -f http://localhost:${PORT}/health || exit 1
+
+# Run startup script
+CMD ["/start.sh"]

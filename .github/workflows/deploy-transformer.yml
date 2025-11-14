@@ -62,3 +62,10 @@ jobs:
           gcloud run services replace infra/transformer-config.yaml \
             --region ${{ env.REGION }} \
             --platform managed
+
+      - name: Set Cloud Run IAM (public access)
+        run: |
+          gcloud run services add-iam-policy-binding ${{ env.SERVICE_NAME }} \
+            --region ${{ env.REGION }} \
+            --member="allUsers" \
+            --role="roles/run.invoker"

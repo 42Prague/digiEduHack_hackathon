@@ -1,0 +1,46 @@
+---
+file_id: "sample-json-002"
+region_id: "region-cz-01"
+text_uri: "gs://test-bucket/text/sample-json-002.txt"
+event_id: "event-json-002"
+file_category: "json"
+
+original:
+  filename: "feedback_data.json"
+  content_type: "application/json"
+  size_bytes: 2345
+  bucket: "test-bucket"
+  object_path: "uploads/region-cz-01/sample-json-002_feedback_data.json"
+  uploaded_at: "2025-01-14T11:00:00Z"
+
+extraction:
+  method: "json_parser"
+  timestamp: "2025-01-14T11:00:10Z"
+  success: true
+  duration_ms: 30
+
+content:
+  text_length: 800
+  word_count: 120
+  character_count: 800
+---
+[
+  {
+    "feedback_id": "FB001",
+    "feedback_text": "Učitel Petrová výborně vysvětluje matematiku. Studenti jsou velmi spokojeni.",
+    "date": "2025-01-10",
+    "author_type": "parent"
+  },
+  {
+    "feedback_id": "FB002",
+    "feedback_text": "Potřebujeme více času na procvičování. Látka je náročná.",
+    "date": "2025-01-11",
+    "author_type": "student"
+  },
+  {
+    "feedback_id": "FB003",
+    "feedback_text": "Výborná spolupráce s rodiči. Děti dělají pokroky.",
+    "date": "2025-01-12",
+    "author_type": "teacher"
+  }
+]
