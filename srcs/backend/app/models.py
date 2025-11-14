@@ -1,7 +1,6 @@
-from typing import Optional
-
-from sqlmodel import SQLModel, Field, Relationship
-
+from typing import Optional, Dict, Any
+from sqlmodel import SQLModel, Field, Column, JSON, Relationship
+from datetime import datetime
 
 class Region(SQLModel, table=True):
     id: Optional[int] = Field(default=None, primary_key=True)
@@ -20,7 +19,27 @@ class School(SQLModel, table=True):
 
 
 class FileMeta(SQLModel, table=True):
-    tus_id: str = Field(default=None, primary_key=True)
-    filename: str
+    id: Optional[int] = Field(default=None, primary_key=True)
 
-    school_id: Optional[int] = Field(default=None, foreign_key="school.id")
+    tus_id: str
+    filename: str
+    school_id: int
+
+    uploaded_at: datetime = Field(default_factory=datetime.utcnow)
+
+    # analysis
+    analysis_status: str = Field(default="pending")  # "pending" | "processing" | "done" | "failed"
+    analysis_started_at: Optional[datetime] = None
+    analysis_finished_at: Optional[datetime] = None
+    analysis_error: Optional[str] = None
+
+    # raw text (optional, if you want to reuse it)
+    extracted_text: Optional[str] = None
+
+    # stats + LLM result (use JSON column)
+    basic_stats: Optional[Dict[str, Any]] = Field(
+        default=None, sa_column=Column(JSON)
+    )
+    llm_summary: Optional[Dict[str, Any]] = Field(
+        default=None, sa_column=Column(JSON)
+    )
