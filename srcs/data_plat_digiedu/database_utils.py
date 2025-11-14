@@ -57,7 +57,8 @@ def get_database_connection():
             engine = create_engine(connection_string)
             
         else:  # SQLite (default)
-            db_path = st.secrets.get("db_path", "teacher_survey.db")
+            # Check environment variable first (for Docker), then secrets, then default
+            db_path = os.environ.get("DB_PATH") or st.secrets.get("db_path", "teacher_survey.db")
             connection_string = f'sqlite:///{db_path}'
             engine = create_engine(connection_string)
             
@@ -74,7 +75,7 @@ def get_database_connection():
         st.warning(f"Database connection failed: {str(e)}. Using SQLite fallback.")
         
         # Fallback to SQLite
-        db_path = "teacher_survey.db"
+        db_path = os.environ.get("DB_PATH", "teacher_survey.db")
         connection_string = f'sqlite:///{db_path}'
         engine = create_engine(connection_string)
         create_tables_if_not_exist(engine)
