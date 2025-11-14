@@ -1,0 +1,3 @@
+[submodule "srcs/gitgud"]
+	path = srcs/gitgud
+	url = git@github.com:tisonpatrik/hackhaton_digiedu.git
