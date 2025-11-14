@@ -1,0 +1,2037 @@
+{
+  "transcripts_list": [
+    {
+      "id": "8fecc63a-15ba-4317-92fd-d3ad0f4753aa",
+      "file_type": "transcript",
+      "original_filename": "interview_SCHOOL_LIBEREC_001_2024-07-09.md",
+      "upload_metadata": {
+        "school_id": "SCHOOL_LIBEREC_001",
+        "region_id": "liberec",
+        "school_type": "secondary",
+        "intervention_type": "municipal_collaboration",
+        "participant_role": "coordinator",
+        "interview_date": "2024-07-09"
+      },
+      "transcript_text": "During our municipal collaboration, we observed significant improvements in staff collaboration. Teachers began sharing resources more openly, and there was a noticeable increase in cross-grade level communication. The principal noted that the school culture has shifted towards more supportive interactions. However, some challenges remain with time management and balancing new initiatives with existing responsibilities. There are still areas for improvement, particularly in resource allocation. The focus on professional growth has been transformative.",
+      "clean_text": "During our municipal collaboration, we observed significant improvements in staff collaboration. Teachers began sharing resources more openly, and there was a noticeable increase in cross-grade level communication. The principal noted that the school culture has shifted towards more supportive interactions. However, some challenges remain with time management and balancing new initiatives with existing responsibilities. There are still areas for improvement, particularly in resource allocation. The focus on professional growth has been transformative.",
+      "raw_file_path": "/data/raw/transcripts/8fecc63a-15ba-4317-92fd-d3ad0f4753aa.md",
+      "transcript_path": "/data/processed/transcripts/8fecc63a-15ba-4317-92fd-d3ad0f4753aa.txt",
+      "created_at": "2024-07-09T10:00:00Z",
+      "updated_at": "2024-07-09T10:00:00Z"
+    },
+    {
+      "id": "389151d2-f878-4e82-a8c9-7b34684dd47d",
+      "file_type": "transcript",
+      "original_filename": "interview_SCHOOL_OLOMOUC_002_2023-10-15.md",
+      "upload_metadata": {
+        "school_id": "SCHOOL_OLOMOUC_002",
+        "region_id": "olomouc",
+        "school_type": "kindergarten",
+        "intervention_type": "team_training",
+        "participant_role": "municipality",
+        "interview_date": "2023-10-15"
+      },
+      "transcript_text": "The team training has transformed how we approach professional development. Previously, teachers worked in isolation, but now we have regular team meetings where we discuss student progress and share best practices. The municipality has been supportive, providing additional resources. We've seen improvements in teacher confidence, especially among newer staff members. The school leadership has been instrumental in driving change. There are still areas for improvement, particularly in resource allocation.",
+      "clean_text": "The team training has transformed how we approach professional development. Previously, teachers worked in isolation, but now we have regular team meetings where we discuss student progress and share best practices. The municipality has been supportive, providing additional resources. We've seen improvements in teacher confidence, especially among newer staff members. The school leadership has been instrumental in driving change. There are still areas for improvement, particularly in resource allocation.",
+      "raw_file_path": "/data/raw/transcripts/389151d2-f878-4e82-a8c9-7b34684dd47d.md",
+      "transcript_path": "/data/processed/transcripts/389151d2-f878-4e82-a8c9-7b34684dd47d.txt",
+      "created_at": "2023-10-15T10:00:00Z",
+      "updated_at": "2023-10-15T10:00:00Z"
+    },
+    {
+      "id": "ada1702d-1c0f-4cb3-89f5-8f37219a0aaa",
+      "file_type": "transcript",
+      "original_filename": "interview_SCHOOL_OLOMOUC_003_2023-12-02.md",
+      "upload_metadata": {
+        "school_id": "SCHOOL_OLOMOUC_003",
+        "region_id": "olomouc",
+        "school_type": "primary",
+        "intervention_type": "other",
+        "participant_role": "teacher",
+        "interview_date": "2023-12-02"
+      },
+      "transcript_text": "Our primary school has experienced positive changes since implementing the other. Teachers report feeling more valued and heard. There's been an increase in innovative teaching methods, and students are more engaged. The collaboration with local authorities has been particularly effective, leading to better resource allocation. We've seen measurable improvements in student engagement. The focus on professional growth has been transformative.",
+      "clean_text": "Our primary school has experienced positive changes since implementing the other. Teachers report feeling more valued and heard. There's been an increase in innovative teaching methods, and students are more engaged. The collaboration with local authorities has been particularly effective, leading to better resource allocation. We've seen measurable improvements in student engagement. The focus on professional growth has been transformative.",
+      "raw_file_path": "/data/raw/transcripts/ada1702d-1c0f-4cb3-89f5-8f37219a0aaa.md",
+      "transcript_path": "/data/processed/transcripts/ada1702d-1c0f-4cb3-89f5-8f37219a0aaa.txt",
+      "created_at": "2023-12-02T10:00:00Z",
+      "updated_at": "2023-12-02T10:00:00Z"
+    },
+    {
+      "id": "95b8112e-5101-4d7f-9475-7add4f878f61",
+      "file_type": "transcript",
+      "original_filename": "interview_SCHOOL_CESKE_BUDEJOVICE_004_2023-04-20.md",
+      "upload_metadata": {
+        "school_id": "SCHOOL_CESKE_BUDEJOVICE_004",
+        "region_id": "ceske_budejovice",
+        "school_type": "secondary",
+        "intervention_type": "teacher_course",
+        "participant_role": "principal",
+        "interview_date": "2023-04-20"
+      },
+      "transcript_text": "While the teacher course showed promise initially, we've encountered some resistance from staff who prefer traditional approaches. Communication between departments needs improvement. However, the principal's leadership has been crucial in maintaining momentum. We're seeing gradual mindset shifts, particularly around student-centered learning. The school leadership has been instrumental in driving change. Parent feedback has been overwhelmingly positive.",
+      "clean_text": "While the teacher course showed promise initially, we've encountered some resistance from staff who prefer traditional approaches. Communication between departments needs improvement. However, the principal's leadership has been crucial in maintaining momentum. We're seeing gradual mindset shifts, particularly around student-centered learning. The school leadership has been instrumental in driving change. Parent feedback has been overwhelmingly positive.",
+      "raw_file_path": "/data/raw/transcripts/95b8112e-5101-4d7f-9475-7add4f878f61.md",
+      "transcript_path": "/data/processed/transcripts/95b8112e-5101-4d7f-9475-7add4f878f61.txt",
+      "created_at": "2023-04-20T10:00:00Z",
+      "updated_at": "2023-04-20T10:00:00Z"
+    },
+    {
+      "id": "fe54d7ee-1b03-4765-b57d-38d0e516a318",
+      "file_type": "transcript",
+      "original_filename": "interview_SCHOOL_PRAHA_005_2023-11-07.md",
+      "upload_metadata": {
+        "school_id": "SCHOOL_PRAHA_005",
+        "region_id": "praha",
+        "school_type": "secondary",
+        "intervention_type": "municipal_collaboration",
+        "participant_role": "coordinator",
+        "interview_date": "2023-11-07"
+      },
+      "transcript_text": "The intervention has created a more collaborative environment. Teachers are working together on curriculum design, and there's increased peer observation. The municipality's involvement has helped address infrastructure needs. We've noticed improvements in teacher morale and student outcomes, though measuring long-term impact remains a challenge. The focus on professional growth has been transformative. The school leadership has been instrumental in driving change.",
+      "clean_text": "The intervention has created a more collaborative environment. Teachers are working together on curriculum design, and there's increased peer observation. The municipality's involvement has helped address infrastructure needs. We've noticed improvements in teacher morale and student outcomes, though measuring long-term impact remains a challenge. The focus on professional growth has been transformative. The school leadership has been instrumental in driving change.",
+      "raw_file_path": "/data/raw/transcripts/fe54d7ee-1b03-4765-b57d-38d0e516a318.md",
+      "transcript_path": "/data/processed/transcripts/fe54d7ee-1b03-4765-b57d-38d0e516a318.txt",
+      "created_at": "2023-11-07T10:00:00Z",
+      "updated_at": "2023-11-07T10:00:00Z"
+    },
+    {
+      "id": "d65ff415-8046-4a2e-a6c9-214e09f6cf5a",
+      "file_type": "transcript",
+      "original_filename": "interview_SCHOOL_OLOMOUC_006_2024-04-08.md",
+      "upload_metadata": {
+        "school_id": "SCHOOL_OLOMOUC_006",
+        "region_id": "olomouc",
+        "school_type": "gymnasium",
+        "intervention_type": "municipal_collaboration",
+        "participant_role": "teacher",
+        "interview_date": "2024-04-08"
+      },
+      "transcript_text": "During our municipal collaboration, we observed significant improvements in staff collaboration. Teachers began sharing resources more openly, and there was a noticeable increase in cross-grade level communication. The principal noted that the school culture has shifted towards more supportive interactions. However, some challenges remain with time management and balancing new initiatives with existing responsibilities. There are still areas for improvement, particularly in resource allocation. We've seen measurable improvements in student engagement.",
+      "clean_text": "During our municipal collaboration, we observed significant improvements in staff collaboration. Teachers began sharing resources more openly, and there was a noticeable increase in cross-grade level communication. The principal noted that the school culture has shifted towards more supportive interactions. However, some challenges remain with time management and balancing new initiatives with existing responsibilities. There are still areas for improvement, particularly in resource allocation. We've seen measurable improvements in student engagement.",
+      "raw_file_path": "/data/raw/transcripts/d65ff415-8046-4a2e-a6c9-214e09f6cf5a.md",
+      "transcript_path": "/data/processed/transcripts/d65ff415-8046-4a2e-a6c9-214e09f6cf5a.txt",
+      "created_at": "2024-04-08T10:00:00Z",
+      "updated_at": "2024-04-08T10:00:00Z"
+    },
+    {
+      "id": "bd626f57-f3c7-4d02-aeee-0bd998f5137a",
+      "file_type": "transcript",
+      "original_filename": "interview_SCHOOL_LIBEREC_007_2023-11-20.md",
+      "upload_metadata": {
+        "school_id": "SCHOOL_LIBEREC_007",
+        "region_id": "liberec",
+        "school_type": "kindergarten",
+        "intervention_type": "municipal_collaboration",
+        "participant_role": "principal",
+        "interview_date": "2023-11-20"
+      },
+      "transcript_text": "The municipal collaboration has transformed how we approach professional development. Previously, teachers worked in isolation, but now we have regular team meetings where we discuss student progress and share best practices. The municipality has been supportive, providing additional resources. We've seen improvements in teacher confidence, especially among newer staff members. We've seen measurable improvements in student engagement. The focus on professional growth has been transformative.",
+      "clean_text": "The municipal collaboration has transformed how we approach professional development. Previously, teachers worked in isolation, but now we have regular team meetings where we discuss student progress and share best practices. The municipality has been supportive, providing additional resources. We've seen improvements in teacher confidence, especially among newer staff members. We've seen measurable improvements in student engagement. The focus on professional growth has been transformative.",
+      "raw_file_path": "/data/raw/transcripts/bd626f57-f3c7-4d02-aeee-0bd998f5137a.md",
+      "transcript_path": "/data/processed/transcripts/bd626f57-f3c7-4d02-aeee-0bd998f5137a.txt",
+      "created_at": "2023-11-20T10:00:00Z",
+      "updated_at": "2023-11-20T10:00:00Z"
+    },
+    {
+      "id": "9af96834-2529-425d-bce2-eb2517f655b4",
+      "file_type": "transcript",
+      "original_filename": "interview_SCHOOL_PARDUBICE_008_2024-11-02.md",
+      "upload_metadata": {
+        "school_id": "SCHOOL_PARDUBICE_008",
+        "region_id": "pardubice",
+        "school_type": "primary",
+        "intervention_type": "teacher_course",
+        "participant_role": "teacher",
+        "interview_date": "2024-11-02"
+      },
+      "transcript_text": "Our primary school has experienced positive changes since implementing the teacher course. Teachers report feeling more valued and heard. There's been an increase in innovative teaching methods, and students are more engaged. The collaboration with local authorities has been particularly effective, leading to better resource allocation. There are still areas for improvement, particularly in resource allocation. The school leadership has been instrumental in driving change.",
+      "clean_text": "Our primary school has experienced positive changes since implementing the teacher course. Teachers report feeling more valued and heard. There's been an increase in innovative teaching methods, and students are more engaged. The collaboration with local authorities has been particularly effective, leading to better resource allocation. There are still areas for improvement, particularly in resource allocation. The school leadership has been instrumental in driving change.",
+      "raw_file_path": "/data/raw/transcripts/9af96834-2529-425d-bce2-eb2517f655b4.md",
+      "transcript_path": "/data/processed/transcripts/9af96834-2529-425d-bce2-eb2517f655b4.txt",
+      "created_at": "2024-11-02T10:00:00Z",
+      "updated_at": "2024-11-02T10:00:00Z"
+    },
+    {
+      "id": "923a876d-1b3b-436a-9b28-bc0001b03812",
+      "file_type": "transcript",
+      "original_filename": "interview_SCHOOL_OSTRAVA_009_2024-02-06.md",
+      "upload_metadata": {
+        "school_id": "SCHOOL_OSTRAVA_009",
+        "region_id": "ostrava",
+        "school_type": "kindergarten",
+        "intervention_type": "teacher_course",
+        "participant_role": "municipality",
+        "interview_date": "2024-02-06"
+      },
+      "transcript_text": "While the teacher course showed promise initially, we've encountered some resistance from staff who prefer traditional approaches. Communication between departments needs improvement. However, the principal's leadership has been crucial in maintaining momentum. We're seeing gradual mindset shifts, particularly around student-centered learning. We've seen measurable improvements in student engagement. Parent feedback has been overwhelmingly positive.",
+      "clean_text": "While the teacher course showed promise initially, we've encountered some resistance from staff who prefer traditional approaches. Communication between departments needs improvement. However, the principal's leadership has been crucial in maintaining momentum. We're seeing gradual mindset shifts, particularly around student-centered learning. We've seen measurable improvements in student engagement. Parent feedback has been overwhelmingly positive.",
+      "raw_file_path": "/data/raw/transcripts/923a876d-1b3b-436a-9b28-bc0001b03812.md",
+      "transcript_path": "/data/processed/transcripts/923a876d-1b3b-436a-9b28-bc0001b03812.txt",
+      "created_at": "2024-02-06T10:00:00Z",
+      "updated_at": "2024-02-06T10:00:00Z"
+    },
+    {
+      "id": "13cffb93-347a-4e8c-aa6f-734deb8979c7",
+      "file_type": "transcript",
+      "original_filename": "interview_SCHOOL_CESKE_BUDEJOVICE_010_2023-07-06.md",
+      "upload_metadata": {
+        "school_id": "SCHOOL_CESKE_BUDEJOVICE_010",
+        "region_id": "ceske_budejovice",
+        "school_type": "primary",
+        "intervention_type": "municipal_collaboration",
+        "participant_role": "teacher",
+        "interview_date": "2023-07-06"
+      },
+      "transcript_text": "The intervention has created a more collaborative environment. Teachers are working together on curriculum design, and there's increased peer observation. The municipality's involvement has helped address infrastructure needs. We've noticed improvements in teacher morale and student outcomes, though measuring long-term impact remains a challenge. The focus on professional growth has been transformative. Parent feedback has been overwhelmingly positive.",
+      "clean_text": "The intervention has created a more collaborative environment. Teachers are working together on curriculum design, and there's increased peer observation. The municipality's involvement has helped address infrastructure needs. We've noticed improvements in teacher morale and student outcomes, though measuring long-term impact remains a challenge. The focus on professional growth has been transformative. Parent feedback has been overwhelmingly positive.",
+      "raw_file_path": "/data/raw/transcripts/13cffb93-347a-4e8c-aa6f-734deb8979c7.md",
+      "transcript_path": "/data/processed/transcripts/13cffb93-347a-4e8c-aa6f-734deb8979c7.txt",
+      "created_at": "2023-07-06T10:00:00Z",
+      "updated_at": "2023-07-06T10:00:00Z"
+    },
+    {
+      "id": "ed22b5fb-c31d-44e1-84a6-922fc9b74902",
+      "file_type": "transcript",
+      "original_filename": "interview_SCHOOL_PRAHA_011_2024-07-06.md",
+      "upload_metadata": {
+        "school_id": "SCHOOL_PRAHA_011",
+        "region_id": "praha",
+        "school_type": "gymnasium",
+        "intervention_type": "leadership_workshop",
+        "participant_role": "coordinator",
+        "interview_date": "2024-07-06"
+      },
+      "transcript_text": "During our leadership workshop, we observed significant improvements in staff collaboration. Teachers began sharing resources more openly, and there was a noticeable increase in cross-grade level communication. The principal noted that the school culture has shifted towards more supportive interactions. However, some challenges remain with time management and balancing new initiatives with existing responsibilities. The focus on professional growth has been transformative. There are still areas for improvement, particularly in resource allocation.",
+      "clean_text": "During our leadership workshop, we observed significant improvements in staff collaboration. Teachers began sharing resources more openly, and there was a noticeable increase in cross-grade level communication. The principal noted that the school culture has shifted towards more supportive interactions. However, some challenges remain with time management and balancing new initiatives with existing responsibilities. The focus on professional growth has been transformative. There are still areas for improvement, particularly in resource allocation.",
+      "raw_file_path": "/data/raw/transcripts/ed22b5fb-c31d-44e1-84a6-922fc9b74902.md",
+      "transcript_path": "/data/processed/transcripts/ed22b5fb-c31d-44e1-84a6-922fc9b74902.txt",
+      "created_at": "2024-07-06T10:00:00Z",
+      "updated_at": "2024-07-06T10:00:00Z"
+    },
+    {
+      "id": "93907082-1599-4b6f-9687-8447c0116043",
+      "file_type": "transcript",
+      "original_filename": "interview_SCHOOL_PLZEN_012_2023-08-09.md",
+      "upload_metadata": {
+        "school_id": "SCHOOL_PLZEN_012",
+        "region_id": "plzen",
+        "school_type": "primary",
+        "intervention_type": "municipal_collaboration",
+        "participant_role": "municipality",
+        "interview_date": "2023-08-09"
+      },
+      "transcript_text": "The municipal collaboration has transformed how we approach professional development. Previously, teachers worked in isolation, but now we have regular team meetings where we discuss student progress and share best practices. The municipality has been supportive, providing additional resources. We've seen improvements in teacher confidence, especially among newer staff members. Parent feedback has been overwhelmingly positive. The focus on professional growth has been transformative.",
+      "clean_text": "The municipal collaboration has transformed how we approach professional development. Previously, teachers worked in isolation, but now we have regular team meetings where we discuss student progress and share best practices. The municipality has been supportive, providing additional resources. We've seen improvements in teacher confidence, especially among newer staff members. Parent feedback has been overwhelmingly positive. The focus on professional growth has been transformative.",
+      "raw_file_path": "/data/raw/transcripts/93907082-1599-4b6f-9687-8447c0116043.md",
+      "transcript_path": "/data/processed/transcripts/93907082-1599-4b6f-9687-8447c0116043.txt",
+      "created_at": "2023-08-09T10:00:00Z",
+      "updated_at": "2023-08-09T10:00:00Z"
+    },
+    {
+      "id": "0aca916e-ce99-4417-af5a-547ed729b1d9",
+      "file_type": "transcript",
+      "original_filename": "interview_SCHOOL_PRAHA_013_2023-11-21.md",
+      "upload_metadata": {
+        "school_id": "SCHOOL_PRAHA_013",
+        "region_id": "praha",
+        "school_type": "primary",
+        "intervention_type": "teacher_course",
+        "participant_role": "coordinator",
+        "interview_date": "2023-11-21"
+      },
+      "transcript_text": "Our primary school has experienced positive changes since implementing the teacher course. Teachers report feeling more valued and heard. There's been an increase in innovative teaching methods, and students are more engaged. The collaboration with local authorities has been particularly effective, leading to better resource allocation. The focus on professional growth has been transformative. There are still areas for improvement, particularly in resource allocation.",
+      "clean_text": "Our primary school has experienced positive changes since implementing the teacher course. Teachers report feeling more valued and heard. There's been an increase in innovative teaching methods, and students are more engaged. The collaboration with local authorities has been particularly effective, leading to better resource allocation. The focus on professional growth has been transformative. There are still areas for improvement, particularly in resource allocation.",
+      "raw_file_path": "/data/raw/transcripts/0aca916e-ce99-4417-af5a-547ed729b1d9.md",
+      "transcript_path": "/data/processed/transcripts/0aca916e-ce99-4417-af5a-547ed729b1d9.txt",
+      "created_at": "2023-11-21T10:00:00Z",
+      "updated_at": "2023-11-21T10:00:00Z"
+    },
+    {
+      "id": "cb59465a-19ba-45d4-8094-5b0047aeba7f",
+      "file_type": "transcript",
+      "original_filename": "interview_SCHOOL_PRAHA_014_2024-02-01.md",
+      "upload_metadata": {
+        "school_id": "SCHOOL_PRAHA_014",
+        "region_id": "praha",
+        "school_type": "kindergarten",
+        "intervention_type": "municipal_collaboration",
+        "participant_role": "teacher",
+        "interview_date": "2024-02-01"
+      },
+      "transcript_text": "While the municipal collaboration showed promise initially, we've encountered some resistance from staff who prefer traditional approaches. Communication between departments needs improvement. However, the principal's leadership has been crucial in maintaining momentum. We're seeing gradual mindset shifts, particularly around student-centered learning. The focus on professional growth has been transformative. There are still areas for improvement, particularly in resource allocation.",
+      "clean_text": "While the municipal collaboration showed promise initially, we've encountered some resistance from staff who prefer traditional approaches. Communication between departments needs improvement. However, the principal's leadership has been crucial in maintaining momentum. We're seeing gradual mindset shifts, particularly around student-centered learning. The focus on professional growth has been transformative. There are still areas for improvement, particularly in resource allocation.",
+      "raw_file_path": "/data/raw/transcripts/cb59465a-19ba-45d4-8094-5b0047aeba7f.md",
+      "transcript_path": "/data/processed/transcripts/cb59465a-19ba-45d4-8094-5b0047aeba7f.txt",
+      "created_at": "2024-02-01T10:00:00Z",
+      "updated_at": "2024-02-01T10:00:00Z"
+    },
+    {
+      "id": "8f858878-a49c-4237-abf6-ef2be3835255",
+      "file_type": "transcript",
+      "original_filename": "interview_SCHOOL_LIBEREC_015_2023-06-06.md",
+      "upload_metadata": {
+        "school_id": "SCHOOL_LIBEREC_015",
+        "region_id": "liberec",
+        "school_type": "gymnasium",
+        "intervention_type": "municipal_collaboration",
+        "participant_role": "teacher",
+        "interview_date": "2023-06-06"
+      },
+      "transcript_text": "The intervention has created a more collaborative environment. Teachers are working together on curriculum design, and there's increased peer observation. The municipality's involvement has helped address infrastructure needs. We've noticed improvements in teacher morale and student outcomes, though measuring long-term impact remains a challenge. Parent feedback has been overwhelmingly positive. The school leadership has been instrumental in driving change.",
+      "clean_text": "The intervention has created a more collaborative environment. Teachers are working together on curriculum design, and there's increased peer observation. The municipality's involvement has helped address infrastructure needs. We've noticed improvements in teacher morale and student outcomes, though measuring long-term impact remains a challenge. Parent feedback has been overwhelmingly positive. The school leadership has been instrumental in driving change.",
+      "raw_file_path": "/data/raw/transcripts/8f858878-a49c-4237-abf6-ef2be3835255.md",
+      "transcript_path": "/data/processed/transcripts/8f858878-a49c-4237-abf6-ef2be3835255.txt",
+      "created_at": "2023-06-06T10:00:00Z",
+      "updated_at": "2023-06-06T10:00:00Z"
+    }
+  ],
+  "transcript_details": [
+    {
+      "id": "8fecc63a-15ba-4317-92fd-d3ad0f4753aa",
+      "file_type": "transcript",
+      "original_filename": "interview_SCHOOL_LIBEREC_001_2024-07-09.md",
+      "upload_metadata": {
+        "school_id": "SCHOOL_LIBEREC_001",
+        "region_id": "liberec",
+        "school_type": "secondary",
+        "intervention_type": "municipal_collaboration",
+        "participant_role": "coordinator",
+        "interview_date": "2024-07-09"
+      },
+      "transcript_text": "During our municipal collaboration, we observed significant improvements in staff collaboration. Teachers began sharing resources more openly, and there was a noticeable increase in cross-grade level communication. The principal noted that the school culture has shifted towards more supportive interactions. However, some challenges remain with time management and balancing new initiatives with existing responsibilities. There are still areas for improvement, particularly in resource allocation. The focus on professional growth has been transformative.",
+      "clean_text": "During our municipal collaboration, we observed significant improvements in staff collaboration. Teachers began sharing resources more openly, and there was a noticeable increase in cross-grade level communication. The principal noted that the school culture has shifted towards more supportive interactions. However, some challenges remain with time management and balancing new initiatives with existing responsibilities. There are still areas for improvement, particularly in resource allocation. The focus on professional growth has been transformative.",
+      "raw_file_path": "/data/raw/transcripts/8fecc63a-15ba-4317-92fd-d3ad0f4753aa.md",
+      "transcript_path": "/data/processed/transcripts/8fecc63a-15ba-4317-92fd-d3ad0f4753aa.txt",
+      "created_at": "2024-07-09T10:00:00Z",
+      "updated_at": "2024-07-09T10:00:00Z",
+      "cultural_analysis": {
+        "id": "f5a04721-04b7-4799-b398-1fd31481c372",
+        "transcript_id": "8fecc63a-15ba-4317-92fd-d3ad0f4753aa",
+        "mindset_shift_score": 82,
+        "collaboration_score": 70,
+        "teacher_confidence_score": 83,
+        "municipality_cooperation_score": 80,
+        "sentiment_score": 84,
+        "themes": [
+          "professional_development",
+          "teacher_wellbeing",
+          "data_driven_decision_making",
+          "leadership",
+          "inclusive_education",
+          "school_culture",
+          "parent_involvement"
+        ],
+        "practical_change": "Weekly team meetings have become standard practice across all departments.",
+        "mindset_change": "More proactive approach to addressing challenges and seeking solutions.",
+        "impact_summary": "The municipal collaboration has created a more cohesive school environment. Teachers report feeling more supported and valued, which has translated into improved classroom practices. Student engagement has increased, and there's a noticeable improvement in overall school climate. The collaboration with local authorities has been particularly effective, leading to better resource allocation and support.",
+        "culture_change_detected": true,
+        "created_at": "2024-09-23T07:41:49.879395"
+      },
+      "dq_report": null
+    },
+    {
+      "id": "389151d2-f878-4e82-a8c9-7b34684dd47d",
+      "file_type": "transcript",
+      "original_filename": "interview_SCHOOL_OLOMOUC_002_2023-10-15.md",
+      "upload_metadata": {
+        "school_id": "SCHOOL_OLOMOUC_002",
+        "region_id": "olomouc",
+        "school_type": "kindergarten",
+        "intervention_type": "team_training",
+        "participant_role": "municipality",
+        "interview_date": "2023-10-15"
+      },
+      "transcript_text": "The team training has transformed how we approach professional development. Previously, teachers worked in isolation, but now we have regular team meetings where we discuss student progress and share best practices. The municipality has been supportive, providing additional resources. We've seen improvements in teacher confidence, especially among newer staff members. The school leadership has been instrumental in driving change. There are still areas for improvement, particularly in resource allocation.",
+      "clean_text": "The team training has transformed how we approach professional development. Previously, teachers worked in isolation, but now we have regular team meetings where we discuss student progress and share best practices. The municipality has been supportive, providing additional resources. We've seen improvements in teacher confidence, especially among newer staff members. The school leadership has been instrumental in driving change. There are still areas for improvement, particularly in resource allocation.",
+      "raw_file_path": "/data/raw/transcripts/389151d2-f878-4e82-a8c9-7b34684dd47d.md",
+      "transcript_path": "/data/processed/transcripts/389151d2-f878-4e82-a8c9-7b34684dd47d.txt",
+      "created_at": "2023-10-15T10:00:00Z",
+      "updated_at": "2023-10-15T10:00:00Z",
+      "cultural_analysis": {
+        "id": "b605d3d7-f372-4b36-9503-b2d2f1f5ab1d",
+        "transcript_id": "389151d2-f878-4e82-a8c9-7b34684dd47d",
+        "mindset_shift_score": 90,
+        "collaboration_score": 95,
+        "teacher_confidence_score": 85,
+        "municipality_cooperation_score": 70,
+        "sentiment_score": 80,
+        "themes": [
+          "professional_development",
+          "leadership",
+          "data_driven_decision_making",
+          "inclusive_education",
+          "curriculum_innovation"
+        ],
+        "practical_change": "The school has implemented peer observation programs to support professional growth.",
+        "mindset_change": "Increased focus on student-centered approaches rather than traditional methods.",
+        "impact_summary": "The team training has created a more cohesive school environment. Teachers report feeling more supported and valued, which has translated into improved classroom practices. Student engagement has increased, and there's a noticeable improvement in overall school climate. The collaboration with local authorities has been particularly effective, leading to better resource allocation and support.",
+        "culture_change_detected": true,
+        "created_at": "2025-07-12T07:41:49.879506"
+      },
+      "dq_report": null
+    },
+    {
+      "id": "ada1702d-1c0f-4cb3-89f5-8f37219a0aaa",
+      "file_type": "transcript",
+      "original_filename": "interview_SCHOOL_OLOMOUC_003_2023-12-02.md",
+      "upload_metadata": {
+        "school_id": "SCHOOL_OLOMOUC_003",
+        "region_id": "olomouc",
+        "school_type": "primary",
+        "intervention_type": "other",
+        "participant_role": "teacher",
+        "interview_date": "2023-12-02"
+      },
+      "transcript_text": "Our primary school has experienced positive changes since implementing the other. Teachers report feeling more valued and heard. There's been an increase in innovative teaching methods, and students are more engaged. The collaboration with local authorities has been particularly effective, leading to better resource allocation. We've seen measurable improvements in student engagement. The focus on professional growth has been transformative.",
+      "clean_text": "Our primary school has experienced positive changes since implementing the other. Teachers report feeling more valued and heard. There's been an increase in innovative teaching methods, and students are more engaged. The collaboration with local authorities has been particularly effective, leading to better resource allocation. We've seen measurable improvements in student engagement. The focus on professional growth has been transformative.",
+      "raw_file_path": "/data/raw/transcripts/ada1702d-1c0f-4cb3-89f5-8f37219a0aaa.md",
+      "transcript_path": "/data/processed/transcripts/ada1702d-1c0f-4cb3-89f5-8f37219a0aaa.txt",
+      "created_at": "2023-12-02T10:00:00Z",
+      "updated_at": "2023-12-02T10:00:00Z",
+      "cultural_analysis": {
+        "id": "ad30ab7f-855e-40c2-8b17-aac8dbc2dfd8",
+        "transcript_id": "ada1702d-1c0f-4cb3-89f5-8f37219a0aaa",
+        "mindset_shift_score": 95,
+        "collaboration_score": 82,
+        "teacher_confidence_score": 86,
+        "municipality_cooperation_score": 85,
+        "sentiment_score": 81,
+        "themes": [
+          "teacher_wellbeing",
+          "pedagogical_innovation",
+          "leadership",
+          "community_partnerships",
+          "collaboration",
+          "assessment_reform",
+          "student_engagement",
+          "curriculum_innovation"
+        ],
+        "practical_change": "Cross-grade collaboration projects have increased student engagement.",
+        "mindset_change": "Increased focus on student-centered approaches rather than traditional methods.",
+        "impact_summary": "The program has transformed professional development practices. Teachers are now more open to sharing experiences and learning from each other. The focus on collaboration has led to innovative teaching methods and improved student outcomes. Parent feedback has been positive, and the school's reputation in the community has strengthened.",
+        "culture_change_detected": true,
+        "created_at": "2024-01-23T07:41:49.879583"
+      },
+      "dq_report": null
+    },
+    {
+      "id": "95b8112e-5101-4d7f-9475-7add4f878f61",
+      "file_type": "transcript",
+      "original_filename": "interview_SCHOOL_CESKE_BUDEJOVICE_004_2023-04-20.md",
+      "upload_metadata": {
+        "school_id": "SCHOOL_CESKE_BUDEJOVICE_004",
+        "region_id": "ceske_budejovice",
+        "school_type": "secondary",
+        "intervention_type": "teacher_course",
+        "participant_role": "principal",
+        "interview_date": "2023-04-20"
+      },
+      "transcript_text": "While the teacher course showed promise initially, we've encountered some resistance from staff who prefer traditional approaches. Communication between departments needs improvement. However, the principal's leadership has been crucial in maintaining momentum. We're seeing gradual mindset shifts, particularly around student-centered learning. The school leadership has been instrumental in driving change. Parent feedback has been overwhelmingly positive.",
+      "clean_text": "While the teacher course showed promise initially, we've encountered some resistance from staff who prefer traditional approaches. Communication between departments needs improvement. However, the principal's leadership has been crucial in maintaining momentum. We're seeing gradual mindset shifts, particularly around student-centered learning. The school leadership has been instrumental in driving change. Parent feedback has been overwhelmingly positive.",
+      "raw_file_path": "/data/raw/transcripts/95b8112e-5101-4d7f-9475-7add4f878f61.md",
+      "transcript_path": "/data/processed/transcripts/95b8112e-5101-4d7f-9475-7add4f878f61.txt",
+      "created_at": "2023-04-20T10:00:00Z",
+      "updated_at": "2023-04-20T10:00:00Z",
+      "cultural_analysis": {
+        "id": "0850152a-ce19-4bf3-9109-0f8c0ad11012",
+        "transcript_id": "95b8112e-5101-4d7f-9475-7add4f878f61",
+        "mindset_shift_score": 83,
+        "collaboration_score": 84,
+        "teacher_confidence_score": 90,
+        "municipality_cooperation_score": 78,
+        "sentiment_score": 78,
+        "themes": [
+          "collaboration",
+          "school_culture",
+          "communication",
+          "parent_involvement"
+        ],
+        "practical_change": "Cross-grade collaboration projects have increased student engagement.",
+        "mindset_change": "Greater openness to innovation and experimentation in pedagogy.",
+        "impact_summary": "While the intervention showed initial promise, implementation challenges have emerged. Some staff members remain resistant to change, and communication gaps persist between departments. However, the principal's leadership has been crucial in maintaining momentum. Gradual mindset shifts are occurring, particularly around student-centered learning approaches.",
+        "culture_change_detected": true,
+        "created_at": "2024-11-26T07:41:49.879648"
+      },
+      "dq_report": null
+    },
+    {
+      "id": "fe54d7ee-1b03-4765-b57d-38d0e516a318",
+      "file_type": "transcript",
+      "original_filename": "interview_SCHOOL_PRAHA_005_2023-11-07.md",
+      "upload_metadata": {
+        "school_id": "SCHOOL_PRAHA_005",
+        "region_id": "praha",
+        "school_type": "secondary",
+        "intervention_type": "municipal_collaboration",
+        "participant_role": "coordinator",
+        "interview_date": "2023-11-07"
+      },
+      "transcript_text": "The intervention has created a more collaborative environment. Teachers are working together on curriculum design, and there's increased peer observation. The municipality's involvement has helped address infrastructure needs. We've noticed improvements in teacher morale and student outcomes, though measuring long-term impact remains a challenge. The focus on professional growth has been transformative. The school leadership has been instrumental in driving change.",
+      "clean_text": "The intervention has created a more collaborative environment. Teachers are working together on curriculum design, and there's increased peer observation. The municipality's involvement has helped address infrastructure needs. We've noticed improvements in teacher morale and student outcomes, though measuring long-term impact remains a challenge. The focus on professional growth has been transformative. The school leadership has been instrumental in driving change.",
+      "raw_file_path": "/data/raw/transcripts/fe54d7ee-1b03-4765-b57d-38d0e516a318.md",
+      "transcript_path": "/data/processed/transcripts/fe54d7ee-1b03-4765-b57d-38d0e516a318.txt",
+      "created_at": "2023-11-07T10:00:00Z",
+      "updated_at": "2023-11-07T10:00:00Z",
+      "cultural_analysis": {
+        "id": "dd6c6051-90a8-4181-b6d9-d2ae613b554b",
+        "transcript_id": "fe54d7ee-1b03-4765-b57d-38d0e516a318",
+        "mindset_shift_score": 79,
+        "collaboration_score": 79,
+        "teacher_confidence_score": 83,
+        "municipality_cooperation_score": 91,
+        "sentiment_score": 75,
+        "themes": [
+          "collaboration",
+          "technology_integration",
+          "leadership"
+        ],
+        "practical_change": "New communication channels have improved parent-teacher relationships.",
+        "mindset_change": "Shift from individual teaching to collaborative learning communities.",
+        "impact_summary": "While the intervention showed initial promise, implementation challenges have emerged. Some staff members remain resistant to change, and communication gaps persist between departments. However, the principal's leadership has been crucial in maintaining momentum. Gradual mindset shifts are occurring, particularly around student-centered learning approaches.",
+        "culture_change_detected": true,
+        "created_at": "2024-03-05T07:41:49.879715"
+      },
+      "dq_report": null
+    },
+    {
+      "id": "d65ff415-8046-4a2e-a6c9-214e09f6cf5a",
+      "file_type": "transcript",
+      "original_filename": "interview_SCHOOL_OLOMOUC_006_2024-04-08.md",
+      "upload_metadata": {
+        "school_id": "SCHOOL_OLOMOUC_006",
+        "region_id": "olomouc",
+        "school_type": "gymnasium",
+        "intervention_type": "municipal_collaboration",
+        "participant_role": "teacher",
+        "interview_date": "2024-04-08"
+      },
+      "transcript_text": "During our municipal collaboration, we observed significant improvements in staff collaboration. Teachers began sharing resources more openly, and there was a noticeable increase in cross-grade level communication. The principal noted that the school culture has shifted towards more supportive interactions. However, some challenges remain with time management and balancing new initiatives with existing responsibilities. There are still areas for improvement, particularly in resource allocation. We've seen measurable improvements in student engagement.",
+      "clean_text": "During our municipal collaboration, we observed significant improvements in staff collaboration. Teachers began sharing resources more openly, and there was a noticeable increase in cross-grade level communication. The principal noted that the school culture has shifted towards more supportive interactions. However, some challenges remain with time management and balancing new initiatives with existing responsibilities. There are still areas for improvement, particularly in resource allocation. We've seen measurable improvements in student engagement.",
+      "raw_file_path": "/data/raw/transcripts/d65ff415-8046-4a2e-a6c9-214e09f6cf5a.md",
+      "transcript_path": "/data/processed/transcripts/d65ff415-8046-4a2e-a6c9-214e09f6cf5a.txt",
+      "created_at": "2024-04-08T10:00:00Z",
+      "updated_at": "2024-04-08T10:00:00Z",
+      "cultural_analysis": {
+        "id": "ee7f8337-2576-48e7-9581-5ce9aa117aa9",
+        "transcript_id": "d65ff415-8046-4a2e-a6c9-214e09f6cf5a",
+        "mindset_shift_score": 70,
+        "collaboration_score": 59,
+        "teacher_confidence_score": 55,
+        "municipality_cooperation_score": 76,
+        "sentiment_score": 66,
+        "themes": [
+          "teacher_wellbeing",
+          "data_driven_decision_making",
+          "leadership",
+          "school_culture",
+          "technology_integration",
+          "parent_involvement",
+          "student_engagement"
+        ],
+        "practical_change": "Cross-grade collaboration projects have increased student engagement.",
+        "mindset_change": "Enhanced sense of collective responsibility for student outcomes.",
+        "impact_summary": "The program has transformed professional development practices. Teachers are now more open to sharing experiences and learning from each other. The focus on collaboration has led to innovative teaching methods and improved student outcomes. Parent feedback has been positive, and the school's reputation in the community has strengthened.",
+        "culture_change_detected": true,
+        "created_at": "2024-09-13T07:41:49.879789"
+      },
+      "dq_report": null
+    },
+    {
+      "id": "bd626f57-f3c7-4d02-aeee-0bd998f5137a",
+      "file_type": "transcript",
+      "original_filename": "interview_SCHOOL_LIBEREC_007_2023-11-20.md",
+      "upload_metadata": {
+        "school_id": "SCHOOL_LIBEREC_007",
+        "region_id": "liberec",
+        "school_type": "kindergarten",
+        "intervention_type": "municipal_collaboration",
+        "participant_role": "principal",
+        "interview_date": "2023-11-20"
+      },
+      "transcript_text": "The municipal collaboration has transformed how we approach professional development. Previously, teachers worked in isolation, but now we have regular team meetings where we discuss student progress and share best practices. The municipality has been supportive, providing additional resources. We've seen improvements in teacher confidence, especially among newer staff members. We've seen measurable improvements in student engagement. The focus on professional growth has been transformative.",
+      "clean_text": "The municipal collaboration has transformed how we approach professional development. Previously, teachers worked in isolation, but now we have regular team meetings where we discuss student progress and share best practices. The municipality has been supportive, providing additional resources. We've seen improvements in teacher confidence, especially among newer staff members. We've seen measurable improvements in student engagement. The focus on professional growth has been transformative.",
+      "raw_file_path": "/data/raw/transcripts/bd626f57-f3c7-4d02-aeee-0bd998f5137a.md",
+      "transcript_path": "/data/processed/transcripts/bd626f57-f3c7-4d02-aeee-0bd998f5137a.txt",
+      "created_at": "2023-11-20T10:00:00Z",
+      "updated_at": "2023-11-20T10:00:00Z",
+      "cultural_analysis": {
+        "id": "19229b26-f3c1-4859-ac2b-8eaf1ebc0cb9",
+        "transcript_id": "bd626f57-f3c7-4d02-aeee-0bd998f5137a",
+        "mindset_shift_score": 66,
+        "collaboration_score": 57,
+        "teacher_confidence_score": 69,
+        "municipality_cooperation_score": 57,
+        "sentiment_score": 61,
+        "themes": [
+          "data_driven_decision_making",
+          "teacher_wellbeing",
+          "community_partnerships",
+          "curriculum_innovation",
+          "communication",
+          "professional_development",
+          "school_culture",
+          "pedagogical_innovation"
+        ],
+        "practical_change": "New communication channels have improved parent-teacher relationships.",
+        "mindset_change": "Enhanced sense of collective responsibility for student outcomes.",
+        "impact_summary": "The municipal collaboration has created a more cohesive school environment. Teachers report feeling more supported and valued, which has translated into improved classroom practices. Student engagement has increased, and there's a noticeable improvement in overall school climate. The collaboration with local authorities has been particularly effective, leading to better resource allocation and support.",
+        "culture_change_detected": true,
+        "created_at": "2024-08-09T07:41:49.879856"
+      },
+      "dq_report": null
+    },
+    {
+      "id": "9af96834-2529-425d-bce2-eb2517f655b4",
+      "file_type": "transcript",
+      "original_filename": "interview_SCHOOL_PARDUBICE_008_2024-11-02.md",
+      "upload_metadata": {
+        "school_id": "SCHOOL_PARDUBICE_008",
+        "region_id": "pardubice",
+        "school_type": "primary",
+        "intervention_type": "teacher_course",
+        "participant_role": "teacher",
+        "interview_date": "2024-11-02"
+      },
+      "transcript_text": "Our primary school has experienced positive changes since implementing the teacher course. Teachers report feeling more valued and heard. There's been an increase in innovative teaching methods, and students are more engaged. The collaboration with local authorities has been particularly effective, leading to better resource allocation. There are still areas for improvement, particularly in resource allocation. The school leadership has been instrumental in driving change.",
+      "clean_text": "Our primary school has experienced positive changes since implementing the teacher course. Teachers report feeling more valued and heard. There's been an increase in innovative teaching methods, and students are more engaged. The collaboration with local authorities has been particularly effective, leading to better resource allocation. There are still areas for improvement, particularly in resource allocation. The school leadership has been instrumental in driving change.",
+      "raw_file_path": "/data/raw/transcripts/9af96834-2529-425d-bce2-eb2517f655b4.md",
+      "transcript_path": "/data/processed/transcripts/9af96834-2529-425d-bce2-eb2517f655b4.txt",
+      "created_at": "2024-11-02T10:00:00Z",
+      "updated_at": "2024-11-02T10:00:00Z",
+      "cultural_analysis": {
+        "id": "f46f9026-6a51-4ade-9ca8-cabf7ff57703",
+        "transcript_id": "9af96834-2529-425d-bce2-eb2517f655b4",
+        "mindset_shift_score": 71,
+        "collaboration_score": 64,
+        "teacher_confidence_score": 68,
+        "municipality_cooperation_score": 65,
+        "sentiment_score": 63,
+        "themes": [
+          "parent_involvement",
+          "inclusive_education",
+          "data_driven_decision_making",
+          "pedagogical_innovation",
+          "student_engagement",
+          "leadership"
+        ],
+        "practical_change": "Teachers now regularly share lesson plans and resources through a common platform.",
+        "mindset_change": "Increased focus on student-centered approaches rather than traditional methods.",
+        "impact_summary": "While the intervention showed initial promise, implementation challenges have emerged. Some staff members remain resistant to change, and communication gaps persist between departments. However, the principal's leadership has been crucial in maintaining momentum. Gradual mindset shifts are occurring, particularly around student-centered learning approaches.",
+        "culture_change_detected": true,
+        "created_at": "2024-11-15T07:41:49.879921"
+      },
+      "dq_report": null
+    },
+    {
+      "id": "923a876d-1b3b-436a-9b28-bc0001b03812",
+      "file_type": "transcript",
+      "original_filename": "interview_SCHOOL_OSTRAVA_009_2024-02-06.md",
+      "upload_metadata": {
+        "school_id": "SCHOOL_OSTRAVA_009",
+        "region_id": "ostrava",
+        "school_type": "kindergarten",
+        "intervention_type": "teacher_course",
+        "participant_role": "municipality",
+        "interview_date": "2024-02-06"
+      },
+      "transcript_text": "While the teacher course showed promise initially, we've encountered some resistance from staff who prefer traditional approaches. Communication between departments needs improvement. However, the principal's leadership has been crucial in maintaining momentum. We're seeing gradual mindset shifts, particularly around student-centered learning. We've seen measurable improvements in student engagement. Parent feedback has been overwhelmingly positive.",
+      "clean_text": "While the teacher course showed promise initially, we've encountered some resistance from staff who prefer traditional approaches. Communication between departments needs improvement. However, the principal's leadership has been crucial in maintaining momentum. We're seeing gradual mindset shifts, particularly around student-centered learning. We've seen measurable improvements in student engagement. Parent feedback has been overwhelmingly positive.",
+      "raw_file_path": "/data/raw/transcripts/923a876d-1b3b-436a-9b28-bc0001b03812.md",
+      "transcript_path": "/data/processed/transcripts/923a876d-1b3b-436a-9b28-bc0001b03812.txt",
+      "created_at": "2024-02-06T10:00:00Z",
+      "updated_at": "2024-02-06T10:00:00Z",
+      "cultural_analysis": {
+        "id": "99364da7-63df-4538-bebd-0dd6327ad5f1",
+        "transcript_id": "923a876d-1b3b-436a-9b28-bc0001b03812",
+        "mindset_shift_score": 52,
+        "collaboration_score": 66,
+        "teacher_confidence_score": 63,
+        "municipality_cooperation_score": 49,
+        "sentiment_score": 45,
+        "themes": [
+          "assessment_reform",
+          "data_driven_decision_making",
+          "inclusive_education",
+          "professional_development",
+          "community_partnerships",
+          "collaboration",
+          "leadership",
+          "communication"
+        ],
+        "practical_change": "New communication channels have improved parent-teacher relationships.",
+        "mindset_change": "Enhanced sense of collective responsibility for student outcomes.",
+        "impact_summary": "The program has transformed professional development practices. Teachers are now more open to sharing experiences and learning from each other. The focus on collaboration has led to innovative teaching methods and improved student outcomes. Parent feedback has been positive, and the school's reputation in the community has strengthened.",
+        "culture_change_detected": false,
+        "created_at": "2024-12-13T07:41:49.879985"
+      },
+      "dq_report": null
+    },
+    {
+      "id": "13cffb93-347a-4e8c-aa6f-734deb8979c7",
+      "file_type": "transcript",
+      "original_filename": "interview_SCHOOL_CESKE_BUDEJOVICE_010_2023-07-06.md",
+      "upload_metadata": {
+        "school_id": "SCHOOL_CESKE_BUDEJOVICE_010",
+        "region_id": "ceske_budejovice",
+        "school_type": "primary",
+        "intervention_type": "municipal_collaboration",
+        "participant_role": "teacher",
+        "interview_date": "2023-07-06"
+      },
+      "transcript_text": "The intervention has created a more collaborative environment. Teachers are working together on curriculum design, and there's increased peer observation. The municipality's involvement has helped address infrastructure needs. We've noticed improvements in teacher morale and student outcomes, though measuring long-term impact remains a challenge. The focus on professional growth has been transformative. Parent feedback has been overwhelmingly positive.",
+      "clean_text": "The intervention has created a more collaborative environment. Teachers are working together on curriculum design, and there's increased peer observation. The municipality's involvement has helped address infrastructure needs. We've noticed improvements in teacher morale and student outcomes, though measuring long-term impact remains a challenge. The focus on professional growth has been transformative. Parent feedback has been overwhelmingly positive.",
+      "raw_file_path": "/data/raw/transcripts/13cffb93-347a-4e8c-aa6f-734deb8979c7.md",
+      "transcript_path": "/data/processed/transcripts/13cffb93-347a-4e8c-aa6f-734deb8979c7.txt",
+      "created_at": "2023-07-06T10:00:00Z",
+      "updated_at": "2023-07-06T10:00:00Z",
+      "cultural_analysis": {
+        "id": "79ac1b0f-dcae-4eab-8224-5ee940b28109",
+        "transcript_id": "13cffb93-347a-4e8c-aa6f-734deb8979c7",
+        "mindset_shift_score": 62,
+        "collaboration_score": 52,
+        "teacher_confidence_score": 52,
+        "municipality_cooperation_score": 73,
+        "sentiment_score": 52,
+        "themes": [
+          "professional_development",
+          "school_culture",
+          "inclusive_education"
+        ],
+        "practical_change": "Teachers now regularly share lesson plans and resources through a common platform.",
+        "mindset_change": "More proactive approach to addressing challenges and seeking solutions.",
+        "impact_summary": "The municipal collaboration has created a more cohesive school environment. Teachers report feeling more supported and valued, which has translated into improved classroom practices. Student engagement has increased, and there's a noticeable improvement in overall school climate. The collaboration with local authorities has been particularly effective, leading to better resource allocation and support.",
+        "culture_change_detected": true,
+        "created_at": "2025-01-14T07:41:49.880059"
+      },
+      "dq_report": null
+    },
+    {
+      "id": "ed22b5fb-c31d-44e1-84a6-922fc9b74902",
+      "file_type": "transcript",
+      "original_filename": "interview_SCHOOL_PRAHA_011_2024-07-06.md",
+      "upload_metadata": {
+        "school_id": "SCHOOL_PRAHA_011",
+        "region_id": "praha",
+        "school_type": "gymnasium",
+        "intervention_type": "leadership_workshop",
+        "participant_role": "coordinator",
+        "interview_date": "2024-07-06"
+      },
+      "transcript_text": "During our leadership workshop, we observed significant improvements in staff collaboration. Teachers began sharing resources more openly, and there was a noticeable increase in cross-grade level communication. The principal noted that the school culture has shifted towards more supportive interactions. However, some challenges remain with time management and balancing new initiatives with existing responsibilities. The focus on professional growth has been transformative. There are still areas for improvement, particularly in resource allocation.",
+      "clean_text": "During our leadership workshop, we observed significant improvements in staff collaboration. Teachers began sharing resources more openly, and there was a noticeable increase in cross-grade level communication. The principal noted that the school culture has shifted towards more supportive interactions. However, some challenges remain with time management and balancing new initiatives with existing responsibilities. The focus on professional growth has been transformative. There are still areas for improvement, particularly in resource allocation.",
+      "raw_file_path": "/data/raw/transcripts/ed22b5fb-c31d-44e1-84a6-922fc9b74902.md",
+      "transcript_path": "/data/processed/transcripts/ed22b5fb-c31d-44e1-84a6-922fc9b74902.txt",
+      "created_at": "2024-07-06T10:00:00Z",
+      "updated_at": "2024-07-06T10:00:00Z",
+      "cultural_analysis": {
+        "id": "f5654908-cce8-4d18-9c71-abad4973a0e9",
+        "transcript_id": "ed22b5fb-c31d-44e1-84a6-922fc9b74902",
+        "mindset_shift_score": 40,
+        "collaboration_score": 35,
+        "teacher_confidence_score": 33,
+        "municipality_cooperation_score": 32,
+        "sentiment_score": 34,
+        "themes": [
+          "data_driven_decision_making",
+          "technology_integration",
+          "assessment_reform",
+          "parent_involvement"
+        ],
+        "practical_change": "The school has implemented peer observation programs to support professional growth.",
+        "mindset_change": "Enhanced sense of collective responsibility for student outcomes.",
+        "impact_summary": "The leadership workshop has created a more cohesive school environment. Teachers report feeling more supported and valued, which has translated into improved classroom practices. Student engagement has increased, and there's a noticeable improvement in overall school climate. The collaboration with local authorities has been particularly effective, leading to better resource allocation and support.",
+        "culture_change_detected": false,
+        "created_at": "2025-07-13T07:41:49.880123"
+      },
+      "dq_report": null
+    },
+    {
+      "id": "93907082-1599-4b6f-9687-8447c0116043",
+      "file_type": "transcript",
+      "original_filename": "interview_SCHOOL_PLZEN_012_2023-08-09.md",
+      "upload_metadata": {
+        "school_id": "SCHOOL_PLZEN_012",
+        "region_id": "plzen",
+        "school_type": "primary",
+        "intervention_type": "municipal_collaboration",
+        "participant_role": "municipality",
+        "interview_date": "2023-08-09"
+      },
+      "transcript_text": "The municipal collaboration has transformed how we approach professional development. Previously, teachers worked in isolation, but now we have regular team meetings where we discuss student progress and share best practices. The municipality has been supportive, providing additional resources. We've seen improvements in teacher confidence, especially among newer staff members. Parent feedback has been overwhelmingly positive. The focus on professional growth has been transformative.",
+      "clean_text": "The municipal collaboration has transformed how we approach professional development. Previously, teachers worked in isolation, but now we have regular team meetings where we discuss student progress and share best practices. The municipality has been supportive, providing additional resources. We've seen improvements in teacher confidence, especially among newer staff members. Parent feedback has been overwhelmingly positive. The focus on professional growth has been transformative.",
+      "raw_file_path": "/data/raw/transcripts/93907082-1599-4b6f-9687-8447c0116043.md",
+      "transcript_path": "/data/processed/transcripts/93907082-1599-4b6f-9687-8447c0116043.txt",
+      "created_at": "2023-08-09T10:00:00Z",
+      "updated_at": "2023-08-09T10:00:00Z",
+      "cultural_analysis": {
+        "id": "dc836985-b959-41f1-9988-8880f23f5bf4",
+        "transcript_id": "93907082-1599-4b6f-9687-8447c0116043",
+        "mindset_shift_score": 41,
+        "collaboration_score": 45,
+        "teacher_confidence_score": 31,
+        "municipality_cooperation_score": 37,
+        "sentiment_score": 43,
+        "themes": [
+          "technology_integration",
+          "student_engagement",
+          "school_culture",
+          "teacher_wellbeing",
+          "leadership",
+          "community_partnerships",
+          "collaboration"
+        ],
+        "practical_change": "Weekly team meetings have become standard practice across all departments.",
+        "mindset_change": "More proactive approach to addressing challenges and seeking solutions.",
+        "impact_summary": "The municipal collaboration has created a more cohesive school environment. Teachers report feeling more supported and valued, which has translated into improved classroom practices. Student engagement has increased, and there's a noticeable improvement in overall school climate. The collaboration with local authorities has been particularly effective, leading to better resource allocation and support.",
+        "culture_change_detected": false,
+        "created_at": "2025-06-10T07:41:49.880201"
+      },
+      "dq_report": null
+    },
+    {
+      "id": "0aca916e-ce99-4417-af5a-547ed729b1d9",
+      "file_type": "transcript",
+      "original_filename": "interview_SCHOOL_PRAHA_013_2023-11-21.md",
+      "upload_metadata": {
+        "school_id": "SCHOOL_PRAHA_013",
+        "region_id": "praha",
+        "school_type": "primary",
+        "intervention_type": "teacher_course",
+        "participant_role": "coordinator",
+        "interview_date": "2023-11-21"
+      },
+      "transcript_text": "Our primary school has experienced positive changes since implementing the teacher course. Teachers report feeling more valued and heard. There's been an increase in innovative teaching methods, and students are more engaged. The collaboration with local authorities has been particularly effective, leading to better resource allocation. The focus on professional growth has been transformative. There are still areas for improvement, particularly in resource allocation.",
+      "clean_text": "Our primary school has experienced positive changes since implementing the teacher course. Teachers report feeling more valued and heard. There's been an increase in innovative teaching methods, and students are more engaged. The collaboration with local authorities has been particularly effective, leading to better resource allocation. The focus on professional growth has been transformative. There are still areas for improvement, particularly in resource allocation.",
+      "raw_file_path": "/data/raw/transcripts/0aca916e-ce99-4417-af5a-547ed729b1d9.md",
+      "transcript_path": "/data/processed/transcripts/0aca916e-ce99-4417-af5a-547ed729b1d9.txt",
+      "created_at": "2023-11-21T10:00:00Z",
+      "updated_at": "2023-11-21T10:00:00Z",
+      "cultural_analysis": {
+        "id": "20b4c9f6-211e-47fb-8397-3cf4493d9ed3",
+        "transcript_id": "0aca916e-ce99-4417-af5a-547ed729b1d9",
+        "mindset_shift_score": 31,
+        "collaboration_score": 28,
+        "teacher_confidence_score": 30,
+        "municipality_cooperation_score": 24,
+        "sentiment_score": 38,
+        "themes": [
+          "technology_integration",
+          "community_partnerships",
+          "parent_involvement",
+          "communication",
+          "pedagogical_innovation",
+          "data_driven_decision_making",
+          "teacher_wellbeing"
+        ],
+        "practical_change": "Weekly team meetings have become standard practice across all departments.",
+        "mindset_change": "Increased focus on student-centered approaches rather than traditional methods.",
+        "impact_summary": "The program has transformed professional development practices. Teachers are now more open to sharing experiences and learning from each other. The focus on collaboration has led to innovative teaching methods and improved student outcomes. Parent feedback has been positive, and the school's reputation in the community has strengthened.",
+        "culture_change_detected": false,
+        "created_at": "2024-09-28T07:41:49.880270"
+      },
+      "dq_report": null
+    },
+    {
+      "id": "cb59465a-19ba-45d4-8094-5b0047aeba7f",
+      "file_type": "transcript",
+      "original_filename": "interview_SCHOOL_PRAHA_014_2024-02-01.md",
+      "upload_metadata": {
+        "school_id": "SCHOOL_PRAHA_014",
+        "region_id": "praha",
+        "school_type": "kindergarten",
+        "intervention_type": "municipal_collaboration",
+        "participant_role": "teacher",
+        "interview_date": "2024-02-01"
+      },
+      "transcript_text": "While the municipal collaboration showed promise initially, we've encountered some resistance from staff who prefer traditional approaches. Communication between departments needs improvement. However, the principal's leadership has been crucial in maintaining momentum. We're seeing gradual mindset shifts, particularly around student-centered learning. The focus on professional growth has been transformative. There are still areas for improvement, particularly in resource allocation.",
+      "clean_text": "While the municipal collaboration showed promise initially, we've encountered some resistance from staff who prefer traditional approaches. Communication between departments needs improvement. However, the principal's leadership has been crucial in maintaining momentum. We're seeing gradual mindset shifts, particularly around student-centered learning. The focus on professional growth has been transformative. There are still areas for improvement, particularly in resource allocation.",
+      "raw_file_path": "/data/raw/transcripts/cb59465a-19ba-45d4-8094-5b0047aeba7f.md",
+      "transcript_path": "/data/processed/transcripts/cb59465a-19ba-45d4-8094-5b0047aeba7f.txt",
+      "created_at": "2024-02-01T10:00:00Z",
+      "updated_at": "2024-02-01T10:00:00Z",
+      "cultural_analysis": {
+        "id": "57ac7d9d-1c63-4453-8860-2e3c6ebf078b",
+        "transcript_id": "cb59465a-19ba-45d4-8094-5b0047aeba7f",
+        "mindset_shift_score": 46,
+        "collaboration_score": 20,
+        "teacher_confidence_score": 30,
+        "municipality_cooperation_score": 36,
+        "sentiment_score": 34,
+        "themes": [
+          "leadership",
+          "teacher_wellbeing",
+          "pedagogical_innovation",
+          "inclusive_education",
+          "community_partnerships"
+        ],
+        "practical_change": "New communication channels have improved parent-teacher relationships.",
+        "mindset_change": "More proactive approach to addressing challenges and seeking solutions.",
+        "impact_summary": "While the intervention showed initial promise, implementation challenges have emerged. Some staff members remain resistant to change, and communication gaps persist between departments. However, the principal's leadership has been crucial in maintaining momentum. Gradual mindset shifts are occurring, particularly around student-centered learning approaches.",
+        "culture_change_detected": false,
+        "created_at": "2024-08-16T07:41:49.880335"
+      },
+      "dq_report": null
+    },
+    {
+      "id": "8f858878-a49c-4237-abf6-ef2be3835255",
+      "file_type": "transcript",
+      "original_filename": "interview_SCHOOL_LIBEREC_015_2023-06-06.md",
+      "upload_metadata": {
+        "school_id": "SCHOOL_LIBEREC_015",
+        "region_id": "liberec",
+        "school_type": "gymnasium",
+        "intervention_type": "municipal_collaboration",
+        "participant_role": "teacher",
+        "interview_date": "2023-06-06"
+      },
+      "transcript_text": "The intervention has created a more collaborative environment. Teachers are working together on curriculum design, and there's increased peer observation. The municipality's involvement has helped address infrastructure needs. We've noticed improvements in teacher morale and student outcomes, though measuring long-term impact remains a challenge. Parent feedback has been overwhelmingly positive. The school leadership has been instrumental in driving change.",
+      "clean_text": "The intervention has created a more collaborative environment. Teachers are working together on curriculum design, and there's increased peer observation. The municipality's involvement has helped address infrastructure needs. We've noticed improvements in teacher morale and student outcomes, though measuring long-term impact remains a challenge. Parent feedback has been overwhelmingly positive. The school leadership has been instrumental in driving change.",
+      "raw_file_path": "/data/raw/transcripts/8f858878-a49c-4237-abf6-ef2be3835255.md",
+      "transcript_path": "/data/processed/transcripts/8f858878-a49c-4237-abf6-ef2be3835255.txt",
+      "created_at": "2023-06-06T10:00:00Z",
+      "updated_at": "2023-06-06T10:00:00Z",
+      "cultural_analysis": {
+        "id": "7ad6bdf5-19fa-4c34-85c2-c08f5336db09",
+        "transcript_id": "8f858878-a49c-4237-abf6-ef2be3835255",
+        "mindset_shift_score": 43,
+        "collaboration_score": 38,
+        "teacher_confidence_score": 47,
+        "municipality_cooperation_score": 49,
+        "sentiment_score": 28,
+        "themes": [
+          "parent_involvement",
+          "communication",
+          "student_engagement",
+          "school_culture",
+          "collaboration",
+          "pedagogical_innovation",
+          "teacher_wellbeing",
+          "technology_integration"
+        ],
+        "practical_change": "Weekly team meetings have become standard practice across all departments.",
+        "mindset_change": "Shift from individual teaching to collaborative learning communities.",
+        "impact_summary": "While the intervention showed initial promise, implementation challenges have emerged. Some staff members remain resistant to change, and communication gaps persist between departments. However, the principal's leadership has been crucial in maintaining momentum. Gradual mindset shifts are occurring, particularly around student-centered learning approaches.",
+        "culture_change_detected": false,
+        "created_at": "2024-01-11T07:41:49.880418"
+      },
+      "dq_report": null
+    }
+  ],
+  "analytics_summary": {
+    "datasets": [
+      "dataset_0",
+      "dataset_1",
+      "dataset_2",
+      "dataset_3",
+      "dataset_4",
+      "dataset_5",
+      "dataset_6",
+      "dataset_7",
+      "dataset_8",
+      "dataset_9"
+    ],
+    "metrics": {
+      "mindset_shift": {
+        "mean": 63.4,
+        "median": 66,
+        "std": 15.5,
+        "min": 31,
+        "max": 95
+      },
+      "collaboration": {
+        "mean": 58.266666666666666,
+        "median": 59,
+        "std": 18.2,
+        "min": 20,
+        "max": 95
+      }
+    },
+    "generated_at": "2025-11-14T07:41:49.882307"
+  },
+  "sentiment_trends": [
+    {
+      "date": "2023-04",
+      "value": 78.0
+    },
+    {
+      "date": "2023-06",
+      "value": 28.0
+    },
+    {
+      "date": "2023-07",
+      "value": 52.0
+    },
+    {
+      "date": "2023-08",
+      "value": 43.0
+    },
+    {
+      "date": "2023-10",
+      "value": 80.0
+    },
+    {
+      "date": "2023-11",
+      "value": 58.0
+    },
+    {
+      "date": "2023-12",
+      "value": 81.0
+    },
+    {
+      "date": "2024-02",
+      "value": 39.5
+    },
+    {
+      "date": "2024-04",
+      "value": 66.0
+    },
+    {
+      "date": "2024-07",
+      "value": 59.0
+    },
+    {
+      "date": "2024-11",
+      "value": 63.0
+    }
+  ],
+  "region_insights": {
+    "liberec": {
+      "region_id": "liberec",
+      "summary": {
+        "total_transcripts": 3,
+        "avg_mindset": 63.666666666666664,
+        "avg_collaboration": 55.0,
+        "avg_confidence": 66.33333333333333,
+        "avg_municipality": 62.0,
+        "avg_sentiment": 57.666666666666664
+      },
+      "top_schools": [
+        [
+          "SCHOOL_LIBEREC_001",
+          {
+            "avg_mindset": 82.0,
+            "avg_collaboration": 70.0,
+            "avg_confidence": 83.0,
+            "avg_municipality": 80.0,
+            "avg_sentiment": 84.0
+          }
+        ],
+        [
+          "SCHOOL_LIBEREC_007",
+          {
+            "avg_mindset": 66.0,
+            "avg_collaboration": 57.0,
+            "avg_confidence": 69.0,
+            "avg_municipality": 57.0,
+            "avg_sentiment": 61.0
+          }
+        ],
+        [
+          "SCHOOL_LIBEREC_015",
+          {
+            "avg_mindset": 43.0,
+            "avg_collaboration": 38.0,
+            "avg_confidence": 47.0,
+            "avg_municipality": 49.0,
+            "avg_sentiment": 28.0
+          }
+        ]
+      ],
+      "schools_needing_support": [
+        [
+          "SCHOOL_LIBEREC_015",
+          {
+            "avg_mindset": 43.0,
+            "avg_collaboration": 38.0,
+            "avg_confidence": 47.0,
+            "avg_municipality": 49.0,
+            "avg_sentiment": 28.0
+          }
+        ],
+        [
+          "SCHOOL_LIBEREC_007",
+          {
+            "avg_mindset": 66.0,
+            "avg_collaboration": 57.0,
+            "avg_confidence": 69.0,
+            "avg_municipality": 57.0,
+            "avg_sentiment": 61.0
+          }
+        ],
+        [
+          "SCHOOL_LIBEREC_001",
+          {
+            "avg_mindset": 82.0,
+            "avg_collaboration": 70.0,
+            "avg_confidence": 83.0,
+            "avg_municipality": 80.0,
+            "avg_sentiment": 84.0
+          }
+        ]
+      ],
+      "intervention_effectiveness": {
+        "municipal_collaboration": {
+          "avg_score": 55.375,
+          "count": 8
+        },
+        "team_training": {
+          "avg_score": 80.0,
+          "count": 1
+        },
+        "other": {
+          "avg_score": 81.0,
+          "count": 1
+        },
+        "teacher_course": {
+          "avg_score": 56.0,
+          "count": 4
+        },
+        "leadership_workshop": {
+          "avg_score": 34.0,
+          "count": 1
+        }
+      },
+      "frequent_themes": [
+        {
+          "theme": "collaboration",
+          "count": 6
+        },
+        {
+          "theme": "communication",
+          "count": 5
+        },
+        {
+          "theme": "leadership",
+          "count": 9
+        },
+        {
+          "theme": "professional_development",
+          "count": 5
+        },
+        {
+          "theme": "student_engagement",
+          "count": 5
+        },
+        {
+          "theme": "parent_involvement",
+          "count": 7
+        },
+        {
+          "theme": "curriculum_innovation",
+          "count": 3
+        },
+        {
+          "theme": "technology_integration",
+          "count": 6
+        },
+        {
+          "theme": "inclusive_education",
+          "count": 6
+        },
+        {
+          "theme": "assessment_reform",
+          "count": 3
+        }
+      ]
+    },
+    "olomouc": {
+      "region_id": "olomouc",
+      "summary": {
+        "total_transcripts": 3,
+        "avg_mindset": 85.0,
+        "avg_collaboration": 78.66666666666667,
+        "avg_confidence": 75.33333333333333,
+        "avg_municipality": 77.0,
+        "avg_sentiment": 75.66666666666667
+      },
+      "top_schools": [
+        [
+          "SCHOOL_OLOMOUC_003",
+          {
+            "avg_mindset": 95.0,
+            "avg_collaboration": 82.0,
+            "avg_confidence": 86.0,
+            "avg_municipality": 85.0,
+            "avg_sentiment": 81.0
+          }
+        ],
+        [
+          "SCHOOL_OLOMOUC_002",
+          {
+            "avg_mindset": 90.0,
+            "avg_collaboration": 95.0,
+            "avg_confidence": 85.0,
+            "avg_municipality": 70.0,
+            "avg_sentiment": 80.0
+          }
+        ],
+        [
+          "SCHOOL_OLOMOUC_006",
+          {
+            "avg_mindset": 70.0,
+            "avg_collaboration": 59.0,
+            "avg_confidence": 55.0,
+            "avg_municipality": 76.0,
+            "avg_sentiment": 66.0
+          }
+        ]
+      ],
+      "schools_needing_support": [
+        [
+          "SCHOOL_OLOMOUC_006",
+          {
+            "avg_mindset": 70.0,
+            "avg_collaboration": 59.0,
+            "avg_confidence": 55.0,
+            "avg_municipality": 76.0,
+            "avg_sentiment": 66.0
+          }
+        ],
+        [
+          "SCHOOL_OLOMOUC_002",
+          {
+            "avg_mindset": 90.0,
+            "avg_collaboration": 95.0,
+            "avg_confidence": 85.0,
+            "avg_municipality": 70.0,
+            "avg_sentiment": 80.0
+          }
+        ],
+        [
+          "SCHOOL_OLOMOUC_003",
+          {
+            "avg_mindset": 95.0,
+            "avg_collaboration": 82.0,
+            "avg_confidence": 86.0,
+            "avg_municipality": 85.0,
+            "avg_sentiment": 81.0
+          }
+        ]
+      ],
+      "intervention_effectiveness": {
+        "municipal_collaboration": {
+          "avg_score": 55.375,
+          "count": 8
+        },
+        "team_training": {
+          "avg_score": 80.0,
+          "count": 1
+        },
+        "other": {
+          "avg_score": 81.0,
+          "count": 1
+        },
+        "teacher_course": {
+          "avg_score": 56.0,
+          "count": 4
+        },
+        "leadership_workshop": {
+          "avg_score": 34.0,
+          "count": 1
+        }
+      },
+      "frequent_themes": [
+        {
+          "theme": "collaboration",
+          "count": 6
+        },
+        {
+          "theme": "communication",
+          "count": 5
+        },
+        {
+          "theme": "leadership",
+          "count": 9
+        },
+        {
+          "theme": "professional_development",
+          "count": 5
+        },
+        {
+          "theme": "student_engagement",
+          "count": 5
+        },
+        {
+          "theme": "parent_involvement",
+          "count": 7
+        },
+        {
+          "theme": "curriculum_innovation",
+          "count": 3
+        },
+        {
+          "theme": "technology_integration",
+          "count": 6
+        },
+        {
+          "theme": "inclusive_education",
+          "count": 6
+        },
+        {
+          "theme": "assessment_reform",
+          "count": 3
+        }
+      ]
+    },
+    "ceske_budejovice": {
+      "region_id": "ceske_budejovice",
+      "summary": {
+        "total_transcripts": 2,
+        "avg_mindset": 72.5,
+        "avg_collaboration": 68.0,
+        "avg_confidence": 71.0,
+        "avg_municipality": 75.5,
+        "avg_sentiment": 65.0
+      },
+      "top_schools": [
+        [
+          "SCHOOL_CESKE_BUDEJOVICE_004",
+          {
+            "avg_mindset": 83.0,
+            "avg_collaboration": 84.0,
+            "avg_confidence": 90.0,
+            "avg_municipality": 78.0,
+            "avg_sentiment": 78.0
+          }
+        ],
+        [
+          "SCHOOL_CESKE_BUDEJOVICE_010",
+          {
+            "avg_mindset": 62.0,
+            "avg_collaboration": 52.0,
+            "avg_confidence": 52.0,
+            "avg_municipality": 73.0,
+            "avg_sentiment": 52.0
+          }
+        ]
+      ],
+      "schools_needing_support": [
+        [
+          "SCHOOL_CESKE_BUDEJOVICE_010",
+          {
+            "avg_mindset": 62.0,
+            "avg_collaboration": 52.0,
+            "avg_confidence": 52.0,
+            "avg_municipality": 73.0,
+            "avg_sentiment": 52.0
+          }
+        ],
+        [
+          "SCHOOL_CESKE_BUDEJOVICE_004",
+          {
+            "avg_mindset": 83.0,
+            "avg_collaboration": 84.0,
+            "avg_confidence": 90.0,
+            "avg_municipality": 78.0,
+            "avg_sentiment": 78.0
+          }
+        ]
+      ],
+      "intervention_effectiveness": {
+        "municipal_collaboration": {
+          "avg_score": 55.375,
+          "count": 8
+        },
+        "team_training": {
+          "avg_score": 80.0,
+          "count": 1
+        },
+        "other": {
+          "avg_score": 81.0,
+          "count": 1
+        },
+        "teacher_course": {
+          "avg_score": 56.0,
+          "count": 4
+        },
+        "leadership_workshop": {
+          "avg_score": 34.0,
+          "count": 1
+        }
+      },
+      "frequent_themes": [
+        {
+          "theme": "collaboration",
+          "count": 6
+        },
+        {
+          "theme": "communication",
+          "count": 5
+        },
+        {
+          "theme": "leadership",
+          "count": 9
+        },
+        {
+          "theme": "professional_development",
+          "count": 5
+        },
+        {
+          "theme": "student_engagement",
+          "count": 5
+        },
+        {
+          "theme": "parent_involvement",
+          "count": 7
+        },
+        {
+          "theme": "curriculum_innovation",
+          "count": 3
+        },
+        {
+          "theme": "technology_integration",
+          "count": 6
+        },
+        {
+          "theme": "inclusive_education",
+          "count": 6
+        },
+        {
+          "theme": "assessment_reform",
+          "count": 3
+        }
+      ]
+    },
+    "praha": {
+      "region_id": "praha",
+      "summary": {
+        "total_transcripts": 4,
+        "avg_mindset": 49.0,
+        "avg_collaboration": 40.5,
+        "avg_confidence": 44.0,
+        "avg_municipality": 45.75,
+        "avg_sentiment": 45.25
+      },
+      "top_schools": [
+        [
+          "SCHOOL_PRAHA_005",
+          {
+            "avg_mindset": 79.0,
+            "avg_collaboration": 79.0,
+            "avg_confidence": 83.0,
+            "avg_municipality": 91.0,
+            "avg_sentiment": 75.0
+          }
+        ],
+        [
+          "SCHOOL_PRAHA_013",
+          {
+            "avg_mindset": 31.0,
+            "avg_collaboration": 28.0,
+            "avg_confidence": 30.0,
+            "avg_municipality": 24.0,
+            "avg_sentiment": 38.0
+          }
+        ],
+        [
+          "SCHOOL_PRAHA_011",
+          {
+            "avg_mindset": 40.0,
+            "avg_collaboration": 35.0,
+            "avg_confidence": 33.0,
+            "avg_municipality": 32.0,
+            "avg_sentiment": 34.0
+          }
+        ],
+        [
+          "SCHOOL_PRAHA_014",
+          {
+            "avg_mindset": 46.0,
+            "avg_collaboration": 20.0,
+            "avg_confidence": 30.0,
+            "avg_municipality": 36.0,
+            "avg_sentiment": 34.0
+          }
+        ]
+      ],
+      "schools_needing_support": [
+        [
+          "SCHOOL_PRAHA_011",
+          {
+            "avg_mindset": 40.0,
+            "avg_collaboration": 35.0,
+            "avg_confidence": 33.0,
+            "avg_municipality": 32.0,
+            "avg_sentiment": 34.0
+          }
+        ],
+        [
+          "SCHOOL_PRAHA_014",
+          {
+            "avg_mindset": 46.0,
+            "avg_collaboration": 20.0,
+            "avg_confidence": 30.0,
+            "avg_municipality": 36.0,
+            "avg_sentiment": 34.0
+          }
+        ],
+        [
+          "SCHOOL_PRAHA_013",
+          {
+            "avg_mindset": 31.0,
+            "avg_collaboration": 28.0,
+            "avg_confidence": 30.0,
+            "avg_municipality": 24.0,
+            "avg_sentiment": 38.0
+          }
+        ],
+        [
+          "SCHOOL_PRAHA_005",
+          {
+            "avg_mindset": 79.0,
+            "avg_collaboration": 79.0,
+            "avg_confidence": 83.0,
+            "avg_municipality": 91.0,
+            "avg_sentiment": 75.0
+          }
+        ]
+      ],
+      "intervention_effectiveness": {
+        "municipal_collaboration": {
+          "avg_score": 55.375,
+          "count": 8
+        },
+        "team_training": {
+          "avg_score": 80.0,
+          "count": 1
+        },
+        "other": {
+          "avg_score": 81.0,
+          "count": 1
+        },
+        "teacher_course": {
+          "avg_score": 56.0,
+          "count": 4
+        },
+        "leadership_workshop": {
+          "avg_score": 34.0,
+          "count": 1
+        }
+      },
+      "frequent_themes": [
+        {
+          "theme": "collaboration",
+          "count": 6
+        },
+        {
+          "theme": "communication",
+          "count": 5
+        },
+        {
+          "theme": "leadership",
+          "count": 9
+        },
+        {
+          "theme": "professional_development",
+          "count": 5
+        },
+        {
+          "theme": "student_engagement",
+          "count": 5
+        },
+        {
+          "theme": "parent_involvement",
+          "count": 7
+        },
+        {
+          "theme": "curriculum_innovation",
+          "count": 3
+        },
+        {
+          "theme": "technology_integration",
+          "count": 6
+        },
+        {
+          "theme": "inclusive_education",
+          "count": 6
+        },
+        {
+          "theme": "assessment_reform",
+          "count": 3
+        }
+      ]
+    },
+    "pardubice": {
+      "region_id": "pardubice",
+      "summary": {
+        "total_transcripts": 1,
+        "avg_mindset": 71.0,
+        "avg_collaboration": 64.0,
+        "avg_confidence": 68.0,
+        "avg_municipality": 65.0,
+        "avg_sentiment": 63.0
+      },
+      "top_schools": [
+        [
+          "SCHOOL_PARDUBICE_008",
+          {
+            "avg_mindset": 71.0,
+            "avg_collaboration": 64.0,
+            "avg_confidence": 68.0,
+            "avg_municipality": 65.0,
+            "avg_sentiment": 63.0
+          }
+        ]
+      ],
+      "schools_needing_support": [
+        [
+          "SCHOOL_PARDUBICE_008",
+          {
+            "avg_mindset": 71.0,
+            "avg_collaboration": 64.0,
+            "avg_confidence": 68.0,
+            "avg_municipality": 65.0,
+            "avg_sentiment": 63.0
+          }
+        ]
+      ],
+      "intervention_effectiveness": {
+        "municipal_collaboration": {
+          "avg_score": 55.375,
+          "count": 8
+        },
+        "team_training": {
+          "avg_score": 80.0,
+          "count": 1
+        },
+        "other": {
+          "avg_score": 81.0,
+          "count": 1
+        },
+        "teacher_course": {
+          "avg_score": 56.0,
+          "count": 4
+        },
+        "leadership_workshop": {
+          "avg_score": 34.0,
+          "count": 1
+        }
+      },
+      "frequent_themes": [
+        {
+          "theme": "collaboration",
+          "count": 6
+        },
+        {
+          "theme": "communication",
+          "count": 5
+        },
+        {
+          "theme": "leadership",
+          "count": 9
+        },
+        {
+          "theme": "professional_development",
+          "count": 5
+        },
+        {
+          "theme": "student_engagement",
+          "count": 5
+        },
+        {
+          "theme": "parent_involvement",
+          "count": 7
+        },
+        {
+          "theme": "curriculum_innovation",
+          "count": 3
+        },
+        {
+          "theme": "technology_integration",
+          "count": 6
+        },
+        {
+          "theme": "inclusive_education",
+          "count": 6
+        },
+        {
+          "theme": "assessment_reform",
+          "count": 3
+        }
+      ]
+    },
+    "ostrava": {
+      "region_id": "ostrava",
+      "summary": {
+        "total_transcripts": 1,
+        "avg_mindset": 52.0,
+        "avg_collaboration": 66.0,
+        "avg_confidence": 63.0,
+        "avg_municipality": 49.0,
+        "avg_sentiment": 45.0
+      },
+      "top_schools": [
+        [
+          "SCHOOL_OSTRAVA_009",
+          {
+            "avg_mindset": 52.0,
+            "avg_collaboration": 66.0,
+            "avg_confidence": 63.0,
+            "avg_municipality": 49.0,
+            "avg_sentiment": 45.0
+          }
+        ]
+      ],
+      "schools_needing_support": [
+        [
+          "SCHOOL_OSTRAVA_009",
+          {
+            "avg_mindset": 52.0,
+            "avg_collaboration": 66.0,
+            "avg_confidence": 63.0,
+            "avg_municipality": 49.0,
+            "avg_sentiment": 45.0
+          }
+        ]
+      ],
+      "intervention_effectiveness": {
+        "municipal_collaboration": {
+          "avg_score": 55.375,
+          "count": 8
+        },
+        "team_training": {
+          "avg_score": 80.0,
+          "count": 1
+        },
+        "other": {
+          "avg_score": 81.0,
+          "count": 1
+        },
+        "teacher_course": {
+          "avg_score": 56.0,
+          "count": 4
+        },
+        "leadership_workshop": {
+          "avg_score": 34.0,
+          "count": 1
+        }
+      },
+      "frequent_themes": [
+        {
+          "theme": "collaboration",
+          "count": 6
+        },
+        {
+          "theme": "communication",
+          "count": 5
+        },
+        {
+          "theme": "leadership",
+          "count": 9
+        },
+        {
+          "theme": "professional_development",
+          "count": 5
+        },
+        {
+          "theme": "student_engagement",
+          "count": 5
+        },
+        {
+          "theme": "parent_involvement",
+          "count": 7
+        },
+        {
+          "theme": "curriculum_innovation",
+          "count": 3
+        },
+        {
+          "theme": "technology_integration",
+          "count": 6
+        },
+        {
+          "theme": "inclusive_education",
+          "count": 6
+        },
+        {
+          "theme": "assessment_reform",
+          "count": 3
+        }
+      ]
+    },
+    "plzen": {
+      "region_id": "plzen",
+      "summary": {
+        "total_transcripts": 1,
+        "avg_mindset": 41.0,
+        "avg_collaboration": 45.0,
+        "avg_confidence": 31.0,
+        "avg_municipality": 37.0,
+        "avg_sentiment": 43.0
+      },
+      "top_schools": [
+        [
+          "SCHOOL_PLZEN_012",
+          {
+            "avg_mindset": 41.0,
+            "avg_collaboration": 45.0,
+            "avg_confidence": 31.0,
+            "avg_municipality": 37.0,
+            "avg_sentiment": 43.0
+          }
+        ]
+      ],
+      "schools_needing_support": [
+        [
+          "SCHOOL_PLZEN_012",
+          {
+            "avg_mindset": 41.0,
+            "avg_collaboration": 45.0,
+            "avg_confidence": 31.0,
+            "avg_municipality": 37.0,
+            "avg_sentiment": 43.0
+          }
+        ]
+      ],
+      "intervention_effectiveness": {
+        "municipal_collaboration": {
+          "avg_score": 55.375,
+          "count": 8
+        },
+        "team_training": {
+          "avg_score": 80.0,
+          "count": 1
+        },
+        "other": {
+          "avg_score": 81.0,
+          "count": 1
+        },
+        "teacher_course": {
+          "avg_score": 56.0,
+          "count": 4
+        },
+        "leadership_workshop": {
+          "avg_score": 34.0,
+          "count": 1
+        }
+      },
+      "frequent_themes": [
+        {
+          "theme": "collaboration",
+          "count": 6
+        },
+        {
+          "theme": "communication",
+          "count": 5
+        },
+        {
+          "theme": "leadership",
+          "count": 9
+        },
+        {
+          "theme": "professional_development",
+          "count": 5
+        },
+        {
+          "theme": "student_engagement",
+          "count": 5
+        },
+        {
+          "theme": "parent_involvement",
+          "count": 7
+        },
+        {
+          "theme": "curriculum_innovation",
+          "count": 3
+        },
+        {
+          "theme": "technology_integration",
+          "count": 6
+        },
+        {
+          "theme": "inclusive_education",
+          "count": 6
+        },
+        {
+          "theme": "assessment_reform",
+          "count": 3
+        }
+      ]
+    }
+  },
+  "recommendations": {
+    "school_recommendations": [
+      "Consider implementing peer observation programs to improve collaboration scores.",
+      "Focus on professional development workshops to boost teacher confidence.",
+      "Strengthen communication channels between staff and administration."
+    ],
+    "region_recommendations": [
+      "Increase investment in mentoring programs for underperforming schools.",
+      "Facilitate cross-school collaboration initiatives.",
+      "Provide additional support for schools with low cultural scores."
+    ],
+    "intervention_recommendations": [
+      "Expand successful mentoring programs to more schools.",
+      "Evaluate and refine leadership workshop curriculum.",
+      "Increase municipality coordination efforts."
+    ],
+    "culture_warnings": [
+      "School SCHOOL_PRAHA_005 shows declining collaboration scores.",
+      "Region brno has multiple schools needing support."
+    ],
+    "strengths": [
+      "Strong teacher confidence in praha region.",
+      "Excellent municipality cooperation in plzen.",
+      "High collaboration scores in mentoring programs."
+    ]
+  },
+  "school_comparison": {
+    "comparisons": {
+      "SCHOOL_LIBEREC_001": {
+        "mindset_shift_score": 82,
+        "collaboration_score": 70,
+        "teacher_confidence_score": 83,
+        "municipality_cooperation_score": 80,
+        "sentiment_score": 84
+      },
+      "SCHOOL_OLOMOUC_002": {
+        "mindset_shift_score": 90,
+        "collaboration_score": 95,
+        "teacher_confidence_score": 85,
+        "municipality_cooperation_score": 70,
+        "sentiment_score": 80
+      }
+    }
+  },
+  "dq_reports": [
+    {
+      "dataset_id": "dataset_high_quality",
+      "dq_score": 95,
+      "total_rows": 150,
+      "valid_rows": 148,
+      "invalid_rows": 2,
+      "missing_values": {
+        "email": 3,
+        "phone": 1
+      },
+      "pii_found_and_masked": {
+        "names": 0,
+        "emails": 0,
+        "phones": 0
+      },
+      "schema_issues": [],
+      "normalization_fixes": [
+        "Standardized date format",
+        "Normalized region names"
+      ],
+      "quarantined_rows_path": null
+    },
+    {
+      "dataset_id": "dataset_missing_values",
+      "dq_score": 72,
+      "total_rows": 200,
+      "valid_rows": 180,
+      "invalid_rows": 20,
+      "missing_values": {
+        "school_id": 15,
+        "region_id": 8,
+        "score": 25,
+        "date": 12
+      },
+      "pii_found_and_masked": {
+        "names": 2,
+        "emails": 5,
+        "phones": 1
+      },
+      "schema_issues": [
+        "Inconsistent date formats"
+      ],
+      "normalization_fixes": [
+        "Fixed date formats",
+        "Standardized region codes"
+      ],
+      "quarantined_rows_path": "/data/processed/clean/dataset_missing_values_quarantined.json"
+    },
+    {
+      "dataset_id": "dataset_schema_issues",
+      "dq_score": 68,
+      "total_rows": 100,
+      "valid_rows": 85,
+      "invalid_rows": 15,
+      "missing_values": {
+        "name": 10
+      },
+      "pii_found_and_masked": {
+        "names": 8,
+        "emails": 12,
+        "phones": 3
+      },
+      "schema_issues": [
+        {
+          "column": "score",
+          "issue": "Mixed data types (string and numeric)"
+        },
+        {
+          "column": "date",
+          "issue": "Multiple date formats"
+        },
+        {
+          "column": "region",
+          "issue": "Inconsistent naming"
+        }
+      ],
+      "normalization_fixes": [
+        "Converted score column to numeric",
+        "Standardized all dates to YYYY-MM-DD",
+        "Normalized region names"
+      ],
+      "quarantined_rows_path": "/data/processed/clean/dataset_schema_issues_quarantined.json"
+    },
+    {
+      "dataset_id": "dataset_pii_heavy",
+      "dq_score": 78,
+      "total_rows": 120,
+      "valid_rows": 115,
+      "invalid_rows": 5,
+      "missing_values": {
+        "email": 5
+      },
+      "pii_found_and_masked": {
+        "names": 45,
+        "emails": 38,
+        "phones": 22
+      },
+      "schema_issues": [],
+      "normalization_fixes": [
+        "Masked all PII",
+        "Standardized formats"
+      ],
+      "quarantined_rows_path": null
+    },
+    {
+      "dataset_id": "dataset_mixed_issues",
+      "dq_score": 65,
+      "total_rows": 180,
+      "valid_rows": 150,
+      "invalid_rows": 30,
+      "missing_values": {
+        "school_id": 20,
+        "score": 15,
+        "region": 8,
+        "date": 12
+      },
+      "pii_found_and_masked": {
+        "names": 15,
+        "emails": 20,
+        "phones": 8
+      },
+      "schema_issues": [
+        {
+          "column": "score",
+          "issue": "Out of range values"
+        },
+        {
+          "column": "date",
+          "issue": "Invalid dates"
+        }
+      ],
+      "normalization_fixes": [
+        "Removed out of range scores",
+        "Fixed invalid dates",
+        "Masked PII"
+      ],
+      "quarantined_rows_path": "/data/processed/clean/dataset_mixed_issues_quarantined.json"
+    }
+  ]
+}
