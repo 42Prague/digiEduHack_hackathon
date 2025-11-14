@@ -40,4 +40,4 @@ COPY --from=builder /app/.next/static ./srcs/eduforms/.next/static
 EXPOSE 3000
 ENV PORT=3000
 
-CMD ["apps/webapp/server.js"]
+CMD ["server.js"]
