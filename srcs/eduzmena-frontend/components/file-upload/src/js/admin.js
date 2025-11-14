@@ -331,6 +331,7 @@ function renderFiles() {
     const schoolFilter = document.getElementById('files-school-filter')?.value || ''
     const docTypeFilter = document.getElementById('files-doc-type-filter')?.value || ''
     const formatFilter = document.getElementById('files-format-filter')?.value || ''
+    const statusFilter = document.getElementById('files-status-filter')?.value || ''
 
     const filteredFiles = files.filter(file => {
         const school = schools.find(s => s.id === file.school_id)
@@ -349,7 +350,11 @@ function renderFiles() {
         const matchesFormat = formatFilter
             ? fileFormat.value === formatFilter
             : true
-        return matchesRegion && matchesSchool && matchesDocType && matchesFormat
+        const fileStatus = file.analysis_status || 'pending'
+        const matchesStatus = statusFilter
+            ? fileStatus === statusFilter
+            : true
+        return matchesRegion && matchesSchool && matchesDocType && matchesFormat && matchesStatus
     })
 
     if (!filteredFiles.length) {
@@ -614,6 +619,7 @@ function setupForms() {
     const filesSchoolFilter = document.getElementById('files-school-filter')
     const filesDocTypeFilter = document.getElementById('files-doc-type-filter')
     const filesFormatFilter = document.getElementById('files-format-filter')
+    const filesStatusFilter = document.getElementById('files-status-filter')
     const filesPageSizeSelect = document.getElementById('files-page-size')
 
     regionForm?.addEventListener('submit', async (e) => {
@@ -652,6 +658,10 @@ function setupForms() {
         renderFiles()
     })
     filesFormatFilter?.addEventListener('change', () => {
+        filePagination.page = 1
+        renderFiles()
+    })
+    filesStatusFilter?.addEventListener('change', () => {
         filePagination.page = 1
         renderFiles()
     })
