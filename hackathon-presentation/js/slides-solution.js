@@ -3,39 +3,64 @@ export const solutionSlides = [
     title: "Problem Statement",
     render: () => `
       <p>
-        Write your problem in 1–2 killer sentences.<br/><br/>
-        <strong>Template:</strong><br/>
-        “We help <em>&lt;who&gt;</em> do <em>&lt;what&gt;</em> so that <em>&lt;impact&gt;</em>.”
+        Build an AI-powered data intelligence platform that automatically adapts to any data format, enables cross-regional comparisons, and measures intervention impact over time
       </p>
     `
   },
   {
     title: "Our Solution",
     render: () => `
-      <p>
-        What did you build?<br/><br/>
-        Explain the core flow: what users see first, what they do, and the main value they get.
-      </p>
+<p>
+
+</p>
+
+<ul style="text-align: left; margin: 0 auto; max-width: 480px;">
+  <li>Direct Excel → database import with one-click synchronization</li>
+  <li>Unique key tokens for secure, error-free user identification</li>
+  <li>Automatic data validation and instant problem alerts</li>
+  <li>Preloaded participant details (region, school, subject, etc.)</li>
+  <li>Clean, consistent data with no typos or manual cleanup</li>
+  <li>Real-time results: comparisons, charts, statistics, and analytics</li>
+</ul>
     `
   },
-  {
-    title: "Demo Time",
-    render: () => `
-      <p>
-        This slide is your cue to jump into the live product.<br/><br/>
-        Show a real user journey, not every button and config screen.
+{
+  title: "Demo Time",
+  render: () => `
+    <div style="
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 1rem;
+      text-align: center;
+    ">
+
+      <video 
+        src="./assets/demo.mp4" 
+        controls 
+        style="
+          width: 80%;
+          max-width: 900px;
+          border-radius: 12px;
+          box-shadow: 0 6px 20px rgba(0,0,0,0.35);
+        "
+      ></video>
+
+      <p style="font-size: 1.15rem; max-width: 70%; line-height:1.6;">
+        Watch the core user journey — the part that proves your solution works.
       </p>
-    `
-  },
+    </div>
+  `
+}
+,
     {
     title: "Tech Stack",
     render: () => `
       <ul class="tech-list">
-        <li><strong>Frontend:</strong> (e.g. React, Vite, plain HTML/JS)</li>
-        <li><strong>Backend:</strong> (e.g. Node.js, Python, Firebase)</li>
-        <li><strong>APIs / Integrations:</strong> (e.g. OpenAI, Stripe, Maps)</li>
-        <li><strong>Database / Storage:</strong> (e.g. PostgreSQL, MongoDB, Supabase)</li>
-        <li><strong>Dev Tools:</strong> (e.g. GitHub, Docker, Postman)</li>
+        <li><strong>Frontend:</strong> (e.g. plain HTML/JS)</li>
+        <li><strong>Backend:</strong> (e.g. Node.js, Python, NextJS)</li>
+        <li><strong>Database / Storage:</strong> (e.g. PostgreSQL, SQLlight)</li>
+        <li><strong>Dev Tools:</strong> (e.g. GitHub, Docker)</li>
       </ul>
     `
   }

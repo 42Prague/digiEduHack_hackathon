@@ -22,8 +22,13 @@ Our system is built to grow with the schools—ensuring consistent data quality 
     title: "Story · The Breakthrough",
     render: () => `
       <p>
-        What was the “aha” moment?<br/><br/>
-        Describe how your team connected the dots and came up with your solution.
+        As we dug deeper, we realized the real problem wasn’t just outdated paper processes — it was the lack of control over data.
+That’s when it clicked:
+What if the system collected clean data from the start, and delivered insights instantly, without manual fixes?
+
+By ensuring accurate, reusable data from the moment it’s entered, we could solve today’s issues and prevent tomorrow’s.
+Our solution grew from a simple idea:
+make the platform easy to use, make the data trustworthy, and make the whole process future-ready.
       </p>
     `
   }
