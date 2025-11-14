@@ -1,0 +1,45 @@
+<!doctype html>
+<html lang="en">
+<head>
+	<meta charset="utf-8">
+	<title>DigiEdu Frontend</title>
+	<base href="/">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<meta name="theme-color" content="#f8fafc">
+	<link rel="preconnect" href="https://fonts.googleapis.com">
+	<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+	<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+	<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;600;700&family=Sora:wght@500;600;700&display=swap" rel="stylesheet">
+	<link rel="icon" type="image/x-icon" href="favicon.ico">
+	<script>
+		(() => {
+			const root = document.documentElement;
+			const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
+			const reduceTransparency = localStorage.getItem('reduced-transparency') === '1';
+			const supportsGlass = CSS.supports('backdrop-filter: blur(1px)') || CSS.supports('-webkit-backdrop-filter: blur(1px)');
+			if (!supportsGlass || reduceTransparency) {
+				root.classList.add('no-glass');
+			}
+			if (!prefersReducedMotion.matches) {
+				window.addEventListener('mousemove', (e) => {
+					const amp = 6;
+					const x = (e.clientX / window.innerWidth - 0.5) * amp;
+					const y = (e.clientY / window.innerHeight - 0.5) * amp;
+					root.style.setProperty('--shine-x', x + 'px');
+					root.style.setProperty('--shine-y', y + 'px');
+				}, { passive: true });
+			}
+			window.__setReducedTransparency = (on) => {
+				localStorage.setItem('reduced-transparency', on ? '1' : '0');
+				root.classList.toggle('no-glass', !!on);
+			};
+		})();
+	</script>
+</head>
+<body>
+	<app-root></app-root>
+	<noscript>This application requires JavaScript to run.</noscript>
+  <!-- Simple baseline styles -->
+</body>
+</html>
+

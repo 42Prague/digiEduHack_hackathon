@@ -1,0 +1,100 @@
+services:
+  digiedu-db:
+    container_name: digiedu-db
+    build:
+      context: ../server
+      dockerfile: Dockerfile-postgres
+    image: digiedu-postgres:latest
+    command: ["postgres", "-c", "log_statement=all"]
+    ports:
+      - "5435:5432"
+    networks:
+      - digiedu_backend_network
+    environment:
+      POSTGRES_DB: develop
+      POSTGRES_USER: testuser
+      POSTGRES_PASSWORD: pleaseletmein
+  digiedu-backend:
+    container_name: digiedu-backend
+    build:
+      context: ../server
+      dockerfile: Dockerfile-backend
+    image: digiedu-backend:latest
+    ports:
+      - "4444:8080"
+    networks:
+      - digiedu_backend_network
+    depends_on:
+      - digiedu-db
+    environment:
+      SERVER_DB_HOST: digiedu-db
+      SERVER_DB_DB: develop
+      SERVER_DB_PORT: 5432
+      SERVER_DB_USER: testuser
+      SERVER_DB_PASSWORD: pleaseletmein
+      SERVER_IP: 0.0.0.0
+      SERVER_PORT: 8080
+  digiedu-agent:
+    container_name: digiedu-agent
+    build:
+      context: ../agentic_analysis
+      dockerfile: Dockerfile
+    image: digiedu-agent:latest
+    env_file:
+      - ../agentic_analysis/.env
+    ports:
+      - "8001:8000"
+    networks:
+      - digiedu_backend_network
+  digiedu-frontend:
+    container_name: digiedu-frontend
+    build:
+      context: ../frontend
+      dockerfile: Dockerfile
+    image: digiedu-frontend:latest
+    ports:
+      - "4200:4200"
+    networks:
+      - digiedu_backend_network
+    depends_on:
+      - digiedu-backend
+      - digiedu-agent
+  digiedu-ingest:
+    container_name: digiedu-ingest
+    build:
+      context: ../ingest_service
+      dockerfile: Dockerfile
+    image: digiedu-ingest:latest
+    environment:
+      DATABASE_URL: postgresql+psycopg://testuser:pleaseletmein@digiedu-db:5432/develop
+      INGEST_DATA_DIR: /app/data
+    volumes:
+      - ingest_data:/app/data
+    ports:
+      - "8002:8000"
+    networks:
+      - digiedu_backend_network
+    depends_on:
+      - digiedu-db
+  digiedu-proxy:
+    container_name: digiedu-proxy
+    build:
+      context: ../reverseproxy
+      dockerfile: Dockerfile
+    image: digiedu-proxy:latest
+    ports:
+      - "80:80"
+    networks:
+      - digiedu_backend_network
+    depends_on:
+      - digiedu-frontend
+      - digiedu-backend
+      - digiedu-agent
+      - digiedu-ingest
+
+networks:
+  digiedu_backend_network:
+    driver: bridge
+    name: digiedu_backend_network
+volumes:
+  ingest_data:

@@ -1,0 +1,48 @@
+.active {
+	text-decoration: underline;
+}
+
+.page-wrapper {
+	position: relative;
+}
+
+.brand {
+	display: inline-flex;
+	align-items: center;
+	gap: 8px;
+}
+.brand-logo {
+	display: block;
+	height: 28px;
+	width: auto;
+}
+
+.lang-switch {
+	display: inline-flex;
+	gap: 4px;
+	padding: 2px;
+	background: var(--surface-2);
+	border-radius: 999px;
+	box-shadow: inset 0 0 0 1px var(--border);
+	vertical-align: middle;
+}
+.lang-switch .chip {
+	border: 0;
+	background: transparent;
+	cursor: pointer;
+	padding: 4px 8px;
+	border-radius: 999px;
+	line-height: 1;
+	transition: background-color .15s ease, transform .05s ease;
+}
+.lang-switch .chip:hover {
+	background: var(--surface-3);
+}
+.lang-switch .chip.active {
+	background: var(--accent-ghost);
+	box-shadow: 0 0 0 1px var(--accent);
+}
+.lang-switch .chip:active {
+	transform: translateY(1px);
+}
+
