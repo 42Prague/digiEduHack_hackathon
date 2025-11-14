@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Hackathon Team Presentation</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <!-- Optional animated 3D background -->
+  <canvas id="bg-canvas"></canvas>
+
+  <div class="card">
+    <div class="top-bar">
+      <div class="top-left">
+        <span class="badge">Hackathon</span>
+        <span class="top-meta">Team of 5 · Interactive Story</span>
+      </div>
+      <div class="top-right">
+        <span id="slide-indicator">Slide 1 / 1</span>
+        <span class="kbd-hint">Press <kbd>F</kbd> for fullscreen</span>
+      </div>
+    </div>
+
+    <div class="slide-shell">
+      <div id="slide-title" class="slide-title"></div>
+      <div id="slide-content" class="slide-content"></div>
+    </div>
+
+    <div class="progress">
+      <div id="progress-bar" class="progress-bar"></div>
+    </div>
+
+    <div class="dots" id="dots"></div>
+
+    <div class="controls">
+      <button id="prev-btn" class="button secondary">
+        ⬅ Previous
+      </button>
+      <div class="hint">
+        ← / → or Space to navigate · F to toggle fullscreen
+      </div>
+      <button id="next-btn" class="button">
+        Next ➡
+      </button>
+    </div>
+  </div>
+
+  <!-- Three.js (for animated background) -->
+  <script src="https://unpkg.com/three@0.160.0/build/three.min.js"></script>
+  <script src="js/background-3d.js"></script>
+
+  <!-- Main logic + slide modules -->
+  <script type="module" src="js/main.js"></script>
+</body>
+</html>
