@@ -9,7 +9,7 @@
     "start": " node --env-file=.env ./dist/mongoExample.js",
     "start-extraction": "node ./dist/ingestionEngine/ingestionPipeline.js",
     "start-server": "node ./dist/webServer/trigger.js",
-    "dev": "tsx watch src/app.ts",
+    "dev": "node ./dist/webServer/trigger.js",
     "lint": "eslint . --max-warnings 0",
     "check-types": "tsc --noEmit",
     "docker:build": "docker build --target=prod -t lazylab/reg-form:latest -f ./Dockerfile --build-arg APP_NAME=reg-form ../../",
