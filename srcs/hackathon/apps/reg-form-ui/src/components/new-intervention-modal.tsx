@@ -58,6 +58,8 @@ export default function NewInterventionModal({
   const [filesToUpload, setFilesToUpload] = useState<File[]>([]);
   const [uploadStatuses, setUploadStatuses] = useState<UploadedFile[]>([]);
 
+  const [rawData, setRawData] = useState<string>("");
+
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const handleInputChange = (
@@ -66,7 +68,12 @@ export default function NewInterventionModal({
     >
   ) => {
     const { name, value } = e.target;
-    setFormData((prev) => ({ ...prev, [name]: value }));
+    // Check if the change is for the new rawData state
+    if (name === "rawData") {
+      setRawData(value);
+    } else {
+      setFormData((prev) => ({ ...prev, [name]: value }));
+    }
   };
 
   // --- NEW PARTICIPANT HANDLERS ---
@@ -250,6 +257,7 @@ export default function NewInterventionModal({
       interventionType: formData.interventionType,
       regionName: "Kutnohorsko", // Hardcoded/Defaulted
       guideName: "Josef Pruvodce", // Hardcoded/Defaulted
+      rawData: rawData,
 
       // --- NEW: Use dynamic participant state ---
       listOfParticipants: {
@@ -324,7 +332,7 @@ export default function NewInterventionModal({
                   className="mt-2 w-full rounded-md border border-input bg-card px-4 py-2 text-foreground focus:border-accent focus:outline-none"
                 >
                   <option value="">Select school</option>
-                  <option value="capek">ZŠ Karla Čpaka</option>
+                  <option value="capek">ZŠ Karla Čapka</option>
                   <option value="jarov">Scio škola Praha Jarov</option>
                   <option value="hostinska">Základní škola Hostýnská</option>
                 </select>
@@ -491,6 +499,24 @@ export default function NewInterventionModal({
               </Button>
             </div>*/}
             {/* End Participants Section */}
+
+            <div className="space-y-4">
+              <h2 className="text-lg font-semibold text-foreground border-b pb-2">
+                Raw Intervention Text 📝
+              </h2>
+              <label className="block text-sm font-medium text-muted-foreground">
+                Copy/paste the full, unprocessed text (e.g., meeting transcript,
+                notes, or focus group data) here.
+              </label>
+              <textarea
+                name="rawData"
+                value={rawData}
+                onChange={handleInputChange}
+                rows={8} // Adjust height as needed
+                placeholder="Start typing or paste the intervention data here..."
+                className="mt-1 w-full rounded-md border border-input bg-card px-4 py-3 text-sm resize-y focus:border-accent focus:outline-none"
+              />
+            </div>
           </div>
 
           {/* Sidebar (1/3 width) */}
