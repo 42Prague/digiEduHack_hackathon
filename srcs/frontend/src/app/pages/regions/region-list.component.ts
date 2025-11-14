@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, OnInit, inject } from '@angular/core';
+import { ChangeDetectionStrategy, Component, OnInit, inject, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { RouterLink } from '@angular/router';
@@ -29,6 +29,7 @@ export class RegionListComponent implements OnInit {
 	// #region Private Properties
 	private readonly regionService: RegionService = inject(RegionService);
 	private readonly auth: AuthService = inject(AuthService);
+	private readonly cdr: ChangeDetectorRef = inject(ChangeDetectorRef);
 	// #endregion
 
 	// #region Public Methods
@@ -38,10 +39,12 @@ export class RegionListComponent implements OnInit {
 				this.regions = items;
 				this.applyFilters();
 				this.isLoading = false;
+				this.cdr.markForCheck();
 			},
 			error: () => {
 				this.error = 'Failed to load regions';
 				this.isLoading = false;
+				this.cdr.markForCheck();
 			}
 		});
 	}

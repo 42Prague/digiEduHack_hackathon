@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, OnInit, inject } from '@angular/core';
+import { ChangeDetectionStrategy, Component, OnInit, inject, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, RouterLink } from '@angular/router';
 import { ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
@@ -31,6 +31,7 @@ export class SchoolDetailComponent implements OnInit {
 	private readonly schoolService: SchoolService = inject(SchoolService);
 	private readonly auth: AuthService = inject(AuthService);
 	private readonly fb: FormBuilder = inject(FormBuilder);
+	private readonly cdr: ChangeDetectorRef = inject(ChangeDetectorRef);
 	// #endregion
 
 	// #region Public Methods
@@ -42,10 +43,12 @@ export class SchoolDetailComponent implements OnInit {
 				this.isLoading = false;
 				if (!s) this.error = 'School not found';
 				if (s) this.buildForm(s);
+				this.cdr.markForCheck();
 			},
 			error: () => {
 				this.error = 'Failed to load school';
 				this.isLoading = false;
+				this.cdr.markForCheck();
 			}
 		});
 	}

@@ -47,6 +47,7 @@ export class LoginPageComponent implements OnInit {
 		const selected = this.users.find(u => u.email === this.email);
 		if (selected) {
 			this.auth.login({
+				id: selected.id,
 				email: selected.email,
 				name: selected.name,
 				surname: selected.surname,
