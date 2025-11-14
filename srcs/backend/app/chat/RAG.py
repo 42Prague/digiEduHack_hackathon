@@ -33,6 +33,7 @@ class RAG:
         print(f"Current documents in ChromaDb: # {self.vector_store._collection.count()}")
 
     def add_document(self, path: str):
+        print(f"Adding document: {path}")
         loader = UnstructuredWordDocumentLoader(file_path=path)
         docs = loader.load()
         assert len(docs) == 1
