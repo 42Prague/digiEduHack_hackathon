@@ -55,9 +55,12 @@ async def handle_cloud_event(request: Request) -> dict[str, str]:
 
     This endpoint receives CloudEvents when text files are created in GCS
     and triggers the tabular ingestion pipeline.
+    
+    Supports both CloudEvent format and raw GCS notifications (when Eventarc
+    is in GCS_NOTIFICATION mode).
 
     Args:
-        request: FastAPI request containing CloudEvent
+        request: FastAPI request containing CloudEvent or GCS notification
 
     Returns:
         dict: Success response with status
@@ -66,27 +69,41 @@ async def handle_cloud_event(request: Request) -> dict[str, str]:
         HTTPException: 400 for invalid events, 500 for processing errors
     """
     try:
-        # Parse CloudEvent
+        # Parse event data
         event_data = await request.json()
 
-        # Extract event metadata
-        event_id = event_data.get("id", "unknown")
-        event_type = event_data.get("type", "")
-        data = event_data.get("data", {})
+        # Check if this is a raw GCS notification or a CloudEvent
+        # GCS notifications have 'kind': 'storage#object'
+        # CloudEvents have 'specversion', 'type', 'source', etc.
+        if "kind" in event_data and event_data.get("kind") == "storage#object":
+            # This is a raw GCS notification, extract data directly
+            logger.info(
+                "Received GCS notification (raw format)",
+                extra={"kind": event_data.get("kind")},
+            )
+            bucket = event_data.get("bucket")
+            object_name = event_data.get("name")
+            event_id = event_data.get("id", event_data.get("generation", "unknown"))
+            event_type = "google.cloud.storage.object.v1.finalized"
+        else:
+            # This is a CloudEvent
+            event_id = event_data.get("id", "unknown")
+            event_type = event_data.get("type", "")
+            data = event_data.get("data", {})
 
-        logger.info(
-            f"Received CloudEvent: event_id={event_id}, type={event_type}",
-            extra={"event_id": event_id, "event_type": event_type},
-        )
+            logger.info(
+                f"Received CloudEvent: event_id={event_id}, type={event_type}",
+                extra={"event_id": event_id, "event_type": event_type},
+            )
 
-        # Validate event type
-        if event_type != "google.cloud.storage.object.v1.finalized":
-            logger.warning(f"Unsupported event type: {event_type}")
-            return {"status": "skipped", "reason": "unsupported_event_type"}
+            # Validate event type
+            if event_type != "google.cloud.storage.object.v1.finalized":
+                logger.warning(f"Unsupported event type: {event_type}")
+                return {"status": "skipped", "reason": "unsupported_event_type"}
 
-        # Extract bucket and object name
-        bucket = data.get("bucket")
-        object_name = data.get("name")
+            # Extract bucket and object name from CloudEvent data
+            bucket = data.get("bucket")
+            object_name = data.get("name")
 
         if not bucket or not object_name:
             logger.error("Missing bucket or object_name in CloudEvent data")
