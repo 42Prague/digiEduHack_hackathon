@@ -23,6 +23,8 @@ export class UserDetailComponent implements OnInit {
 	public isEditing: boolean = false;
 	public isSaving: boolean = false;
 	public form?: FormGroup;
+	public readonly AccessLevel = AccessLevel;
+	public readonly canEdit: boolean = false;
 	// #endregion
 
 	// #region Private Properties
