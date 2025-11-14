@@ -104,6 +104,8 @@ class ProcessingRequest(BaseModel):
         
         # Parse path pattern: uploads/{region_id}/{file_id}_{original_filename}
         # Example: uploads/region-cz-01/abc123_report.pdf
+        # Example (extracted): uploads/region-cz-01/abc123_document_file.pdf
+        # file_id is everything up to the first underscore after region_id
         path_pattern = r"^uploads/([^/]+)/([^_]+)_(.+)$"
         match = re.match(path_pattern, object_path)
         

@@ -194,14 +194,19 @@ async def process_archive(
         files_processed = 0
         
         # Extract archive ID from the original path
-        # uploads/{region_id}/{archive_id}.zip -> archive_id
+        # uploads/{region_id}/{archive_id}_{original_name}.zip -> archive_id
         archive_name_parts = Path(cloud_event.data.name).stem
         
         for extracted_file in extracted_files:
             try:
+                # Generate unique file_id for extracted file
+                # Use hyphen to separate archive_id from extracted filename stem
+                extracted_file_id = f"{processing_req.file_id}-{Path(extracted_file.filename).stem}"
+                
                 # Upload extracted file to GCS
-                # Pattern: uploads/{region_id}/{archive_id}/{filename}
-                destination_name = f"uploads/{processing_req.region_id}/{archive_name_parts}/{extracted_file.filename}"
+                # Pattern: uploads/{region_id}/{file_id}_{filename}
+                # For extracted files: file_id contains hyphen (e.g., abc123-document)
+                destination_name = f"uploads/{processing_req.region_id}/{extracted_file_id}_{extracted_file.filename}"
                 
                 await gcs_client.upload_file(
                     extracted_file.local_path,
@@ -237,7 +242,7 @@ async def process_archive(
                 
                 # Create processing request for extracted file
                 extracted_processing_req = ProcessingRequest(
-                    file_id=f"{processing_req.file_id}_{Path(extracted_file.filename).stem}",
+                    file_id=extracted_file_id,
                     region_id=processing_req.region_id,
                     bucket=bucket_name,
                     object_name=destination_name,
@@ -272,7 +277,7 @@ async def process_archive(
                     f"Failed to process extracted file: {e}",
                     extra={
                         "event_id": cloud_event.id,
-                        "filename": extracted_file.filename,
+                        "extracted_filename": extracted_file.filename,
                         "error": str(e)
                     }
                 )
