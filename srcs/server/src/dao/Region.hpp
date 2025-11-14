@@ -24,13 +24,23 @@ namespace digiedu::dao {
             drogon::orm::ResultCallback resClb,
             drogon::orm::ExceptionCallback exClb
         ) const {
-            t->execSqlAsync(
-                "INSERT INTO region (id, name, legal_address, main_contact) VALUES"
-                "(gen_random_uuid(), $1, $2, $3)",
-                std::move(resClb),
-                std::move(exClb),
-                name, legalAddress, mainContact
-            );
+            if (mainContact.empty()) {
+                t->execSqlAsync(
+                    "INSERT INTO region (id, name, legal_address) VALUES"
+                    "(gen_random_uuid(), $1, $2)",
+                    std::move(resClb),
+                    std::move(exClb),
+                    name, legalAddress
+                );
+            } else {
+                t->execSqlAsync(
+                    "INSERT INTO region (id, name, legal_address, main_contact) VALUES"
+                    "(gen_random_uuid(), $1, $2, $3)",
+                    std::move(resClb),
+                    std::move(exClb),
+                    name, legalAddress, mainContact
+                );
+            }
         }
 
         static void execGetAllSqlAsync(

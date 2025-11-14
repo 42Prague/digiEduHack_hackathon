@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, OnInit, inject } from '@angular/core';
+import { ChangeDetectionStrategy, Component, OnInit, inject, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { RouterLink } from '@angular/router';
@@ -29,6 +29,7 @@ export class SchoolListComponent implements OnInit {
 	// #region Private Properties
 	private readonly schoolService: SchoolService = inject(SchoolService);
 	private readonly auth: AuthService = inject(AuthService);
+	private readonly cdr: ChangeDetectorRef = inject(ChangeDetectorRef);
 	// #endregion
 
 	// #region Public Methods
@@ -36,10 +37,17 @@ export class SchoolListComponent implements OnInit {
 		const current = this.auth.currentUser();
 		const regionId = current?.regionId;
 		this.regionFilter = regionId || undefined;
-		this.schoolService.list(regionId).subscribe((res: School[]) => {
-			this.schools = res;
-			this.applyFilters();
-			this.isLoading = false;
+		this.schoolService.list(regionId).subscribe({
+			next: (res: School[]) => {
+				this.schools = res;
+				this.applyFilters();
+				this.isLoading = false;
+				this.cdr.markForCheck();
+			},
+			error: () => {
+				this.isLoading = false;
+				this.cdr.markForCheck();
+			}
 		});
 	}
 	public isGlobal(): boolean {

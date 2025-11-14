@@ -70,7 +70,7 @@ namespace digiedu::dao {
             root["legal_id"] = r["legal_id"].as<std::string>();
             root["address"] = r["address"].as<std::string>();
             root["main_contact"] = r["main_contact"].as<std::string>();
-            root["region"] = r["main_contact"].as<std::string>();
+            root["region"] = r["region"].as<std::string>();
             return root;
         }
     };

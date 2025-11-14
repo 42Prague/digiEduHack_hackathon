@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import json
+import logging
 from typing import Any, Dict, List, Optional
 
 from .azure_client import client
@@ -74,26 +75,6 @@ Here's an approximate line chart representing this trend:
 TOOLS: List[Dict[str, Any]] = [
     {
         "type": "function",
-        "name": "load_files",
-        "description": (
-            "Return a list of available data files and their summaries. "
-            "Use this to understand what data exists across regions."
-        ),
-        "parameters": {
-            "type": "object",
-            "properties": {
-                "limit": {
-                    "type": "integer",
-                    "minimum": 1,
-                    "maximum": 50,
-                    "description": "Maximum number of files to return.",
-                }
-            },
-            "required": [],
-        },
-    },
-    {
-        "type": "function",
         "name": "find_relevant_files",
         "description": (
             "Given a natural language query, return the most relevant files "
@@ -142,10 +123,12 @@ TOOLS: List[Dict[str, Any]] = [
 ]
 
 TOOL_EXECUTORS = {
-    "load_files": tool_impl.load_files,
     "find_relevant_files": tool_impl.find_relevant_files,
     "temporal_search": tool_impl.temporal_search,
 }
+
+
+logger = logging.getLogger(__name__)
 
 
 def _summarize_tool_output(name: str, result: Any) -> str:
@@ -237,10 +220,39 @@ def run_agent(
 
     max_steps = request.max_steps or settings.agent_max_steps
 
+    try:
+        preload_result = tool_impl.load_files(limit=None)
+        available_files = preload_result.get("files", []) if isinstance(preload_result, dict) else []
+    except Exception as exc:  # pragma: no cover - defensive
+        logger.exception("Unable to preload files for prompt: %s", exc)
+        available_files = []
+
+    filenames = [
+        file.get("original_filename")
+        or file.get("name")
+        or str(file.get("id"))
+        for file in available_files
+        if file
+    ]
+    filenames_block = ""
+    if filenames:
+        joined = "\n".join(f"- {name}" for name in filenames)
+        filenames_block = (
+            "Available files (original filenames):\n"
+            f"{joined}\n"
+            "Use temporal_search or find_relevant_files to retrieve details when needed."
+        )
+
     # Prepare conversation history for the first Responses API call.
     history_inputs = _history_to_inputs(history_messages)
 
-    user_content = f"Language: {request.language}\n\nUser question:\n{request.query}"
+    content_parts: List[str] = []
+    if filenames_block:
+        content_parts.append(filenames_block)
+    preferred_language = request.language or "en"
+    content_parts.append(f"Language: {preferred_language}")
+    content_parts.append(f"User question:\n{request.query}")
+    user_content = "\n\n".join(content_parts)
 
     inputs: List[Dict[str, Any]] = history_inputs + [
         {
