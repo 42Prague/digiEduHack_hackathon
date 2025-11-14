@@ -38,7 +38,7 @@ services:
 
   backend:
     build:
-      context: ./backend
+      context: ./src/backend
     depends_on:
       - chromadb
       - tusd
@@ -67,7 +67,7 @@ services:
 
   frontend:
     build:
-      context: ./eduzmena-frontend
+      context: ./src/eduzmena-frontend
     depends_on:
       - backend
       - tusd
@@ -79,7 +79,7 @@ services:
 
   worker:
     build:
-      context: ./backend
+      context: ./src/backend
     depends_on:
       - tusd
     restart: unless-stopped
@@ -125,7 +125,7 @@ services:
 
   whisper:
     build:
-      context: ./whisper
+      context: ./src/whisper
     restart: unless-stopped
     environment:
       - WHISPER_MODEL=${WHISPER_MODEL:-small}   # or medium / large-v3 if you have GPU
