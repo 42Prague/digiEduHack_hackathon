@@ -1,71 +1,69 @@
-# 42Prague DigiEduHack Hackathon
+# Hackathon RAG System with Multi-LLM Support
 
-> Welcome! This is the main repository for submitting your team's solution for the DigiEduHack Hackathon at 42Prague.
+## 1. One-sentence description
+A retrieval-augmented generation (RAG) system that ingests documents, indexes chunks, and answers questions or generates structured data using multiple LLMs, Architecture based on TimeServiceDB structure.
 
-## ⚠️ First Steps: Read the Guidelines & Get Data
+## 2. Technology stack
+- **Backend:** Python 3.11, Flask  
+- **Frontend:** Vite, React, TypeScript, TailwindCSS  
+- **Key Libraries (Backend):** `openai`, `pdfplumber`, `mammoth`, `markdown`, `requests`, `BeautifulSoup`  
+- **Key Libraries (Frontend):** `lucide-react`, `sonner`, custom UI components (Card, Button, Input, Select, Textarea)  
+- **AI Models Used:** Llama 3.3 70B Instruct via Featherless API the model can be Self-hosted.
+- 
+## 3. Data Privacy Statement
+- **Where data is processed:** EU-based cloud (Featherless AI EU endpoints)/local hosting possibility
+- **AI services used:** Self-hosted Llama 3  
+- **Does data leave the EU?:** No, all user data remains within EU servers/within internal company servers 
 
-Before you start, please **carefully read all documents** in the `resources/` folder. They contain the rules, guidelines, data samples, and the template you must fill out.
+## 4. Monthly cost estimate
+€50–€250 depending on usage and API calls  
 
-* `resources/DigiEduHack_solution_guidelines.pdf`: Contains all rules, guidelines, and judging criteria.
-* `resources/Digi_Edu_Hack_Solution_Canvas_2025.pdf`: This is the **mandatory template** you must fill out and send to the [DigiEduHack submission platform](https://digieduhack.com/host/submit-solution?relatedChallenge=106879). Only 1 team member is submitting the solution.
-* **[Download Data Samples](https://drive.google.com/drive/folders/1KVzBOg1ktjgJd16rlyVDPniwRMDWNYYt?usp=sharing)**: Contains data samples provided for the challenge.
+## 5. Prerequisites
+- Python 3.11  
+- Node.js 20+  
+- `FEATHERLESS_API_KEY` environment variable  
 
----
+## 6. Setup instructions
 
-## 🚀 How to Submit Your Solution
+# Backend setup
+# Clone the repo
+git clone https://github.com/yourusername/hackathon-rag.git
+cd hackathon-rag
 
-We use the standard GitHub **Fork & Pull Request** workflow. This is the only way to submit your project. Follow these steps carefully.
+# Create virtual environment
+python -m venv venv
+source venv/bin/activate  # Linux/macOS
+venv\Scripts\activate     # Windows
+
+# Install dependencies
+pip install -r requirements.txt
+
+# Set Featherless API key
+export FEATHERLESS_API_KEY="your_api_key_here"  # Linux/macOS
+set FEATHERLESS_API_KEY="your_api_key_here"     # Windows
 
 
+# Frontend setup
+cd frontend
+npm install
+npm run dev
 
-### Step 1: Fork This Repository
 
-Click the **"Fork"** button at the top-right corner of this page. This will create a complete copy of this repository under your personal GitHub account.
+## 7. How to run locally
+python -m your_package.app
+npm run dev
 
-### Step 2: Create Your Branch
+## 8.How to deploy to production
+Containerize the application using Docker
+docker build -t hackathon-rag .
+docker run -e FEATHERLESS_API_KEY="your_api_key_here" -p 5000:5000 hackathon-rag
 
-On **your forked repository**, create a new branch to hold your work. **Please name this branch after your team.**
+## 9. Known limitations
 
-You can do this locally on your computer after cloning your fork:
+Only supports text-based PDF, DOCX, Markdown, and MP3 transcriptions
 
-```bash
-# Clone your fork (replace YOUR-USERNAME)
-git clone [https://github.com/YOUR-USERNAME/42Prague_digiEduHack_hackathon.git](https://github.com/YOUR-USERNAME/42Prague_digiEduHack_hackathon.git)
-cd 42Prague_digiEduHack_hackathon
+Region filtering may fail if metadata is missing or malformed
 
-# Create and switch to your new branch (replace with your team name)
-git checkout -b your-team-name
-```
+LLM responses are limited to 1–3 sentences or JSON strictly; no reasoning is included
 
-### Step 3: Add Your Project Files
-
-Now it's time to build! Add all your project components to your branch:
-
-1.  **Your Solution:** Add all your source code, folders, dependencies (e.g., `requirements.txt`, `package.json`), and any files needed to run your solution. You can use the `srcs/` folder or create your own structure.
-2.  **Solution Canvas:** Fill out the `Digi_Edu_Hack_Solution_Canvas_2025.pdf` template. Add the completed PDF to the root of your branch.
-3.  **Pitch Deck:** Add your final pitch (PDF or PPTX format) to the `pitch/` folder.
-
-### Step 4: Commit & Push Your Work
-
-As you work, commit your changes and push them to your fork on GitHub.
-
-```bash
-# After making your changes
-git add .
-git commit -m "Add project files and solution canvas"
-
-# Push your branch to your fork (replace with your team name)
-git push origin your-team-name
-```
-
-### Step 5: Open a Pull Request
-
-When your submission is complete, it's time to create the Pull Request.
-
-1.  Go to your forked repository on GitHub.
-2.  You will see a green button that says **"Compare & pull request"**. Click it.
-3.  **Important:** Make sure the "base repository" is `42Prague/42Prague_digiEduHack_hackathon` and the "head repository" is `YOUR-USERNAME/42Prague_digiEduHack_hackathon` (from your team branch).
-4.  Use your **Team Name** as the title for the Pull Request.
-5.  Click **"Create pull request"**.
-
-That's it! Your submission is now in the queue for review.
+Large documents may exceed token limits for Featherless API

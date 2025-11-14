@@ -1,0 +1,16 @@
+
+CREATE TABLE recordings (
+    id              INTEGER PRIMARY KEY AUTOINCREMENT,
+    name            TEXT UNIQUE,
+    audio_file      TEXT,
+    transcript_file TEXT
+);
+
+CREATE TABLE segments (
+    id              INTEGER PRIMARY KEY AUTOINCREMENT,
+    recording_id    INTEGER,
+    segment_index   INTEGER,
+    speaker         TEXT,
+    text            TEXT,
+    FOREIGN KEY(recording_id) REFERENCES recordings(id)
+);
