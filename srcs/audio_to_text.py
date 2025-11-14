@@ -6,7 +6,7 @@ import os
 import torch
 from faster_whisper import WhisperModel
 
-def audio_to_text(str: folder_path):
+def audio_to_text(folder_path):
     """
     Finds audio files (.wav, .mp3, .flac, .ogg, .m4a, upper or lowercase) in a folder,
     loads a medium WhisperModel, and writes plain text transcripts in a 'transcripts' folder.
