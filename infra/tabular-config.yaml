@@ -152,22 +152,3 @@ spec:
           periodSeconds: 10
           timeoutSeconds: 10
           failureThreshold: 6
-
----
-# IAM Policy for Eventarc to invoke the service
-apiVersion: v1
-kind: ConfigMap
-metadata:
-  name: tabular-service-iam
-data:
-  policy: |
-    {
-      "bindings": [
-        {
-          "role": "roles/run.invoker",
-          "members": [
-            "serviceAccount:eventarc-trigger@PROJECT_ID.iam.gserviceaccount.com"
-          ]
-        }
-      ]
-    }
