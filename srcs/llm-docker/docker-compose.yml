@@ -1,0 +1,9 @@
+services:
+  web:
+    build: ./ai
+    container_name: llm-web
+    ports:
+      - "8000:8000"
+    environment:
+      - HF_API_KEY=${HF_API_KEY}
+      - MODE=${MODE}

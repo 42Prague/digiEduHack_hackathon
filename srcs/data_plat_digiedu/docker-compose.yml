@@ -1,0 +1,90 @@
+# ====================================================================
+# Docker Compose Configuration
+# Student Performance Survey System
+# ====================================================================
+
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: student-survey-app
+    ports:
+      - "8501:8501"
+    volumes:
+      # Persist database
+      - survey-data:/app/data
+      # Mount source code for development (hot reload)
+      - ./app.py:/app/app.py
+      - ./database_utils.py:/app/database_utils.py
+      - ./database_setup.sql:/app/database_setup.sql
+      - ./generate_mock_data.py:/app/generate_mock_data.py
+      - ./create_demographics_template.py:/app/create_demographics_template.py
+      - ./load_demographics.py:/app/load_demographics.py
+      - ./load_sample_data.py:/app/load_sample_data.py
+      - ./mixed_effects_analysis.py:/app/mixed_effects_analysis.py
+      - ./streamlit_dashboard.py:/app/streamlit_dashboard.py
+      - ./llm_service.py:/app/llm_service.py
+      - ./demographics_config.xlsx:/app/demographics_config.xlsx
+      - ./data_structure_template.csv:/app/data_structure_template.csv
+      - ./pages:/app/pages
+      - ./.streamlit:/app/.streamlit
+    environment:
+      # Streamlit configuration
+      - STREAMLIT_SERVER_PORT=8501
+      - STREAMLIT_SERVER_ADDRESS=0.0.0.0
+      - STREAMLIT_SERVER_HEADLESS=true
+      - STREAMLIT_BROWSER_GATHER_USAGE_STATS=false
+      - STREAMLIT_SERVER_FILE_WATCHER_TYPE=poll
+      - STREAMLIT_SERVER_RUN_ON_SAVE=true
+      
+      # Database configuration
+      - DB_PATH=/app/data/teacher_survey.db
+      
+      # LLM Service configuration
+      - LLM_SERVICE_URL=http://llm-service:8000
+      
+      # Application settings
+      - GENERATE_MOCK_DATA=true
+      - PYTHONUNBUFFERED=1
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8501/_stcore/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 60s
+    restart: unless-stopped
+    networks:
+      - survey-network
+    depends_on:
+      - llm-service
+
+  llm-service:
+    build:
+      context: .
+      dockerfile: Dockerfile.llm
+    container_name: llm-service
+    ports:
+      - "8000:8000"
+    environment:
+      - HF_API_KEY=${HF_API_KEY}
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 10s
+    restart: unless-stopped
+    networks:
+      - survey-network
+
+volumes:
+  survey-data:
+    driver: local
+    name: student-survey-data
+
+networks:
+  survey-network:
+    driver: bridge
+    name: student-survey-network
+
