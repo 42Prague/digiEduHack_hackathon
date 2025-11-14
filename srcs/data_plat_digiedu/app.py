@@ -129,7 +129,7 @@ def main():
     st.markdown("### 📈 Advanced Analysis")
     
     st.markdown("""
-    #### 🔬 Statistical Analysis (NEW!)
+    #### 🔬 Statistical Analysis
     **Mixed Effects Models**
     
     Run hierarchical linear models directly in your browser:
@@ -143,7 +143,7 @@ def main():
     """)
     
     st.markdown("""
-    #### 🤖 ChatFriend - AI Assistant (NEW!)
+    #### 🤖 ChatFriend - AI Assistant
     **Your AI-Powered Qualitative Analysis Partner**
     
     Uses local LLM (Ollama) to analyze teacher narratives:
@@ -155,7 +155,6 @@ def main():
     
     ➡️ Go to **5_🤖_ChatFriend** in the sidebar
     
-    *Requires Ollama (free, runs locally)*
     """)
     
     st.markdown("---")
