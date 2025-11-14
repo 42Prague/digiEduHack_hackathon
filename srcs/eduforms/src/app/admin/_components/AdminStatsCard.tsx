@@ -13,7 +13,7 @@ export function AdminStatsCard() {
   if (isLoading) {
     return (
       <div className="bg-white rounded-lg shadow p-6">
-        <p className="text-gray-600">Loading stats...</p>
+        <p className="text-gray-600">Načítání statistik...</p>
       </div>
     );
   }
@@ -21,9 +21,9 @@ export function AdminStatsCard() {
   if (error) {
     return (
       <div className="bg-red-50 rounded-lg shadow p-6">
-        <p className="text-red-600">Error: {error.message}</p>
+        <p className="text-red-600">Chyba: {error.message}</p>
         <p className="text-sm text-red-500 mt-2">
-          You must be an admin to view this data.
+          Pro zobrazení těchto dat musíte být administrátor.
         </p>
       </div>
     );
@@ -31,22 +31,22 @@ export function AdminStatsCard() {
 
   return (
     <div className="bg-white rounded-lg shadow p-6">
-      <h2 className="text-xl font-semibold mb-4">System Statistics</h2>
+      <h2 className="text-xl font-semibold mb-4">Systémové statistiky</h2>
       <div className="grid grid-cols-2 gap-4">
         <div className="bg-blue-50 p-4 rounded">
-          <p className="text-sm text-gray-600">Total Users</p>
+          <p className="text-sm text-gray-600">Celkový počet uživatelů</p>
           <p className="text-2xl font-bold text-blue-600">{stats?.totalUsers ?? 0}</p>
         </div>
         <div className="bg-green-50 p-4 rounded">
-          <p className="text-sm text-gray-600">Regular Users</p>
+          <p className="text-sm text-gray-600">Běžní uživatelé</p>
           <p className="text-2xl font-bold text-green-600">{stats?.regularUsers ?? 0}</p>
         </div>
         <div className="bg-purple-50 p-4 rounded">
-          <p className="text-sm text-gray-600">Admin Users</p>
+          <p className="text-sm text-gray-600">Administrátoři</p>
           <p className="text-2xl font-bold text-purple-600">{stats?.adminUsers ?? 0}</p>
         </div>
         <div className="bg-red-50 p-4 rounded">
-          <p className="text-sm text-gray-600">Banned Users</p>
+          <p className="text-sm text-gray-600">Blokovaní uživatelé</p>
           <p className="text-2xl font-bold text-red-600">{stats?.bannedUsers ?? 0}</p>
         </div>
       </div>

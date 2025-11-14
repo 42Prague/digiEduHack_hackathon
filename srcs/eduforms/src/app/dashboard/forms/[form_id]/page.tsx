@@ -214,20 +214,20 @@ export default function FormPage({ params }: { params: Promise<{ form_id: string
 
   const submitMutation = api.forms.submitForm.useMutation({
     onSuccess: () => {
-      alert("Form submitted successfully!");
+      alert("Formulář byl úspěšně odeslán!");
       router.push("/dashboard");
     },
     onError: (error) => {
-      alert(`Error submitting form: ${error.message}`);
+      alert(`Chyba při odesílání formuláře: ${error.message}`);
     },
   });
 
   const saveDraftMutation = api.forms.saveDraft.useMutation({
     onSuccess: () => {
-      alert("Draft saved successfully!");
+      alert("Koncept byl úspěšně uložen!");
     },
     onError: (error) => {
-      alert(`Error saving draft: ${error.message}`);
+      alert(`Chyba při ukládání konceptu: ${error.message}`);
     },
   });
 
@@ -262,7 +262,7 @@ export default function FormPage({ params }: { params: Promise<{ form_id: string
         <Center h={400}>
           <Stack align="center" gap="md">
             <Loader size="lg" />
-            <Text c="dimmed">Loading form...</Text>
+            <Text c="dimmed">Načítání formuláře...</Text>
           </Stack>
         </Center>
       </Container>
@@ -274,11 +274,11 @@ export default function FormPage({ params }: { params: Promise<{ form_id: string
       <Container size="md" py="xl">
         <Alert
           icon={<IconAlertCircle size={16} />}
-          title="Error"
+          title="Chyba"
           color="red"
           variant="filled"
         >
-          {error?.message || "Form not found"}
+          {error?.message || "Formulář nebyl nalezen"}
         </Alert>
       </Container>
     );
@@ -302,12 +302,12 @@ export default function FormPage({ params }: { params: Promise<{ form_id: string
               </div>
               {isSubmitted && (
                 <Badge color="green" size="lg" variant="filled">
-                  Submitted
+                  Odesláno
                 </Badge>
               )}
               {submission?.userForm?.submission_status === "draft" && (
                 <Badge color="yellow" size="lg" variant="filled">
-                  Draft
+                  Koncept
                 </Badge>
               )}
             </Group>
@@ -315,7 +315,7 @@ export default function FormPage({ params }: { params: Promise<{ form_id: string
 
           {isSubmitted && (
             <Alert color="green" variant="light">
-              This form has already been submitted. You can view your responses below, but cannot make changes.
+              Tento formulář byl již odeslán. Můžete si níže prohlédnout své odpovědi, ale nemůžete je změnit.
             </Alert>
           )}
 
@@ -333,14 +333,14 @@ export default function FormPage({ params }: { params: Promise<{ form_id: string
                 ))
               ) : (
                 <Alert color="blue" variant="light">
-                  This form has no fields yet.
+                  Tento formulář zatím nemá žádná pole.
                 </Alert>
               )}
 
               {!isSubmitted && (
                 <Group justify="space-between" mt="xl">
                   <Button variant="subtle" onClick={() => router.back()}>
-                    Cancel
+                    Zrušit
                   </Button>
                   <Group>
                     <Button 
@@ -349,14 +349,14 @@ export default function FormPage({ params }: { params: Promise<{ form_id: string
                       disabled={form.fields?.length === 0}
                       loading={saveDraftMutation.isPending}
                     >
-                      Save Draft
+                      Uložit koncept
                     </Button>
                     <Button 
                       type="submit" 
                       disabled={form.fields?.length === 0}
                       loading={submitMutation.isPending}
                     >
-                      Submit Form
+                      Odeslat formulář
                     </Button>
                   </Group>
                 </Group>
@@ -365,7 +365,7 @@ export default function FormPage({ params }: { params: Promise<{ form_id: string
               {isSubmitted && (
                 <Group justify="flex-end" mt="xl">
                   <Button variant="subtle" onClick={() => router.back()}>
-                    Back to Dashboard
+                    Zpět na přehled
                   </Button>
                 </Group>
               )}

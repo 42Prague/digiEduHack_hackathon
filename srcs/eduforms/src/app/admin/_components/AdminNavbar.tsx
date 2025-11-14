@@ -40,10 +40,10 @@ export function AdminNavbar() {
   };
 
   const mainLinks: LinkItem[] = [
-    { label: "Dashboard", icon: IconDashboard, href: "/admin" },
-    { label: "Users", icon: IconUsers, href: "/admin/users" },
-    { label: "Institutions", icon: IconBuilding, href: "/admin/institutions" },
-    { label: "Forms", icon: IconForms, href: "/admin/forms" },
+    { label: "Přehled", icon: IconDashboard, href: "/admin" },
+    { label: "Uživatelé", icon: IconUsers, href: "/admin/users" },
+    { label: "Instituce", icon: IconBuilding, href: "/admin/institutions" },
+    { label: "Formuláře", icon: IconForms, href: "/admin/forms" },
   ];
 
   return (
@@ -55,7 +55,7 @@ export function AdminNavbar() {
             <Avatar color="blue" radius="md">E</Avatar>
             <div>
               <Text size="lg" fw={700}>EduForms</Text>
-              <Text size="xs" c="dimmed">Admin Panel</Text>
+              <Text size="xs" c="dimmed">Administrátorský panel</Text>
             </div>
           </Group>
         </div>
@@ -71,7 +71,7 @@ export function AdminNavbar() {
               </Avatar>
               <div style={{ flex: 1 }}>
                 <Text size="sm" fw={500} lineClamp={1}>
-                  {session.user.name ?? "Admin User"}
+                  {session.user.name ?? "Administrátor"}
                 </Text>
                 <Text size="xs" c="dimmed" lineClamp={1}>
                   {session.user.email}
@@ -79,7 +79,7 @@ export function AdminNavbar() {
               </div>
             </Group>
             <Badge color="violet" variant="light" fullWidth>
-              Admin
+              Administrátor
             </Badge>
           </Paper>
         )}
@@ -87,7 +87,7 @@ export function AdminNavbar() {
         {/* Navigation Links */}
         <Stack gap={4} style={{ flex: 1 }}>
           <Text size="xs" fw={600} c="dimmed" tt="uppercase" px="xs" mb="xs">
-            Navigation
+            Navigace
           </Text>
           {mainLinks.map((link) => {
             const isActive = pathname === link.href;
@@ -109,10 +109,10 @@ export function AdminNavbar() {
           <Divider my="md" />
 
           <Text size="xs" fw={600} c="dimmed" tt="uppercase" px="xs" mb="xs">
-            System
+            Systém
           </Text>
           <NavLink
-            label="Settings"
+            label="Nastavení"
             leftSection={<IconSettings size={20} stroke={1.5} />}
           />
         </Stack>
@@ -121,7 +121,7 @@ export function AdminNavbar() {
         <div>
           <Divider mb="md" />
           <NavLink
-            label={isLoggingOut ? "Signing out..." : "Sign Out"}
+            label={isLoggingOut ? "Odhlašování..." : "Odhlásit se"}
             leftSection={<IconLogout size={20} stroke={1.5} />}
             onClick={handleSignOut}
             color="red"

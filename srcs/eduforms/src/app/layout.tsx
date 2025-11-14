@@ -9,8 +9,8 @@ import { TRPCReactProvider } from "~/trpc/react";
 import { ColorSchemeScript, MantineProvider, mantineHtmlProps } from '@mantine/core';
 
 export const metadata: Metadata = {
-  title: "EDU Změna Formluáře",
-  description: "Formuláře EDUZměna",
+  title: "EDU Změna Formuláře",
+  description: "Formuláře EDU Změna",
   icons: [{ rel: "icon", url: "/favicon.ico" }],
 };
 
@@ -23,7 +23,7 @@ export default function RootLayout({
   children,
 }: Readonly<{ children: React.ReactNode }>) {
   return (
-    <html lang="en" className={`${geist.variable}`} {...mantineHtmlProps}>
+    <html lang="cs" className={`${geist.variable}`} {...mantineHtmlProps}>
       <head>
         <ColorSchemeScript />
       </head>

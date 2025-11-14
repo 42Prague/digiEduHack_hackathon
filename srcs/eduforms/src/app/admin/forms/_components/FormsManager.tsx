@@ -91,7 +91,7 @@ export function FormsManager() {
   };
 
   const handleDelete = (id: string) => {
-    if (confirm("Are you sure you want to delete this form?")) {
+    if (confirm("Opravdu chcete smazat tento formulář?")) {
       deleteMutation.mutate({ id });
     }
   };
@@ -106,7 +106,7 @@ export function FormsManager() {
       <Center h={400}>
         <Stack align="center" gap="md">
           <Loader size="lg" />
-          <Text c="dimmed">Loading forms...</Text>
+          <Text c="dimmed">Načítání formulářů...</Text>
         </Stack>
       </Center>
     );
@@ -116,9 +116,9 @@ export function FormsManager() {
     <Stack gap="lg">
       <Group justify="space-between">
         <div>
-          <Title order={1}>Forms Management</Title>
+          <Title order={1}>Správa formulářů</Title>
           <Text c="dimmed" size="sm">
-            Create and manage forms with reusable fields
+            Vytváření a správa formulářů s opakovaně použitelnými poli
           </Text>
         </div>
         <Group>
@@ -128,10 +128,10 @@ export function FormsManager() {
             variant="light"
             leftSection={<IconForms size={16} />}
           >
-            Manage Fields
+            Spravovat pole
           </Button>
           <Button leftSection={<IconPlus size={16} />} onClick={handleOpenCreate}>
-            Create Form
+            Vytvořit formulář
           </Button>
         </Group>
       </Group>
@@ -139,7 +139,7 @@ export function FormsManager() {
       {createMutation.error && (
         <Alert
           icon={<IconAlertCircle size={16} />}
-          title="Error"
+          title="Chyba"
           color="red"
           onClose={() => createMutation.reset()}
           withCloseButton
@@ -153,14 +153,14 @@ export function FormsManager() {
           <Stack align="center" gap="md">
             <IconForms size={48} stroke={1.5} opacity={0.5} />
             <Text size="lg" fw={500}>
-              No forms yet
+              Zatím žádné formuláře
             </Text>
             <Text c="dimmed" ta="center">
-              Create your first form to get started. You can add fields to it
-              from the field library.
+              Vytvořte svůj první formulář pro začátek. Můžete do něj přidat pole
+              z knihovny polí.
             </Text>
             <Button onClick={handleOpenCreate} leftSection={<IconPlus size={16} />}>
-              Create First Form
+              Vytvořit první formulář
             </Button>
           </Stack>
         </Card>
@@ -169,11 +169,11 @@ export function FormsManager() {
           <Table striped highlightOnHover>
             <Table.Thead>
               <Table.Tr>
-                <Table.Th>Form Name</Table.Th>
-                <Table.Th>Description</Table.Th>
-                <Table.Th>Created</Table.Th>
-                <Table.Th>Last Updated</Table.Th>
-                <Table.Th>Actions</Table.Th>
+                <Table.Th>Název formuláře</Table.Th>
+                <Table.Th>Popis</Table.Th>
+                <Table.Th>Vytvořeno</Table.Th>
+                <Table.Th>Naposledy aktualizováno</Table.Th>
+                <Table.Th>Akce</Table.Th>
               </Table.Tr>
             </Table.Thead>
             <Table.Tbody>
@@ -203,7 +203,7 @@ export function FormsManager() {
                         variant="subtle"
                         color="blue"
                         onClick={() => router.push(`/admin/forms/${form.id}`)}
-                        title="Edit Form Builder"
+                        title="Upravit návrháře formuláře"
                       >
                         <IconEdit size={16} />
                       </ActionIcon>
@@ -211,7 +211,7 @@ export function FormsManager() {
                         variant="subtle"
                         color="gray"
                         onClick={() => handleEdit(form)}
-                        title="Edit Details"
+                        title="Upravit detaily"
                       >
                         <IconPencil size={16} />
                       </ActionIcon>
@@ -219,7 +219,7 @@ export function FormsManager() {
                         variant="subtle"
                         color="red"
                         onClick={() => handleDelete(form.id)}
-                        title="Delete"
+                        title="Smazat"
                       >
                         <IconTrash size={16} />
                       </ActionIcon>
@@ -239,15 +239,15 @@ export function FormsManager() {
           resetForm();
         }}
         title={
-          <Title order={3}>{editingId ? "Edit Form" : "Create Form"}</Title>
+          <Title order={3}>{editingId ? "Upravit formulář" : "Vytvořit formulář"}</Title>
         }
         size="lg"
       >
         <form onSubmit={handleSubmit}>
           <Stack gap="md">
             <TextInput
-              label="Form Name"
-              placeholder="e.g., Teacher Survey 2024"
+              label="Název formuláře"
+              placeholder="např. Dotazník pro učitele 2024"
               value={formData.label}
               onChange={(e) =>
                 setFormData({ ...formData, label: e.target.value })
@@ -256,8 +256,8 @@ export function FormsManager() {
             />
 
             <Textarea
-              label="Description"
-              placeholder="Describe the purpose of this form"
+              label="Popis"
+              placeholder="Popište účel tohoto formuláře"
               value={formData.description}
               onChange={(e) =>
                 setFormData({ ...formData, description: e.target.value })
@@ -273,13 +273,13 @@ export function FormsManager() {
                   resetForm();
                 }}
               >
-                Cancel
+                Zrušit
               </Button>
               <Button
                 type="submit"
                 loading={createMutation.isPending || updateMutation.isPending}
               >
-                {editingId ? "Update" : "Create"}
+                {editingId ? "Aktualizovat" : "Vytvořit"}
               </Button>
             </Group>
           </Stack>

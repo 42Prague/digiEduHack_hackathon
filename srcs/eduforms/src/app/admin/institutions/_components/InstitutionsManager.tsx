@@ -69,7 +69,7 @@ export function InstitutionsManager() {
   };
 
   const handleDelete = (id: string) => {
-    if (confirm("Are you sure you want to delete this institution?")) {
+    if (confirm("Opravdu chcete smazat tuto instituci?")) {
       deleteMutation.mutate({ id });
     }
   };
@@ -91,7 +91,7 @@ export function InstitutionsManager() {
       <Center h={400}>
         <Stack align="center" gap="md">
           <Loader size="lg" />
-          <Text c="dimmed">Loading institutions...</Text>
+          <Text c="dimmed">Načítání institucí...</Text>
         </Stack>
       </Center>
     );
@@ -102,13 +102,13 @@ export function InstitutionsManager() {
       {/* Header */}
       <Group justify="space-between" align="flex-start">
         <div>
-          <Title order={1}>Institution Management</Title>
+          <Title order={1}>Správa institucí</Title>
           <Text c="dimmed" mt="xs">
-            Manage educational institutions (schools) in the Czech Republic
+            Správa vzdělávacích institucí (škol) v České republice
           </Text>
         </div>
         <Button leftSection={<IconPlus size={16} />} onClick={handleOpenCreate}>
-          Create New Institution
+          Vytvořit novou instituci
         </Button>
       </Group>
 
@@ -116,14 +116,14 @@ export function InstitutionsManager() {
       <Modal
         opened={opened}
         onClose={handleClose}
-        title={<Title order={3}>{editingId ? "Edit Institution" : "Create New Institution"}</Title>}
+        title={<Title order={3}>{editingId ? "Upravit instituci" : "Vytvořit novou instituci"}</Title>}
         size="lg"
       >
         <form onSubmit={handleSubmit}>
           <Stack gap="md">
             <TextInput
-              label="Institution Name"
-              placeholder="e.g., Základní škola Praha 1"
+              label="Název instituce"
+              placeholder="např. Základní škola Praha 1"
               value={formData.label}
               onChange={(e) => setFormData({ ...formData, label: e.currentTarget.value })}
               required
@@ -131,11 +131,11 @@ export function InstitutionsManager() {
             />
             
             <TextInput
-              label="IČO (Business ID)"
-              placeholder="e.g., 12345678"
+              label="IČO"
+              placeholder="např. 12345678"
               value={formData.ico}
               onChange={(e) => setFormData({ ...formData, ico: e.currentTarget.value })}
-              description="Czech business identification number"
+              description="Identifikační číslo organizace"
               required
               withAsterisk
             />
@@ -143,7 +143,7 @@ export function InstitutionsManager() {
             {(createMutation.error || updateMutation.error) && (
               <Alert
                 icon={<IconAlertCircle size={16} />}
-                title="Error"
+                title="Chyba"
                 color="red"
                 variant="light"
               >
@@ -153,13 +153,13 @@ export function InstitutionsManager() {
 
             <Group justify="flex-end" mt="md">
               <Button variant="subtle" onClick={handleClose}>
-                Cancel
+                Zrušit
               </Button>
               <Button
                 type="submit"
                 loading={createMutation.isPending || updateMutation.isPending}
               >
-                {editingId ? "Update Institution" : "Create Institution"}
+                {editingId ? "Aktualizovat instituci" : "Vytvořit instituci"}
               </Button>
             </Group>
           </Stack>
@@ -169,9 +169,9 @@ export function InstitutionsManager() {
       {/* Institutions List */}
       <Paper shadow="sm" p="xl" radius="md">
         <Group justify="space-between" mb="lg">
-          <Title order={2}>All Institutions</Title>
+          <Title order={2}>Všechny instituce</Title>
           <Badge size="lg" variant="light">
-            {institutions?.length ?? 0} total
+            {institutions?.length ?? 0} celkem
           </Badge>
         </Group>
 
@@ -179,10 +179,10 @@ export function InstitutionsManager() {
           <Center h={200}>
             <Stack align="center" gap="xs">
               <Text c="dimmed" size="lg">
-                No institutions found
+                Nebyly nalezeny žádné instituce
               </Text>
               <Text c="dimmed" size="sm">
-                Create your first institution to get started
+                Vytvořte první instituci pro začátek
               </Text>
             </Stack>
           </Center>
@@ -191,10 +191,10 @@ export function InstitutionsManager() {
             <Table striped highlightOnHover>
               <Table.Thead>
                 <Table.Tr>
-                  <Table.Th>Name</Table.Th>
+                  <Table.Th>Název</Table.Th>
                   <Table.Th>IČO</Table.Th>
-                  <Table.Th>Created</Table.Th>
-                  <Table.Th style={{ textAlign: "right" }}>Actions</Table.Th>
+                  <Table.Th>Vytvořeno</Table.Th>
+                  <Table.Th style={{ textAlign: "right" }}>Akce</Table.Th>
                 </Table.Tr>
               </Table.Thead>
               <Table.Tbody>
@@ -211,7 +211,7 @@ export function InstitutionsManager() {
                           variant="subtle"
                           color="blue"
                           onClick={() => handleEdit(inst)}
-                          title="Edit"
+                          title="Upravit"
                         >
                           <IconPencil size={18} />
                         </ActionIcon>
@@ -220,7 +220,7 @@ export function InstitutionsManager() {
                           color="red"
                           onClick={() => handleDelete(inst.id)}
                           loading={deleteMutation.isPending}
-                          title="Delete"
+                          title="Smazat"
                         >
                           <IconTrash size={18} />
                         </ActionIcon>

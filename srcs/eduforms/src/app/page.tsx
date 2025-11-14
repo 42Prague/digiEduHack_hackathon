@@ -220,7 +220,7 @@ export default function Home() {
               onClick={toggleMode}
               disabled={isLoading}
             >
-              {isAdminMode ? 'Teacher Login' : 'Admin'}
+              {isAdminMode ? 'Přihlášení pro učitele' : 'Admin'}
             </Button>
           </Group>
         </Stack>

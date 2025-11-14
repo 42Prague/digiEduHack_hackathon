@@ -119,14 +119,14 @@ export function UsersManager() {
   };
 
   const handleDelete = (id: string) => {
-    if (confirm("Are you sure you want to delete this user?")) {
+    if (confirm("Opravdu chcete smazat tohoto uživatele?")) {
       deleteMutation.mutate({ userId: id });
     }
   };
 
   const handleOpenCreate = () => {
     if (!selectedInstitution) {
-      alert("Please select an institution first");
+      alert("Nejprve prosím vyberte instituci");
       return;
     }
     setEditingId(null);
@@ -149,7 +149,7 @@ export function UsersManager() {
       <Center h={400}>
         <Stack align="center" gap="md">
           <Loader size="lg" />
-          <Text c="dimmed">Loading institutions...</Text>
+          <Text c="dimmed">Načítání institucí...</Text>
         </Stack>
       </Center>
     );
@@ -160,9 +160,9 @@ export function UsersManager() {
       {/* Header */}
       <Group justify="space-between" align="flex-start">
         <div>
-          <Title order={1}>User Management</Title>
+          <Title order={1}>Správa uživatelů</Title>
           <Text c="dimmed" mt="xs">
-            Create and manage user accounts for institutions
+            Vytváření a správa uživatelských účtů pro instituce
           </Text>
         </div>
       </Group>
@@ -171,13 +171,13 @@ export function UsersManager() {
       <Card shadow="sm" padding="lg" radius="md" withBorder>
         <Group mb="md">
           <IconSchool size={24} style={{ color: "var(--mantine-color-blue-6)" }} />
-          <Title order={3}>Select Institution</Title>
+          <Title order={3}>Výběr instituce</Title>
         </Group>
         <Text size="sm" c="dimmed" mb="md">
-          Choose an institution to view and manage its users
+          Vyberte instituci pro zobrazení a správu jejích uživatelů
         </Text>
         <Select
-          placeholder="Select an institution..."
+          placeholder="Vyberte instituci..."
           data={
             institutions?.map((inst) => ({
               value: inst.id,
@@ -201,7 +201,7 @@ export function UsersManager() {
             onClick={handleOpenCreate}
             size="md"
           >
-            Add New User
+            Přidat nového uživatele
           </Button>
         </Group>
       )}
@@ -213,7 +213,7 @@ export function UsersManager() {
         title={
           <Group gap="sm">
             <IconUserPlus size={20} />
-            <Title order={3}>{editingId ? "Edit User" : "Create New User"}</Title>
+            <Title order={3}>{editingId ? "Upravit uživatele" : "Vytvořit nového uživatele"}</Title>
           </Group>
         }
         size="lg"
@@ -223,7 +223,7 @@ export function UsersManager() {
             {selectedInstitutionData && (
               <Alert
                 icon={<IconSchool size={16} />}
-                title="Institution"
+                title="Instituce"
                 color="blue"
                 variant="light"
               >
@@ -232,8 +232,8 @@ export function UsersManager() {
             )}
 
             <TextInput
-              label="Full Name"
-              placeholder="e.g., Jan Novák"
+              label="Celé jméno"
+              placeholder="např. Jan Novák"
               value={formData.name}
               onChange={(e) => setFormData({ ...formData, name: e.currentTarget.value })}
               required
@@ -242,8 +242,8 @@ export function UsersManager() {
             />
 
             <TextInput
-              label="Email Address"
-              placeholder="e.g., jan.novak@example.com"
+              label="E-mailová adresa"
+              placeholder="např. jan.novak@example.com"
               type="email"
               value={formData.email}
               onChange={(e) => setFormData({ ...formData, email: e.currentTarget.value })}
@@ -254,11 +254,11 @@ export function UsersManager() {
 
             {!editingId && (
               <PasswordInput
-                label="Password"
-                placeholder="Enter password"
+                label="Heslo"
+                placeholder="Zadejte heslo"
                 value={formData.password}
                 onChange={(e) => setFormData({ ...formData, password: e.currentTarget.value })}
-                description="Minimum 8 characters"
+                description="Minimálně 8 znaků"
                 required
                 withAsterisk
               />
@@ -266,11 +266,11 @@ export function UsersManager() {
 
             <Select
               label="Role"
-              placeholder="Select role"
+              placeholder="Vyberte roli"
               data={[
-                { value: "user", label: "User" },
-                { value: "teacher", label: "Teacher" },
-                { value: "admin", label: "Admin" },
+                { value: "user", label: "Uživatel" },
+                { value: "teacher", label: "Učitel" },
+                { value: "admin", label: "Administrátor" },
               ]}
               value={formData.role}
               onChange={(value) => setFormData({ ...formData, role: value ?? "user" })}
@@ -282,7 +282,7 @@ export function UsersManager() {
             {(createMutation.error || updateMutation.error) && (
               <Alert
                 icon={<IconAlertCircle size={16} />}
-                title="Error"
+                title="Chyba"
                 color="red"
                 variant="light"
               >
@@ -294,13 +294,13 @@ export function UsersManager() {
 
             <Group justify="flex-end" mt="md">
               <Button variant="subtle" onClick={handleClose}>
-                Cancel
+                Zrušit
               </Button>
               <Button
                 type="submit"
                 loading={createMutation.isPending || updateMutation.isPending}
               >
-                {editingId ? "Update User" : "Create User"}
+                {editingId ? "Aktualizovat uživatele" : "Vytvořit uživatele"}
               </Button>
             </Group>
           </Stack>
@@ -313,10 +313,10 @@ export function UsersManager() {
           <Group justify="space-between" mb="lg">
             <Group>
               <IconUsers size={24} style={{ color: "var(--mantine-color-blue-6)" }} />
-              <Title order={2}>Users</Title>
+              <Title order={2}>Uživatelé</Title>
             </Group>
             <Badge size="lg" variant="light">
-              {users?.length ?? 0} {users?.length === 1 ? "user" : "users"}
+              {users?.length ?? 0} {users?.length === 1 ? "uživatel" : users?.length < 5 ? "uživatelé" : "uživatelů"}
             </Badge>
           </Group>
 
@@ -324,7 +324,7 @@ export function UsersManager() {
             <Center h={200}>
               <Stack align="center" gap="md">
                 <Loader size="lg" />
-                <Text c="dimmed">Loading users...</Text>
+                <Text c="dimmed">Načítání uživatelů...</Text>
               </Stack>
             </Center>
           ) : !users || users.length === 0 ? (
@@ -332,10 +332,10 @@ export function UsersManager() {
               <Stack align="center" gap="xs">
                 <IconUsers size={48} style={{ opacity: 0.3 }} />
                 <Text c="dimmed" size="lg">
-                  No users found
+                  Nebyli nalezeni žádní uživatelé
                 </Text>
                 <Text c="dimmed" size="sm">
-                  Create your first user for this institution
+                  Vytvořte prvního uživatele pro tuto instituci
                 </Text>
               </Stack>
             </Center>
@@ -344,12 +344,12 @@ export function UsersManager() {
               <Table striped highlightOnHover>
                 <Table.Thead>
                   <Table.Tr>
-                    <Table.Th>Name</Table.Th>
-                    <Table.Th>Email</Table.Th>
+                    <Table.Th>Jméno</Table.Th>
+                    <Table.Th>E-mail</Table.Th>
                     <Table.Th>Role</Table.Th>
-                    <Table.Th>Status</Table.Th>
-                    <Table.Th>Created</Table.Th>
-                    <Table.Th style={{ textAlign: "right" }}>Actions</Table.Th>
+                    <Table.Th>Stav</Table.Th>
+                    <Table.Th>Vytvořeno</Table.Th>
+                    <Table.Th style={{ textAlign: "right" }}>Akce</Table.Th>
                   </Table.Tr>
                 </Table.Thead>
                 <Table.Tbody>
@@ -374,15 +374,15 @@ export function UsersManager() {
                       <Table.Td>
                         {user.banned ? (
                           <Badge color="red" variant="filled">
-                            Banned
+                            Blokován
                           </Badge>
                         ) : user.emailVerified ? (
                           <Badge color="green" variant="light">
-                            Verified
+                            Ověřen
                           </Badge>
                         ) : (
                           <Badge color="yellow" variant="light">
-                            Unverified
+                            Neověřen
                           </Badge>
                         )}
                       </Table.Td>
@@ -395,7 +395,7 @@ export function UsersManager() {
                             variant="subtle"
                             color="blue"
                             onClick={() => handleEdit(user)}
-                            title="Edit"
+                            title="Upravit"
                           >
                             <IconPencil size={18} />
                           </ActionIcon>
@@ -404,7 +404,7 @@ export function UsersManager() {
                             color="red"
                             onClick={() => handleDelete(user.id)}
                             loading={deleteMutation.isPending}
-                            title="Delete"
+                            title="Smazat"
                           >
                             <IconTrash size={18} />
                           </ActionIcon>
@@ -423,10 +423,10 @@ export function UsersManager() {
             <Stack align="center" gap="md">
               <IconSchool size={64} style={{ opacity: 0.3 }} />
               <Title order={3} c="dimmed">
-                Select an Institution
+                Vyberte instituci
               </Title>
               <Text c="dimmed" size="sm" ta="center" maw={400}>
-                Please select an institution from the dropdown above to view and manage its users
+                Vyberte prosím instituci z rozbalovací nabídky výše pro zobrazení a správu jejích uživatelů
               </Text>
             </Stack>
           </Center>
