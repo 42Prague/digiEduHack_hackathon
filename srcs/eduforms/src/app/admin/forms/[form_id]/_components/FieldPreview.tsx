@@ -147,7 +147,7 @@ export function FieldPreview({ config }: FieldPreviewProps) {
             min={Math.min(...config.options)}
             max={Math.max(...config.options)}
             marks={config.options.map((val) => ({ value: val, label: val.toString() }))}
-            step={null}
+            step={undefined}
             disabled
           />
         </Stack>

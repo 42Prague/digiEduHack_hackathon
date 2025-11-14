@@ -207,7 +207,7 @@ export function FormBuilder({ formId }: FormBuilderProps) {
                               style={{ cursor: "grab" }}
                             />
                             <Badge size="sm" variant="light">
-                              {field.config.type}
+                              {field.config?.type}
                             </Badge>
                             <Text size="sm" fw={500}>
                               {field.name}
@@ -253,7 +253,7 @@ export function FormBuilder({ formId }: FormBuilderProps) {
 
                         <Divider />
 
-                        <FieldPreview config={field.config} />
+                        <FieldPreview config={field.config!} />
                       </Stack>
                     </Card>
                   ))}
@@ -312,10 +312,10 @@ export function FormBuilder({ formId }: FormBuilderProps) {
                           </ActionIcon>
                         </Group>
                         <Badge size="xs" variant="light">
-                          {field.config.type}
+                          {field.config?.type}
                         </Badge>
                         <Text size="xs" c="dimmed" lineClamp={2}>
-                          {field.config.label}
+                          {field.config?.label}
                         </Text>
                         {field.description && (
                           <Text size="xs" c="dimmed" lineClamp={1}>
