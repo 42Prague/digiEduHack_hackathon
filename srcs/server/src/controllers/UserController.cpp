@@ -33,7 +33,7 @@ void digiedu::controllers::Users::getAll(
     dao::User::execGetAllSqlAsync(
         drogon::app().getFastDbClient(),
         [callback] (const drogon::orm::Result& r) {
-            Json::Value root;
+            Json::Value root(Json::arrayValue);
             for (size_t i = 0; i < r.size(); ++i)
                 root.insert(i, dao::User::getRowToJson(r[i]));
             utils::jsonResponse(callback, std::move(root), drogon::k200OK);
@@ -59,6 +59,29 @@ void digiedu::controllers::Users::get(
                 return;
             }
             utils::jsonResponse(callback, dao::User::getRowToJson(r[0]), drogon::k200OK);
+        },
+        [callback] (const drogon::orm::DrogonDbException& e) {
+            utils::emptyResponse(callback, drogon::k500InternalServerError);
+            std::cerr << e.base().what() << std::endl;
+        }
+    );
+}
+
+void digiedu::controllers::Users::login(
+    const drogon::HttpRequestPtr& request,
+    std::function<void(const drogon::HttpResponsePtr&)>&& callback
+) {
+    auto user = dao::User::fromLoginRequest(request);
+    dao::User::execLoginSqlAsync(
+        drogon::app().getFastDbClient(),
+        user.email,
+        [callback, user] (const drogon::orm::Result& r) mutable {
+            if (r.empty()) {
+                utils::emptyResponse(callback, drogon::k404NotFound);
+                return;
+            }
+            user.hashedPassword = r[0]["password_hash"].as<std::string>();
+            utils::emptyResponse(callback, user.checkPassword() ? drogon::k200OK : drogon::k401Unauthorized);
         },
         [callback] (const drogon::orm::DrogonDbException& e) {
             utils::emptyResponse(callback, drogon::k500InternalServerError);

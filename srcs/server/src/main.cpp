@@ -1,4 +1,5 @@
 #include "controllers/UserController.hpp"
+#include "controllers/RegionController.hpp"
 
 int main() {
   const char* hostPtr = std::getenv("SERVER_DB_HOST");
@@ -27,6 +28,7 @@ int main() {
   // Register controllers
   LOG_TRACE << "--- CONTROLLERS REGISTRATION BEGIN ---";
   digiedu::controllers::Users::registerController();
+  digiedu::controllers::Regions::registerController();
   LOG_TRACE << "--- CONTROLLERS REGISTRATION END ---";
 
   // Register listeners

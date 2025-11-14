@@ -12,35 +12,23 @@ CREATE TABLE user_account(
 ALTER TABLE user_account
     ADD CONSTRAINT uc_user_account_email UNIQUE (email);
 
--- CREATE TABLE region(
---     id UUID NOT NULL,
---     name TEXT,
---     legal_address TEXT,
---     CONSTRAINT pk_region PRIMARY KEY (id)
--- );
--- CREATE TABLE region_main_contact (
---     user_id UUID NOT NULL REFERENCES user_account (id),
---     region_id UUID NOT NULL REFERENCES region (id),
---     PRIMARY KEY (user_id, region_id)
--- );
+CREATE TABLE region(
+    id UUID NOT NULL,
+    name TEXT,
+    legal_address TEXT,
+    main_contact UUID REFERENCES user_account(id),
+    CONSTRAINT pk_region PRIMARY KEY (id)
+);
 
--- CREATE TABLE school(
---     id UUID NOT NULL,
---     name TEXT,
---     legal_id TEXT,
---     address TEXT,
---     CONSTRAINT pk_school PRIMARY KEY (id)
--- );
--- CREATE TABLE school_main_contact (
---     user_id UUID NOT NULL REFERENCES user_account (id),
---     school_id UUID NOT NULL REFERENCES school (id),
---     PRIMARY KEY (user_id, school_id)
--- );
--- CREATE TABLE school_region (
---     school_id UUID NOT NULL REFERENCES school (id),
---     region_id UUID NOT NULL REFERENCES region (id),
---     PRIMARY KEY (school_id, region_id)
--- );
+CREATE TABLE school(
+    id UUID NOT NULL,
+    name TEXT,
+    legal_id TEXT,
+    address TEXT,
+    main_contact UUID REFERENCES user_account(id),
+    region UUID REFERENCES region(id),
+    CONSTRAINT pk_school PRIMARY KEY (id)
+);
 
 CREATE TABLE fancy_session(
     id UUID NOT NULL,

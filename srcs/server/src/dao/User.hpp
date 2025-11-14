@@ -16,6 +16,7 @@ namespace digiedu::dao {
         static User fromCreateRequest(const drogon::HttpRequestPtr& request) {
             const auto& json = request->getJsonObject();
             return {
+                "",
                 (*json)["name"].asString(),
                 (*json)["surname"].asString(),
                 (*json)["email"].asString(),
@@ -26,8 +27,24 @@ namespace digiedu::dao {
             };
         }
 
+        static User fromLoginRequest(const drogon::HttpRequestPtr& request) {
+            const auto& json = request->getJsonObject();
+            return {
+                "",
+                "",
+                "",
+                (*json)["email"].asString(),
+                "",
+                (*json)["password"].asString()
+            };
+        }
+
         void hashPassword() {
             hashedPassword = BCrypt::generateHash(password);
+        }
+
+        bool checkPassword() const {
+            return BCrypt::validatePassword(password, hashedPassword);
         }
 
         void execCreateSqlAsync(
@@ -70,8 +87,22 @@ namespace digiedu::dao {
             );
         }
 
+        static void execLoginSqlAsync(
+            const drogon::orm::DbClientPtr& t,
+            const std::string& email,
+            drogon::orm::ResultCallback resClb,
+            drogon::orm::ExceptionCallback exClb
+        ) {
+            t->execSqlAsync(
+                "SELECT password_hash FROM user_account WHERE email=$1",
+                std::move(resClb),
+                std::move(exClb),
+                email
+            );
+        }
+
         static Json::Value getRowToJson(const drogon::orm::Row& r) {
-            Json::Value root;
+            Json::Value root(Json::objectValue);
             root["id"] = r["id"].as<std::string>();
             root["name"] = r["name"].as<std::string>();
             root["surname"] = r["surname"].as<std::string>();
