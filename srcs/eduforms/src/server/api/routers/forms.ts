@@ -601,4 +601,227 @@ export const formsRouter = createTRPCRouter({
         return newData[0];
       }
     }),
+
+  // ============================================================
+  // FORM ASSIGNMENT (Admin)
+  // ============================================================
+
+  // Assign a form to a single user (admin only)
+  assignFormToUser: adminProcedure
+    .input(
+      z.object({
+        formId: z.string().uuid(),
+        userId: z.string(),
+      })
+    )
+    .mutation(async ({ ctx, input }) => {
+      // Verify form exists
+      const formExists = await ctx.db
+        .select()
+        .from(form)
+        .where(eq(form.id, input.formId))
+        .limit(1);
+
+      if (!formExists[0]) {
+        throw new Error("Form not found");
+      }
+
+      // Verify user exists
+      const userExists = await ctx.db
+        .select()
+        .from(user)
+        .where(eq(user.id, input.userId))
+        .limit(1);
+
+      if (!userExists[0]) {
+        throw new Error("User not found");
+      }
+
+      // Create user_form entry with "todo" status
+      // Multiple assignments of the same form to the same user are now allowed
+      const newUserForm = await ctx.db
+        .insert(user_form)
+        .values({
+          form_id: input.formId,
+          user_id: input.userId,
+          submission_status: "todo",
+          assigned_by: ctx.session.user.id,
+        })
+        .returning();
+
+      return newUserForm[0];
+    }),
+
+  // Assign a form to all users in an institution (admin only)
+  assignFormToInstitution: adminProcedure
+    .input(
+      z.object({
+        formId: z.string().uuid(),
+        institutionId: z.string().uuid(),
+        allowDuplicates: z.boolean().optional().default(false),
+      })
+    )
+    .mutation(async ({ ctx, input }) => {
+      // Verify form exists
+      const formExists = await ctx.db
+        .select()
+        .from(form)
+        .where(eq(form.id, input.formId))
+        .limit(1);
+
+      if (!formExists[0]) {
+        throw new Error("Form not found");
+      }
+
+      // Get all users in the institution
+      const institutionUsers = await ctx.db
+        .select()
+        .from(user)
+        .where(eq(user.institution, input.institutionId));
+
+      if (institutionUsers.length === 0) {
+        throw new Error("No users found in this institution");
+      }
+
+      let usersToAssign = institutionUsers;
+
+      // If duplicates are not allowed, filter out users who already have this form assigned
+      if (!input.allowDuplicates) {
+        const existingAssignments = await ctx.db
+          .select()
+          .from(user_form)
+          .where(eq(user_form.form_id, input.formId));
+
+        const existingUserIds = new Set(
+          existingAssignments.map((a) => a.user_id)
+        );
+
+        usersToAssign = institutionUsers.filter(
+          (u) => !existingUserIds.has(u.id)
+        );
+
+        if (usersToAssign.length === 0) {
+          return {
+            assigned: 0,
+            skipped: institutionUsers.length,
+            message: "All users in this institution already have this form assigned",
+          };
+        }
+      }
+
+      // Create user_form entries for all users
+      const assignments = usersToAssign.map((u) => ({
+        form_id: input.formId,
+        user_id: u.id,
+        submission_status: "todo" as const,
+        assigned_by: ctx.session.user.id,
+      }));
+
+      const newUserForms = await ctx.db
+        .insert(user_form)
+        .values(assignments)
+        .returning();
+
+      return {
+        assigned: newUserForms.length,
+        skipped: institutionUsers.length - usersToAssign.length,
+        message: `Successfully assigned form to ${newUserForms.length} user(s)`,
+      };
+    }),
+
+  // ============================================================
+  // RESULTS & ANALYTICS (Admin)
+  // ============================================================
+
+  // Get all forms with submission counts
+  listFormsWithSubmissionCounts: adminProcedure.query(async ({ ctx }) => {
+    const forms = await ctx.db
+      .select()
+      .from(form)
+      .orderBy(desc(form.createdAt));
+
+    const formsWithCounts = await Promise.all(
+      forms.map(async (formItem) => {
+        const submissions = await ctx.db
+          .select()
+          .from(form_field_data)
+          .where(
+            and(
+              eq(form_field_data.form_id, formItem.id),
+              eq(form_field_data.state, "submitted")
+            )
+          );
+
+        return {
+          ...formItem,
+          submissionCount: submissions.length,
+        };
+      })
+    );
+
+    return formsWithCounts;
+  }),
+
+  // Get all submissions for a specific form
+  getFormSubmissions: adminProcedure
+    .input(z.object({ formId: z.string().uuid() }))
+    .query(async ({ ctx, input }) => {
+      // Get form with fields
+      const formData = await ctx.db
+        .select()
+        .from(form)
+        .where(eq(form.id, input.formId))
+        .limit(1);
+
+      if (!formData[0]) {
+        throw new Error("Form not found");
+      }
+
+      // Get fields for this form
+      const formFields = await ctx.db
+        .select({
+          field: field,
+          order: form_field.order,
+        })
+        .from(form_field)
+        .innerJoin(field, eq(form_field.field_id, field.id))
+        .where(eq(form_field.form_id, input.formId))
+        .orderBy(form_field.order);
+
+      // Get all submitted form data
+      const submissions = await ctx.db
+        .select({
+          submission: form_field_data,
+          user: user,
+        })
+        .from(form_field_data)
+        .innerJoin(user_form, eq(form_field_data.user_form_id, user_form.id))
+        .innerJoin(user, eq(user_form.user_id, user.id))
+        .where(
+          and(
+            eq(form_field_data.form_id, input.formId),
+            eq(form_field_data.state, "submitted")
+          )
+        )
+        .orderBy(desc(form_field_data.createdAt));
+
+      return {
+        form: formData[0],
+        fields: formFields.map((f) => ({
+          ...f.field,
+          order: f.order,
+        })),
+        submissions: submissions.map((s) => ({
+          id: s.submission.id,
+          data: s.submission.data,
+          createdAt: s.submission.createdAt,
+          updatedAt: s.submission.updatedAt,
+          user: {
+            id: s.user.id,
+            name: s.user.name,
+            email: s.user.email,
+          },
+        })),
+      };
+    }),
 });

@@ -134,7 +134,9 @@ export const user_form = pgTable("user_form", {
   id: uuid("id").primaryKey().defaultRandom(),
   user_id: text().references(()=>user.id).notNull(),
   form_id: uuid().references(()=>form.id).notNull(),
-  submission_status: formState()
+  submission_status: formState(),
+  assigned_at: timestamp("assigned_at").defaultNow().notNull(),
+  assigned_by: text("assigned_by"), // Optional: track who assigned the form
 });
 
 export type FieldConfigType = 

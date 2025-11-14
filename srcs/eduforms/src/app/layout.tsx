@@ -1,5 +1,6 @@
 import "~/styles/globals.css";
 import '@mantine/core/styles.css';
+import '@mantine/notifications/styles.css';
 
 import { type Metadata } from "next";
 import { Geist } from "next/font/google";
@@ -7,6 +8,7 @@ import { Geist } from "next/font/google";
 import { TRPCReactProvider } from "~/trpc/react";
 
 import { ColorSchemeScript, MantineProvider, mantineHtmlProps } from '@mantine/core';
+import { Notifications } from '@mantine/notifications';
 
 export const metadata: Metadata = {
   title: "EDU Změna Formuláře",
@@ -28,7 +30,10 @@ export default function RootLayout({
         <ColorSchemeScript />
       </head>
       <body>
-        <MantineProvider><TRPCReactProvider>{children}</TRPCReactProvider></MantineProvider>
+        <MantineProvider>
+          <Notifications />
+          <TRPCReactProvider>{children}</TRPCReactProvider>
+        </MantineProvider>
       </body>
     </html>
   );

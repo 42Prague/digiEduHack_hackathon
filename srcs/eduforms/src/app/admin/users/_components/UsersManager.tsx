@@ -316,7 +316,7 @@ export function UsersManager() {
               <Title order={2}>Uživatelé</Title>
             </Group>
             <Badge size="lg" variant="light">
-              {users?.length ?? 0} {users?.length === 1 ? "uživatel" : users?.length < 5 ? "uživatelé" : "uživatelů"}
+              {users?.length ?? 0} {(users?.length ?? 0) === 1 ? "uživatel" : (users?.length ?? 0) < 5 ? "uživatelé" : "uživatelů"}
             </Badge>
           </Group>
 

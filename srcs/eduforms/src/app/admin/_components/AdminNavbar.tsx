@@ -9,6 +9,7 @@ import {
   IconLogout,
   IconSettings,
   IconForms,
+  IconChartBar,
 } from "@tabler/icons-react";
 import { Stack, NavLink, Avatar, Text, Group, Badge, Divider, Paper } from "@mantine/core";
 import { authClient } from "~/server/better-auth/client";
@@ -44,6 +45,7 @@ export function AdminNavbar() {
     { label: "Uživatelé", icon: IconUsers, href: "/admin/users" },
     { label: "Instituce", icon: IconBuilding, href: "/admin/institutions" },
     { label: "Formuláře", icon: IconForms, href: "/admin/forms" },
+    { label: "Výsledky", icon: IconChartBar, href: "/admin/results" },
   ];
 
   return (
@@ -62,27 +64,7 @@ export function AdminNavbar() {
 
         <Divider />
 
-        {/* User Profile */}
-        {session?.user && (
-          <Paper p="md" withBorder>
-            <Group gap="sm" mb="sm">
-              <Avatar color="teal" radius="xl">
-                {session.user.name?.[0]?.toUpperCase() ?? "A"}
-              </Avatar>
-              <div style={{ flex: 1 }}>
-                <Text size="sm" fw={500} lineClamp={1}>
-                  {session.user.name ?? "Administrátor"}
-                </Text>
-                <Text size="xs" c="dimmed" lineClamp={1}>
-                  {session.user.email}
-                </Text>
-              </div>
-            </Group>
-            <Badge color="violet" variant="light" fullWidth>
-              Administrátor
-            </Badge>
-          </Paper>
-        )}
+        
 
         {/* Navigation Links */}
         <Stack gap={4} style={{ flex: 1 }}>
@@ -108,14 +90,28 @@ export function AdminNavbar() {
 
           <Divider my="md" />
 
-          <Text size="xs" fw={600} c="dimmed" tt="uppercase" px="xs" mb="xs">
-            Systém
-          </Text>
-          <NavLink
-            label="Nastavení"
-            leftSection={<IconSettings size={20} stroke={1.5} />}
-          />
         </Stack>
+          {/* User Profile */}
+        {session?.user && (
+          <Paper p="md" withBorder>
+            <Group gap="sm" mb="sm">
+              <Avatar color="teal" radius="xl">
+                {session.user.name?.[0]?.toUpperCase() ?? "A"}
+              </Avatar>
+              <div style={{ flex: 1 }}>
+                <Text size="sm" fw={500} lineClamp={1}>
+                  {session.user.name ?? "Administrátor"}
+                </Text>
+                <Text size="xs" c="dimmed" lineClamp={1}>
+                  {session.user.email}
+                </Text>
+              </div>
+            </Group>
+            <Badge color="violet" variant="light" fullWidth>
+              Administrátor
+            </Badge>
+          </Paper>
+        )}
 
         {/* Footer with Sign Out */}
         <div>

@@ -1,7 +1,7 @@
 import { redirect } from "next/navigation";
 import { auth } from "~/server/better-auth";
 import { headers } from "next/headers";
-import { UsersManager } from "./_components/UsersManager";
+import { UsersPageClient } from "./_components/UsersPageClient";
 
 export default async function UsersPage() {
   // Get session on the server side (Node.js runtime - can access database)
@@ -14,6 +14,6 @@ export default async function UsersPage() {
     redirect("/");
   }
 
-  return <UsersManager />;
+  return <UsersPageClient />;
 }
 
