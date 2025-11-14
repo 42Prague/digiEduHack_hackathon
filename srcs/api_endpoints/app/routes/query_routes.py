@@ -16,7 +16,8 @@ def query():
     if not q:
         return jsonify({"error": "Missing 'query' in body"}), 400
     top_k = int(body.get("top_k", 3))
-    retrieved = retrieve(q, top_k=top_k)
+    regions = body.get("regions", None)
+    retrieved = retrieve(q, regions = regions, top_k=top_k, )
     context_chunks = [r["chunk"] for r in retrieved]
     if not context_chunks:
         # no context found, still call model but warn or return "no context"

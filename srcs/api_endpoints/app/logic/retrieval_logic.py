@@ -32,15 +32,44 @@ def cosine_sim(a: Dict[str,int], b: Dict[str,int]) -> float:
         return 0.0
     return dot_product(a,b) / (mag_a * mag_b)
 
-def retrieve(query: str, top_k: int = 3) -> List[dict]:
+
+import json
+
+def retrieve(query: str, regions: list, top_k: int = 3) -> list:
     q_tokens = token_counts(query)
     store = VectorStore()
     rows = store.all_chunks()
     scored = []
+
     for r in rows:
+        metadata = r.get("metadata", {})
+
+        # Parse metadata if it's a JSON string
+        if isinstance(metadata, str):
+            try:
+                metadata = json.loads(metadata)
+            except json.JSONDecodeError:
+                metadata = {}
+
+        chunk_regions = metadata.get("regions", [])
+
+        # Filter by regions if any are specified
+        if regions:
+            # Make comparison case-insensitive
+            if not any(reg.lower() in [c.lower() for c in chunk_regions] for reg in regions):
+                continue  # skip this chunk if no region matches
+
+        # Compute similarity
         score = cosine_sim(q_tokens, r["tokens"])
-        scored.append((score, r))
+        scored.append((score, r, metadata))  # keep metadata for correct return
+
+    # Sort by score descending
     scored.sort(key=lambda x: x[0], reverse=True)
-    top = [r for s,r in scored[:top_k] if s > 0]
-    # return with scores if you want
-    return [{"id": r["id"], "chunk": r["chunk"], "metadata": r["metadata"]} for r in top]
+
+    # Take top_k with positive score
+    top = [(s, r, m) for s, r, m in scored[:top_k] if s > 0]
+
+    # Return properly
+    return [{"id": r["id"], "chunk": r["chunk"], "metadata": m} for s, r, m in top]
+
+
