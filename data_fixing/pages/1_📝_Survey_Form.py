@@ -74,6 +74,71 @@ def main():
     # Get database connection
     engine = get_database_connection()
     
+    # ============================================================
+    # PRE-FORM: REGION & SCHOOL SELECTION (DYNAMIC, OUTSIDE FORM)
+    # ============================================================
+    st.markdown('<div class="section-header"><h2>📍 Step 1: Select Your Location</h2></div>', unsafe_allow_html=True)
+    st.markdown("*Please select your region and school first (these selections update dynamically)*")
+    
+    col_region, col_school = st.columns(2)
+    
+    with col_region:
+        region = st.selectbox(
+            "Region *",
+            options=[""] + get_active_regions(engine),
+            help="Geographic or administrative region",
+            key="region_selector"
+        )
+    
+    # Initialize school variables
+    school_id = ""
+    school_name = ""
+    
+    with col_school:
+        if region:
+            schools = get_active_schools(engine, region_id=region)
+            
+            # Debug: Show how many schools found
+            st.caption(f"🔍 Found {len(schools) if schools else 0} schools in {region}")
+            
+            if schools and len(schools) > 0:
+                # Create dropdown options showing both ID and name
+                school_options = [""] + [f"{s['school_id']} - {s['school_name']}" for s in schools]
+                
+                selected_school = st.selectbox(
+                    "School *",
+                    options=school_options,
+                    help="Select your school from the list",
+                    key="school_selector"
+                )
+                
+                # Extract school_id and school_name from selection
+                if selected_school:
+                    school_id = selected_school.split(" - ")[0]
+                    school_name = selected_school.split(" - ", 1)[1]
+                else:
+                    school_id = ""
+                    school_name = ""
+            else:
+                st.warning(f"⚠️ No schools found in {region}. Please check the demographics Excel file.")
+                school_id = ""
+                school_name = ""
+        else:
+            # No region selected yet
+            st.info("👈 Please select a region first")
+            school_id = ""
+            school_name = ""
+    
+    st.markdown("---")
+    
+    # Display selected location if available
+    if region and school_id:
+        st.success(f"✅ **Selected Location:** {region} → {school_id} - {school_name}")
+    elif region:
+        st.info(f"⏳ **Selected Region:** {region} → Please select a school above")
+    else:
+        st.info("⏳ Please select your region and school above to continue")
+    
     # Create form
     with st.form("teacher_survey_form"):
         
@@ -82,12 +147,9 @@ def main():
         # ============================================================
         
         st.markdown('<div class="section-header"><h2>📋 Section A: Background Information</h2></div>', unsafe_allow_html=True)
+        st.markdown(f"**Region:** {region if region else '(not selected)'} | **School:** {school_name if school_name else '(not selected)'}")
         
         col1, col2 = st.columns(2)
-        
-        # Initialize school variables
-        school_id = ""
-        school_name = ""
         
         with col1:
             survey_date = st.date_input(
@@ -101,46 +163,6 @@ def main():
                 help="Your unique teacher identification code",
                 placeholder="e.g., T001"
             )
-            
-            region = st.selectbox(
-                "Region *",
-                options=[""] + get_active_regions(engine),
-                help="Geographic or administrative region"
-            )
-            
-            # Get schools for selected region (dynamic from database)
-            if region:
-                schools = get_active_schools(engine, region_id=region)
-                
-                # Debug: Show how many schools found
-                st.caption(f"🔍 Found {len(schools) if schools else 0} schools in {region}")
-                
-                if schools and len(schools) > 0:
-                    # Create dropdown options showing both ID and name
-                    school_options = [""] + [f"{s['school_id']} - {s['school_name']}" for s in schools]
-                    
-                    selected_school = st.selectbox(
-                        "School *",
-                        options=school_options,
-                        help="Select your school from the list"
-                    )
-                    
-                    # Extract school_id and school_name from selection
-                    if selected_school:
-                        school_id = selected_school.split(" - ")[0]
-                        school_name = selected_school.split(" - ", 1)[1]
-                    else:
-                        school_id = ""
-                        school_name = ""
-                else:
-                    st.warning(f"⚠️ No schools found in {region}. Please check the demographics Excel file.")
-                    school_id = ""
-                    school_name = ""
-            else:
-                # No region selected yet
-                school_id = ""
-                school_name = ""
-                st.info("👆 Please select a region first to see the school dropdown")
         
         with col2:
             teaching_experience_years = st.selectbox(
