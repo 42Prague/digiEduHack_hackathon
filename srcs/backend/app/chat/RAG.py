@@ -1,3 +1,4 @@
+import os
 from dataclasses import dataclass
 
 import anyio
@@ -12,17 +13,25 @@ from langchain.tools import tool
 
 from .prompts import agent_system_prompt
 
+OLLAMA_HOST = os.getenv("OLLAMA_HOST", "http://ollama:11434")
+OLLAMA_MODEL = os.getenv("OLLAMA_MODEL", "llama3.1:8b")
+OLLAMA_EMBED_MODEL = os.getenv("OLLAMA_EMBED_MODEL", "embeddinggemma")
+
 @dataclass
 class ModelResponse:
     role: str
-    content: int
+    content: str
 
 class RAG:
     def __init__(self):
         self.llm = ChatOllama(
-            model="llama3.1:8b"
+            model=OLLAMA_MODEL,
+            base_url=OLLAMA_HOST
         )
-        self.embeddings = OllamaEmbeddings(model="embeddinggemma", base_url="http://host.docker.internal:11434")
+        self.embeddings = OllamaEmbeddings(
+            model=OLLAMA_EMBED_MODEL,
+            base_url=OLLAMA_HOST
+        )
 
         self.vector_store = Chroma(
             collection_name="example_collection",
@@ -90,4 +99,3 @@ class RAG:
                 if type == "text":
                     print("Yielding response")
                     yield ModelResponse(role=node, content=content['text'])
-

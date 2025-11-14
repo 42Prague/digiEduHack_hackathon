@@ -27,13 +27,39 @@ cd digiEduHack_hackathon/srcs
 docker compose up -d
 ```
 
-This boots three services:
+### Choosing your Ollama instance
 
-### **1. ollama (local LLM server)**
+- **Use the embedded Ollama container** (default, more self-contained):
+  ```bash
+  docker compose --profile embedded-ollama up -d
+  ```
+  This launches the `ollama` service defined in `docker-compose.yml` so everything stays inside Docker.
+
+- **Use an existing host Ollama** (saves resources, skips the container):
+  ```bash
+  OLLAMA_HOST=http://host.docker.internal:11434 docker compose up -d
+  ```
+  Because the Ollama service sits behind the `embedded-ollama` profile, it will only start if you explicitly request that profile.  
+  (On Linux we add `host.docker.internal` via `extra_hosts`, so this hostname resolves to your host automatically.)
+
+Whichever option you choose, make sure the Ollama instance has *both* the chat model and the embedding model pulled. By default the code expects:
+
+```bash
+ollama pull llama3.1:8b        # chat model (OLLAMA_MODEL)
+ollama pull embeddinggemma     # embedding model (OLLAMA_EMBED_MODEL)
+```
+
+If you change `OLLAMA_MODEL` or `OLLAMA_EMBED_MODEL`, remember to pull the matching models before starting the stack.
+
+All backend components read `OLLAMA_HOST`, `OLLAMA_MODEL`, and `OLLAMA_EMBED_MODEL`, so once the environment variable is set (inline or via `.env`) the RAG pipeline automatically points to the correct instance.
+
+This boots the main services:
+
+### **1. ollama (local LLM server, optional profile)**
 
 * Exposes port **11434** → override via `OLLAMA_PORT=<port>`.
 * Stores downloaded models in the named docker volume `ollama_data`.
-* Auto-pulls `deepseek-r1:1.5b` on startup via `chat/docker-entrypoint.sh`.
+* Auto-pulls `llama3.1:8b` on startup via `chat/docker-entrypoint.sh`.
 
 ### **2. backend (FastAPI + SQLite)**
 
@@ -83,13 +109,15 @@ Delete this folder to wipe all app data.
 
 You can override defaults using `.env` or via inline `docker compose`:
 
-| Variable              | Default                             | Used by                     |
-| --------------------- | ----------------------------------- | --------------------------- |
-| `OLLAMA_PORT`         | `11434`                             | ollama                      |
-| `OLLAMA_MODEL`        | `deepseek-r1:1.5b`                  | backend                     |
-| `BACKEND_TEST_PROMPT` | “Say hi from the backend container” | backend demo script         |
-| `DATABASE_URL`        | `sqlite:////data/app.db`            | backend                     |
-| `TUSD_URL`            | `http://tusd:1080`                  | backend for linking uploads |
+| Variable               | Default                              | Used by                     |
+| ---------------------- | ------------------------------------ | --------------------------- |
+| `OLLAMA_HOST`          | `http://ollama:11434`                | backend, worker, embeddings |
+| `OLLAMA_PORT`          | `11434`                              | ollama                      |
+| `OLLAMA_MODEL`         | `llama3.1:8b`                        | backend / worker LLM calls  |
+| `OLLAMA_EMBED_MODEL`   | `embeddinggemma`                     | embeddings in RAG           |
+| `BACKEND_TEST_PROMPT`  | “Say hi from the backend container”  | backend demo script         |
+| `DATABASE_URL`         | `sqlite:////data/app.db`             | backend                     |
+| `TUSD_URL`             | `http://tusd:1080`                   | backend for linking uploads |
 
 ---
 

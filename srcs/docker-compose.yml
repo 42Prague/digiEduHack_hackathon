@@ -1,6 +1,7 @@
 services:
   ollama:
     image: ollama/ollama:latest
+    profiles: ["embedded-ollama"]
     restart: unless-stopped
     ports:
       - "${OLLAMA_PORT:-11434}:11434"
@@ -39,7 +40,6 @@ services:
     build:
       context: ./backend
     depends_on:
-      - ollama
       - chromadb
       - tusd
     ports:
@@ -48,7 +48,7 @@ services:
       - "8000:80"
     environment:
       # LLM config
-      - OLLAMA_HOST=http://ollama:11434
+      - OLLAMA_HOST=${OLLAMA_HOST:-http://ollama:11434}
       # - OLLAMA_MODEL=${OLLAMA_MODEL:-deepseek-r1:1.5b}
       - OLLAMA_MODEL=${OLLAMA_MODEL:-llama3.1:8b}
       - BACKEND_TEST_PROMPT=${BACKEND_TEST_PROMPT:-Say hi from the backend container}
@@ -62,6 +62,8 @@ services:
       - ./data:/data          # SQLite DB + any extra app data
     networks:
       - internal
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
 
   frontend:
     build:
@@ -79,11 +81,10 @@ services:
     build:
       context: ./backend
     depends_on:
-      - ollama
       - tusd
     restart: unless-stopped
     environment:
-      - OLLAMA_HOST=http://ollama:11434
+      - OLLAMA_HOST=${OLLAMA_HOST:-http://ollama:11434}
       # - OLLAMA_MODEL=${OLLAMA_MODEL:-deepseek-r1:1.5b}
       - OLLAMA_MODEL=${OLLAMA_MODEL:-llama3.1:8b}
       - DATABASE_URL=sqlite:////data/app.db
@@ -94,6 +95,8 @@ services:
     command: ["python", "-m", "app.worker"]
     networks:
       - internal
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
 
   chromadb: # Vector database
     image: chromadb/chroma:latest
