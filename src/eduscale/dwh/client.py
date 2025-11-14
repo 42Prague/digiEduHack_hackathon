@@ -211,3 +211,51 @@ class DwhClient:
             logger.info(f"Created staging table: {table_ref}")
         except Exception as e:
             logger.warning(f"Failed to create staging table: {e}")
+
+    def insert_observation(
+        self,
+        observation: dict[str, Any],
+        targets: list[dict[str, Any]] | None = None,
+    ) -> int:
+        """Insert observation and targets directly to BigQuery.
+
+        Args:
+            observation: Observation record dict
+            targets: List of observation_target dicts (optional)
+
+        Returns:
+            Number of rows inserted
+
+        This method inserts free-form observations directly to BigQuery without
+        going through the staging/merge flow.
+        """
+        rows_inserted = 0
+
+        # Insert observation
+        observation_table_ref = f"{self.project_id}.{self.dataset_id}.observations"
+        
+        try:
+            errors = self.client.insert_rows_json(observation_table_ref, [observation])
+            if errors:
+                logger.error(f"Failed to insert observation: {errors}")
+            else:
+                rows_inserted += 1
+                logger.info(f"Inserted observation: file_id={observation.get('file_id')}")
+        except Exception as e:
+            logger.error(f"Exception inserting observation: {e}")
+
+        # Insert observation targets if provided
+        if targets:
+            targets_table_ref = f"{self.project_id}.{self.dataset_id}.observation_targets"
+            
+            try:
+                errors = self.client.insert_rows_json(targets_table_ref, targets)
+                if errors:
+                    logger.error(f"Failed to insert observation_targets: {errors}")
+                else:
+                    rows_inserted += len(targets)
+                    logger.info(f"Inserted {len(targets)} observation_targets")
+            except Exception as e:
+                logger.error(f"Exception inserting observation_targets: {e}")
+
+        return rows_inserted

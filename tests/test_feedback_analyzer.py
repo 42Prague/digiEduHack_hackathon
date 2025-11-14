@@ -39,6 +39,11 @@ def sample_frontmatter():
         page_count=None,
         sheet_count=1,
         slide_count=None,
+        audio_duration_seconds=None,
+        audio_sample_rate=None,
+        audio_channels=None,
+        audio_confidence=None,
+        audio_language=None,
     )
 
 

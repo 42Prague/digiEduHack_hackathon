@@ -315,20 +315,23 @@ def create_new_entity(
     source_value: str,
     region_id: str,
 ) -> str:
-    """Create new entity in dimension table and return new ID.
+    """Create new entity ID for unmatched entity.
 
-    Note: This is a placeholder. Actual implementation would insert into BigQuery.
+    This generates a deterministic hash-based ID for entities that don't match
+    existing dimension table records. The entities will be inserted into BigQuery
+    as part of the observation data and can be promoted to dimension tables later.
 
     Args:
-        entity_type: Type of entity
-        source_value: Source name/value
-        region_id: Region ID
+        entity_type: Type of entity (teacher, student, parent, region, school, subject)
+        source_value: Original name/value from source data
+        region_id: Region ID for scoping
 
     Returns:
-        New entity_id (UUID or hash-based)
+        Deterministic entity_id (16-char hex hash)
     """
     # Generate deterministic ID based on entity_type, source_value, and region_id
-    id_string = f"{entity_type}:{region_id}:{source_value}"
+    # This ensures same entity gets same ID across multiple files
+    id_string = f"{entity_type}:{region_id}:{normalize_name(source_value)}"
     entity_id = hashlib.sha256(id_string.encode()).hexdigest()[:16]
 
     logger.info(
@@ -446,24 +449,170 @@ def _embedding_match(
 def load_entity_cache(region_id: str) -> EntityCache:
     """Load entities from BigQuery for the region.
 
-    Note: This is a placeholder. Actual implementation would query BigQuery.
-
     Args:
         region_id: Region ID to load entities for
 
     Returns:
         EntityCache with loaded entities
     """
+    from google.cloud import bigquery
+    from eduscale.core.config import settings
+    
     logger.info(f"Loading entity cache for region_id={region_id}")
-
-    # Placeholder: In real implementation, would query BigQuery dimension tables
+    
     cache = EntityCache()
-
+    
+    try:
+        # Initialize BigQuery client
+        client = bigquery.Client(project=settings.bigquery_project)
+        dataset_id = settings.BIGQUERY_DATASET_ID
+        
+        # Query dimension tables for the region
+        # Teachers
+        try:
+            query = f"""
+            SELECT teacher_id, teacher_name
+            FROM `{settings.bigquery_project}.{dataset_id}.dim_teacher`
+            WHERE region_id = @region_id
+            LIMIT 10000
+            """
+            job_config = bigquery.QueryJobConfig(
+                query_parameters=[bigquery.ScalarQueryParameter("region_id", "STRING", region_id)]
+            )
+            results = client.query(query, job_config=job_config).result()
+            
+            for row in results:
+                teacher_id = row.teacher_id
+                teacher_name = row.teacher_name
+                normalized_name = normalize_name(teacher_name)
+                cache.teachers[normalized_name] = teacher_id
+                cache.entity_names[teacher_id] = teacher_name
+                
+        except Exception as e:
+            logger.debug(f"Could not load teachers (table may not exist): {e}")
+        
+        # Students
+        try:
+            query = f"""
+            SELECT student_id, student_name
+            FROM `{settings.bigquery_project}.{dataset_id}.dim_student`
+            WHERE region_id = @region_id
+            LIMIT 10000
+            """
+            job_config = bigquery.QueryJobConfig(
+                query_parameters=[bigquery.ScalarQueryParameter("region_id", "STRING", region_id)]
+            )
+            results = client.query(query, job_config=job_config).result()
+            
+            for row in results:
+                student_id = row.student_id
+                student_name = row.student_name
+                normalized_name = normalize_name(student_name)
+                cache.students[normalized_name] = student_id
+                cache.entity_names[student_id] = student_name
+                
+        except Exception as e:
+            logger.debug(f"Could not load students (table may not exist): {e}")
+        
+        # Parents
+        try:
+            query = f"""
+            SELECT parent_id, parent_name
+            FROM `{settings.bigquery_project}.{dataset_id}.dim_parent`
+            WHERE region_id = @region_id
+            LIMIT 10000
+            """
+            job_config = bigquery.QueryJobConfig(
+                query_parameters=[bigquery.ScalarQueryParameter("region_id", "STRING", region_id)]
+            )
+            results = client.query(query, job_config=job_config).result()
+            
+            for row in results:
+                parent_id = row.parent_id
+                parent_name = row.parent_name
+                normalized_name = normalize_name(parent_name)
+                cache.parents[normalized_name] = parent_id
+                cache.entity_names[parent_id] = parent_name
+                
+        except Exception as e:
+            logger.debug(f"Could not load parents (table may not exist): {e}")
+        
+        # Regions
+        try:
+            query = f"""
+            SELECT region_id as entity_id, region_name
+            FROM `{settings.bigquery_project}.{dataset_id}.dim_region`
+            LIMIT 1000
+            """
+            results = client.query(query).result()
+            
+            for row in results:
+                entity_id = row.entity_id
+                region_name = row.region_name
+                normalized_name = normalize_name(region_name)
+                cache.regions[normalized_name] = entity_id
+                cache.entity_names[entity_id] = region_name
+                
+        except Exception as e:
+            logger.debug(f"Could not load regions (table may not exist): {e}")
+        
+        # Schools
+        try:
+            query = f"""
+            SELECT school_id, school_name
+            FROM `{settings.bigquery_project}.{dataset_id}.dim_school`
+            WHERE region_id = @region_id
+            LIMIT 1000
+            """
+            job_config = bigquery.QueryJobConfig(
+                query_parameters=[bigquery.ScalarQueryParameter("region_id", "STRING", region_id)]
+            )
+            results = client.query(query, job_config=job_config).result()
+            
+            for row in results:
+                school_id = row.school_id
+                school_name = row.school_name
+                normalized_name = normalize_name(school_name)
+                cache.schools[normalized_name] = school_id
+                cache.entity_names[school_id] = school_name
+                
+        except Exception as e:
+            logger.debug(f"Could not load schools (table may not exist): {e}")
+        
+        # Subjects
+        try:
+            query = f"""
+            SELECT subject_id, subject_name
+            FROM `{settings.bigquery_project}.{dataset_id}.dim_subject`
+            WHERE region_id = @region_id
+            LIMIT 1000
+            """
+            job_config = bigquery.QueryJobConfig(
+                query_parameters=[bigquery.ScalarQueryParameter("region_id", "STRING", region_id)]
+            )
+            results = client.query(query, job_config=job_config).result()
+            
+            for row in results:
+                subject_id = row.subject_id
+                subject_name = row.subject_name
+                normalized_name = normalize_name(subject_name)
+                cache.subjects[normalized_name] = subject_id
+                cache.entity_names[subject_id] = subject_name
+                
+        except Exception as e:
+            logger.debug(f"Could not load subjects (table may not exist): {e}")
+        
+    except Exception as e:
+        logger.warning(f"Failed to load entity cache from BigQuery: {e}")
+    
     logger.info(
         f"Loaded entity cache: "
         f"{len(cache.teachers)} teachers, "
         f"{len(cache.students)} students, "
-        f"{len(cache.parents)} parents"
+        f"{len(cache.parents)} parents, "
+        f"{len(cache.regions)} regions, "
+        f"{len(cache.schools)} schools, "
+        f"{len(cache.subjects)} subjects"
     )
 
     return cache

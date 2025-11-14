@@ -34,6 +34,11 @@ def sample_frontmatter():
         page_count=15,
         sheet_count=None,
         slide_count=None,
+        audio_duration_seconds=None,
+        audio_sample_rate=None,
+        audio_channels=None,
+        audio_confidence=None,
+        audio_language=None,
     )
 
 
@@ -124,7 +129,7 @@ def test_process_free_form_text_audio_metadata(empty_entity_cache):
         bucket="bucket-name",
         object_path="uploads/region/audio-file-789.mp3",
         uploaded_at="2025-01-14T11:00:00Z",
-        extraction_method="speech_to_text",
+        extraction_method="google-speech-to-text",
         extraction_timestamp="2025-01-14T11:05:00Z",
         extraction_success=True,
         extraction_duration_ms=5000,
@@ -134,6 +139,11 @@ def test_process_free_form_text_audio_metadata(empty_entity_cache):
         page_count=None,
         sheet_count=None,
         slide_count=None,
+        audio_duration_seconds=123.45,
+        audio_sample_rate=16000,
+        audio_channels=1,
+        audio_confidence=0.95,
+        audio_language="en-US",
     )
 
     text_content = "This is a transcript of an audio recording."
@@ -147,3 +157,6 @@ def test_process_free_form_text_audio_metadata(empty_entity_cache):
     # Check audio-specific metadata
     assert observation.original_content_type == "audio/mpeg"
     assert observation.page_count is None
+    assert observation.audio_duration_ms == 123450  # 123.45s * 1000
+    assert observation.audio_confidence == 0.95
+    assert observation.audio_language == "en-US"

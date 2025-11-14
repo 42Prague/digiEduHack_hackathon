@@ -94,6 +94,11 @@ def test_column_name_normalization():
         page_count=None,
         sheet_count=None,
         slide_count=None,
+        audio_duration_seconds=None,
+        audio_sample_rate=None,
+        audio_channels=None,
+        audio_confidence=None,
+        audio_language=None,
     )
 
     df = load_dataframe_from_text(text_content, frontmatter)
@@ -135,6 +140,11 @@ def test_row_limit_enforcement():
         page_count=None,
         sheet_count=None,
         slide_count=None,
+        audio_duration_seconds=None,
+        audio_sample_rate=None,
+        audio_channels=None,
+        audio_confidence=None,
+        audio_language=None,
     )
 
     with pytest.raises(ValueError, match="exceeds maximum rows"):
@@ -167,6 +177,11 @@ def test_empty_columns_dropped():
         page_count=None,
         sheet_count=None,
         slide_count=None,
+        audio_duration_seconds=None,
+        audio_sample_rate=None,
+        audio_channels=None,
+        audio_confidence=None,
+        audio_language=None,
     )
 
     df = load_dataframe_from_text(text_content, frontmatter)
@@ -216,6 +231,11 @@ def test_jsonl_format():
         page_count=None,
         sheet_count=None,
         slide_count=None,
+        audio_duration_seconds=None,
+        audio_sample_rate=None,
+        audio_channels=None,
+        audio_confidence=None,
+        audio_language=None,
     )
 
     df = load_dataframe_from_text(text_content, frontmatter)

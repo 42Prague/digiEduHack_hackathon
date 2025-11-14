@@ -163,11 +163,9 @@ async def handle_cloud_event(request: Request) -> dict[str, str]:
             },
         )
 
-        # TODO: Fire-and-forget Backend status update
-        # This would call Backend API to update file processing status
-        # For now, we just log it
+        # Log pipeline completion
         logger.info(
-            f"Would update Backend: file_id={result.file_id}, status={result.status}",
+            f"Pipeline completed: file_id={result.file_id}, status={result.status}",
             extra={"event_id": event_id, "file_id": result.file_id},
         )
 
