@@ -7,8 +7,12 @@ This design document describes the Terraform infrastructure-as-code configuratio
 The Terraform configuration provisions:
 - **Artifact Registry**: A Docker repository for storing container images in an EU region
 - **Cloud Run v2 Service**: A fully managed serverless platform for running the containerized FastAPI application
+- **BigQuery Datasets**: Core and staging datasets for data warehouse operations
+- **BigQuery Tables**: Dimension, fact, and tracking tables with proper partitioning and clustering
+- **Service Accounts**: Dedicated service accounts for Cloud Run services (Engine, Tabular) with appropriate IAM permissions
+- **Eventarc Triggers**: Event-driven triggers for MIME Decoder (uploads/*) and Tabular Service (text/*)
 - **API Enablement**: Automatic activation of required Google Cloud APIs
-- **IAM Policies**: Public access configuration for the health endpoint
+- **IAM Policies**: Public access configuration and service-to-service permissions
 
 ## Architecture
 
@@ -29,6 +33,7 @@ graph TB
         AR[Artifact Registry]
         CR[Cloud Run v2]
         IAM[IAM Policy]
+        BQ[BigQuery Datasets & Tables]
     end
     
     subgraph "Developer Workflow"
@@ -45,6 +50,7 @@ graph TB
     Main --> APIs
     APIs --> AR
     APIs --> CR
+    APIs --> BQ
     Main --> IAM
     
     Dev --> Docker
@@ -56,6 +62,7 @@ graph TB
     style AR fill:#e1f5ff
     style CR fill:#e1f5ff
     style IAM fill:#e1f5ff
+    style BQ fill:#e1f5ff
 ```
 
 ### Resource Dependency Graph
@@ -80,7 +87,8 @@ graph LR
 infra/terraform/
 ├── versions.tf              # Terraform and provider version constraints
 ├── variables.tf             # Input variable definitions
-├── main.tf                  # Core resource definitions
+├── main.tf                  # Core resource definitions (Artifact Registry, Cloud Run)
+├── bigquery.tf              # BigQuery datasets and tables
 ├── outputs.tf               # Output value definitions
 ├── terraform.tfvars.example # Example variable values
 └── README.md                # Documentation
@@ -285,6 +293,127 @@ resource "google_cloud_run_v2_service_iam_member" "public_access" {
 - Can be disabled by setting `allow_unauthenticated = false`
 - Enables health endpoint access without authentication
 
+### 3.5 Tabular Service Account and IAM Permissions
+
+**Purpose**: Provide Tabular Service with necessary permissions for data processing
+
+**Service Account**:
+```hcl
+resource "google_service_account" "tabular_service" {
+  account_id   = "tabular-service"
+  display_name = "Tabular Service Account"
+  description  = "Service account for Tabular Service running on Cloud Run"
+}
+```
+
+**IAM Permissions**:
+
+1. **Storage Object Viewer** - Read text files from GCS:
+```hcl
+resource "google_storage_bucket_iam_member" "tabular_storage_viewer" {
+  bucket = google_storage_bucket.uploads.name
+  role   = "roles/storage.objectViewer"
+  member = "serviceAccount:${google_service_account.tabular_service.email}"
+}
+```
+
+2. **BigQuery Data Editor** - Write to BigQuery tables:
+```hcl
+resource "google_project_iam_member" "tabular_bigquery_editor" {
+  project = var.project_id
+  role    = "roles/bigquery.dataEditor"
+  member  = "serviceAccount:${google_service_account.tabular_service.email}"
+}
+```
+
+3. **BigQuery Job User** - Execute BigQuery jobs:
+```hcl
+resource "google_project_iam_member" "tabular_bigquery_job_user" {
+  project = var.project_id
+  role    = "roles/bigquery.jobUser"
+  member  = "serviceAccount:${google_service_account.tabular_service.email}"
+}
+```
+
+**Design Decisions**:
+- Dedicated service account follows principle of least privilege
+- Storage permissions scoped to uploads bucket only
+- BigQuery permissions at project level (required for cross-dataset operations)
+- Service account created even if Tabular Service not yet deployed
+- Permissions ready for when Tabular Service is deployed via GitHub Actions
+
+### 3.6 Eventarc Trigger for Tabular Service
+
+**Purpose**: Automatically invoke Tabular Service when text files are created
+
+**Trigger Configuration**:
+```hcl
+resource "google_eventarc_trigger" "text_trigger" {
+  count    = var.enable_eventarc ? 1 : 0
+  name     = "text-files-trigger"
+  location = var.region
+  project  = var.project_id
+
+  matching_criteria {
+    attribute = "type"
+    value     = "google.cloud.storage.object.v1.finalized"
+  }
+
+  matching_criteria {
+    attribute = "bucket"
+    value     = google_storage_bucket.uploads.name
+  }
+
+  matching_criteria {
+    attribute = "name"
+    value     = "text/"
+    operator  = "match-path-pattern"
+  }
+
+  destination {
+    cloud_run_service {
+      service = data.google_cloud_run_service.tabular[0].name
+      region  = data.google_cloud_run_service.tabular[0].location
+    }
+  }
+
+  service_account = google_service_account.eventarc_trigger.email
+
+  depends_on = [
+    google_project_service.eventarc,
+    google_cloud_run_service_iam_member.eventarc_tabular_invoker,
+    google_storage_bucket.uploads
+  ]
+}
+```
+
+**IAM Permission for Eventarc → Tabular**:
+```hcl
+resource "google_cloud_run_service_iam_member" "eventarc_tabular_invoker" {
+  count    = var.enable_eventarc ? 1 : 0
+  service  = data.google_cloud_run_service.tabular[0].name
+  location = data.google_cloud_run_service.tabular[0].location
+  role     = "roles/run.invoker"
+  member   = "serviceAccount:${google_service_account.eventarc_trigger.email}"
+  project  = var.project_id
+}
+```
+
+**Design Decisions**:
+- Conditional creation based on `enable_eventarc` variable
+- Filters events by `text/` prefix to match Transformer output
+- Uses existing Eventarc service account (shared with MIME Decoder trigger)
+- References Tabular service via data source (deployed separately via GitHub Actions)
+- Automatic retry with exponential backoff on failures
+- Separate trigger from MIME Decoder trigger for independent scaling
+
+**Event Flow**:
+1. Transformer saves text file to `gs://bucket/text/file_id.txt`
+2. GCS emits OBJECT_FINALIZE event
+3. Eventarc filters for `text/*` pattern
+4. Eventarc invokes Tabular Service with CloudEvent
+5. Tabular Service processes file and loads to BigQuery
+
 ### 4. Output Definitions (outputs.tf)
 
 **Responsibility**: Export useful values after infrastructure creation
@@ -337,7 +466,254 @@ terraform output -raw full_image_path
 - Shows all available configuration options
 - Includes both required and optional variables
 
-### 6. Documentation (README.md)
+### 6. BigQuery Configuration (bigquery.tf)
+
+**Responsibility**: Define BigQuery datasets and tables for data warehouse
+
+#### 6.1 API Enablement
+
+**Resource**: `google_project_service.bigquery`
+
+**Configuration**:
+```hcl
+resource "google_project_service" "bigquery" {
+  project = var.project_id
+  service = "bigquery.googleapis.com"
+  disable_on_destroy = false
+}
+```
+
+**Design Decisions**:
+- Enable BigQuery API before creating datasets
+- Separate from other API enablement for clarity
+- Idempotent and safe to apply multiple times
+
+#### 6.2 BigQuery Datasets
+
+**Resources**:
+- `google_bigquery_dataset.core`: Main dataset for dimension and fact tables
+- `google_bigquery_dataset.staging`: Temporary dataset for data loading
+
+**Core Dataset Configuration**:
+```hcl
+resource "google_bigquery_dataset" "core" {
+  dataset_id  = var.bigquery_dataset_id
+  location    = var.region
+  description = "Core dataset for EduScale data warehouse (dimensions and facts)"
+  
+  depends_on = [google_project_service.bigquery]
+}
+```
+
+**Staging Dataset Configuration**:
+```hcl
+resource "google_bigquery_dataset" "staging" {
+  dataset_id  = var.bigquery_staging_dataset_id
+  location    = var.region
+  description = "Staging dataset for temporary data loading operations"
+  
+  default_table_expiration_ms = var.bigquery_staging_table_expiration_days * 24 * 60 * 60 * 1000
+  
+  depends_on = [google_project_service.bigquery]
+}
+```
+
+**Design Decisions**:
+- Separate datasets for core and staging data
+- Staging tables auto-expire after 7 days (configurable)
+- Core tables have no expiration
+- Location matches region variable for data locality
+- Explicit dependencies on API enablement
+
+#### 6.3 Dimension Tables
+
+**Tables**: dim_region, dim_school, dim_time
+
+**dim_region Schema**:
+```hcl
+resource "google_bigquery_table" "dim_region" {
+  dataset_id = google_bigquery_dataset.core.dataset_id
+  table_id   = "dim_region"
+  
+  schema = jsonencode([
+    { name = "region_id", type = "STRING", mode = "REQUIRED" },
+    { name = "region_name", type = "STRING", mode = "NULLABLE" },
+    { name = "from_date", type = "DATE", mode = "NULLABLE" },
+    { name = "to_date", type = "DATE", mode = "NULLABLE" }
+  ])
+}
+```
+
+**dim_school Schema**:
+```hcl
+resource "google_bigquery_table" "dim_school" {
+  dataset_id = google_bigquery_dataset.core.dataset_id
+  table_id   = "dim_school"
+  
+  schema = jsonencode([
+    { name = "school_name", type = "STRING", mode = "REQUIRED" },
+    { name = "region_id", type = "STRING", mode = "NULLABLE" },
+    { name = "from_date", type = "DATE", mode = "NULLABLE" },
+    { name = "to_date", type = "DATE", mode = "NULLABLE" }
+  ])
+}
+```
+
+**dim_time Schema**:
+```hcl
+resource "google_bigquery_table" "dim_time" {
+  dataset_id = google_bigquery_dataset.core.dataset_id
+  table_id   = "dim_time"
+  
+  schema = jsonencode([
+    { name = "date", type = "DATE", mode = "REQUIRED" },
+    { name = "year", type = "INTEGER", mode = "NULLABLE" },
+    { name = "month", type = "INTEGER", mode = "NULLABLE" },
+    { name = "day", type = "INTEGER", mode = "NULLABLE" },
+    { name = "quarter", type = "INTEGER", mode = "NULLABLE" },
+    { name = "day_of_week", type = "INTEGER", mode = "NULLABLE" }
+  ])
+}
+```
+
+**Design Decisions**:
+- Dimension tables for slowly changing dimensions
+- from_date and to_date support temporal tracking
+- No partitioning on dimension tables (small size)
+- Explicit schemas ensure consistency with Tabular service
+
+#### 6.4 Fact Tables
+
+**Tables**: fact_assessment, fact_intervention
+
+**fact_assessment Schema**:
+```hcl
+resource "google_bigquery_table" "fact_assessment" {
+  dataset_id = google_bigquery_dataset.core.dataset_id
+  table_id   = "fact_assessment"
+  
+  time_partitioning {
+    type  = "DAY"
+    field = "date"
+  }
+  
+  clustering = ["region_id"]
+  
+  schema = jsonencode([
+    { name = "date", type = "DATE", mode = "REQUIRED" },
+    { name = "region_id", type = "STRING", mode = "REQUIRED" },
+    { name = "school_name", type = "STRING", mode = "NULLABLE" },
+    { name = "student_id", type = "STRING", mode = "NULLABLE" },
+    { name = "student_name", type = "STRING", mode = "NULLABLE" },
+    { name = "subject", type = "STRING", mode = "NULLABLE" },
+    { name = "test_score", type = "FLOAT", mode = "NULLABLE" },
+    { name = "file_id", type = "STRING", mode = "REQUIRED" },
+    { name = "ingest_timestamp", type = "TIMESTAMP", mode = "REQUIRED" }
+  ])
+}
+```
+
+**fact_intervention Schema**:
+```hcl
+resource "google_bigquery_table" "fact_intervention" {
+  dataset_id = google_bigquery_dataset.core.dataset_id
+  table_id   = "fact_intervention"
+  
+  time_partitioning {
+    type  = "DAY"
+    field = "date"
+  }
+  
+  clustering = ["region_id"]
+  
+  schema = jsonencode([
+    { name = "date", type = "DATE", mode = "REQUIRED" },
+    { name = "region_id", type = "STRING", mode = "REQUIRED" },
+    { name = "school_name", type = "STRING", mode = "NULLABLE" },
+    { name = "intervention_type", type = "STRING", mode = "NULLABLE" },
+    { name = "participants_count", type = "INTEGER", mode = "NULLABLE" },
+    { name = "file_id", type = "STRING", mode = "REQUIRED" },
+    { name = "ingest_timestamp", type = "TIMESTAMP", mode = "REQUIRED" }
+  ])
+}
+```
+
+**Design Decisions**:
+- Partition by date for query performance and cost optimization
+- Cluster by region_id for regional queries
+- Include file_id and ingest_timestamp for audit trail
+- Schemas match Tabular service normalized data models
+
+#### 6.5 Observations Table
+
+**Table**: observations (for unstructured/mixed data)
+
+**observations Schema**:
+```hcl
+resource "google_bigquery_table" "observations" {
+  dataset_id = google_bigquery_dataset.core.dataset_id
+  table_id   = "observations"
+  
+  time_partitioning {
+    type  = "DAY"
+    field = "ingest_timestamp"
+  }
+  
+  clustering = ["region_id"]
+  
+  schema = jsonencode([
+    { name = "file_id", type = "STRING", mode = "REQUIRED" },
+    { name = "region_id", type = "STRING", mode = "REQUIRED" },
+    { name = "observation_text", type = "STRING", mode = "NULLABLE" },
+    { name = "source_table_type", type = "STRING", mode = "NULLABLE" },
+    { name = "ingest_timestamp", type = "TIMESTAMP", mode = "REQUIRED" }
+  ])
+}
+```
+
+**Design Decisions**:
+- Stores free-form text and MIXED table type data
+- Partition by ingest_timestamp for time-based queries
+- Cluster by region_id for regional filtering
+- Flexible schema for unstructured data
+
+#### 6.6 Ingest Runs Tracking Table
+
+**Table**: ingest_runs (for pipeline execution tracking)
+
+**ingest_runs Schema**:
+```hcl
+resource "google_bigquery_table" "ingest_runs" {
+  dataset_id = google_bigquery_dataset.core.dataset_id
+  table_id   = "ingest_runs"
+  
+  time_partitioning {
+    type  = "DAY"
+    field = "created_at"
+  }
+  
+  clustering = ["region_id", "status"]
+  
+  schema = jsonencode([
+    { name = "file_id", type = "STRING", mode = "REQUIRED" },
+    { name = "region_id", type = "STRING", mode = "REQUIRED" },
+    { name = "status", type = "STRING", mode = "REQUIRED" },
+    { name = "step", type = "STRING", mode = "NULLABLE" },
+    { name = "error_message", type = "STRING", mode = "NULLABLE" },
+    { name = "created_at", type = "TIMESTAMP", mode = "REQUIRED" },
+    { name = "updated_at", type = "TIMESTAMP", mode = "REQUIRED" }
+  ])
+}
+```
+
+**Design Decisions**:
+- Tracks all ingestion pipeline executions
+- Partition by created_at for time-based queries
+- Cluster by region_id and status for filtering
+- Stores error messages for debugging
+- Provides audit trail for all data loads
+
+### 7. Documentation (README.md)
 
 **Responsibility**: Comprehensive guide for using the Terraform configuration
 

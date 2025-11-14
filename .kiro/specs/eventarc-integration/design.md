@@ -286,6 +286,100 @@ The Eventarc trigger service account has minimal permissions:
 
 3. Verify metrics in Cloud Monitoring console
 
+## Tabular Service Trigger
+
+### Purpose
+
+Trigger Tabular service when Transformer saves text files to Cloud Storage, enabling fully event-driven data processing pipeline.
+
+### Terraform Configuration
+
+```hcl
+resource "google_eventarc_trigger" "tabular_trigger" {
+  name     = "${var.project_name}-tabular-trigger"
+  location = var.region
+  project  = var.project_id
+
+  matching_criteria {
+    attribute = "type"
+    value     = "google.cloud.storage.object.v1.finalized"
+  }
+
+  matching_criteria {
+    attribute = "bucket"
+    value     = google_storage_bucket.upload_bucket.name
+  }
+
+  # Filter for text files only
+  matching_criteria {
+    attribute = "subject"
+    value     = "objects/text/"
+    operator  = "match-path-pattern"
+  }
+
+  destination {
+    cloud_run_service {
+      service = google_cloud_run_service.tabular.name
+      region  = var.region
+    }
+  }
+
+  service_account = google_service_account.eventarc_trigger.email
+}
+```
+
+### Event Flow
+
+1. **Transformer saves text** → `gs://bucket/text/file_id.txt` (with YAML frontmatter)
+2. **GCS emits OBJECT_FINALIZE event**
+3. **Eventarc filters** for `text/*` pattern
+4. **Eventarc delivers CloudEvent** to Tabular service
+5. **Tabular processes** and returns 200
+6. **On error**, Eventarc retries with exponential backoff
+
+### CloudEvents Payload
+
+```json
+{
+  "specversion": "1.0",
+  "type": "google.cloud.storage.object.v1.finalized",
+  "source": "//storage.googleapis.com/projects/_/buckets/eduscale-uploads-eu",
+  "subject": "objects/text/abc123.txt",
+  "id": "event-id-456",
+  "time": "2025-11-14T10:30:10Z",
+  "data": {
+    "bucket": "eduscale-uploads-eu",
+    "name": "text/abc123.txt",
+    "contentType": "text/plain",
+    "size": "15000"
+  }
+}
+```
+
+### Integration with Pipeline
+
+```
+uploads/* → Eventarc Trigger #1 → MIME Decoder → Transformer
+                                                      ↓
+                                            saves text/file_id.txt
+                                                      ↓
+text/* → Eventarc Trigger #2 → Tabular Service → BigQuery
+```
+
+### Monitoring
+
+The Tabular trigger emits the same metrics as the MIME Decoder trigger:
+- `eventarc.googleapis.com/trigger/event_count`
+- `eventarc.googleapis.com/trigger/match_count`
+- `eventarc.googleapis.com/trigger/delivery_success_count`
+- `eventarc.googleapis.com/trigger/delivery_failure_count`
+- `eventarc.googleapis.com/trigger/delivery_latency`
+
+Recommended alerts:
+1. **High Failure Rate**: Alert when Tabular trigger delivery_failure_count > 10% of event_count
+2. **High Latency**: Alert when Tabular processing latency p95 > 60 seconds (AI processing takes longer)
+3. **No Events**: Alert when text file events = 0 for > 2 hours (indicates Transformer issues)
+
 ## Known Limitations
 
 **No Dead Letter Queue for Failed Events**: After all retry attempts are exhausted (5 retries with exponential backoff), failed events are logged with full context but not queued for automatic reprocessing. This design choice prioritizes simplicity and rapid deployment for the MVP phase.

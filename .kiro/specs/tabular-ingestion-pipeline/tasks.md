@@ -1,367 +1,399 @@
 # Implementation Plan
 
-- [ ] 1. Set up project dependencies and configuration
-  - Add new dependencies to requirements.txt (sentence-transformers, pandas, pyarrow, pandera, google-cloud-bigquery, pyyaml, numpy, scikit-learn)
-  - Note: openpyxl removed as we process text, not binary Excel files
-  - Extend src/eduscale/core/config.py with new settings (BIGQUERY_PROJECT_ID, BIGQUERY_DATASET_ID, BIGQUERY_STAGING_DATASET_ID, CLEAN_LAYER_BASE_PATH, CONCEPT_CATALOG_PATH, EMBEDDING_MODEL_NAME, INGEST_MAX_ROWS, PSEUDONYMIZE_IDS)
-  - Add bigquery_project and bigquery_staging_dataset properties to Settings class
-  - _Requirements: 10.1, 10.2, 10.3, 10.4, 10.5, 10.6, 10.7, 10.8, 10.9, 19.1, 19.2, 19.3_
+## Overview
+This implementation plan breaks down the Tabular Ingestion Pipeline into incremental, testable tasks. Each task builds on previous work and focuses on core functionality first, with optional testing tasks marked with *.
 
-- [ ] 2. Create concepts catalog configuration
-  - Create config/concepts.yaml with 5 table types (ATTENDANCE, ASSESSMENT, FEEDBACK, INTERVENTION, MIXED)
-  - Define anchor phrases for each table type in English and Czech
-  - Define 40+ canonical concepts organized by category:
-    - Core entity IDs: student_id, teacher_id, parent_id, region_id, subject_id
-    - Entity names: student_name, teacher_name, parent_name, school_name, region_name
-    - Temporal fields: date, from_date, to_date
-    - Assessment fields: test_score, subject, subject_id
-    - Intervention fields: intervention_id, intervention_type, participants_count
-    - Experiment fields: experiment_id, experiment_name, experiment_status
-    - Criteria fields: criteria_id, criteria_name, target_value, baseline_value
-    - Rule fields: rule_id, rule_title, rule_type
-    - Feedback fields: feedback_id, feedback_text, sentiment_score, feedback_category, author_id, author_type
-    - Generic fields: description
-  - Include multilingual synonyms (English and Czech), descriptions, and expected_type for each concept
-  - _Requirements: 11.1, 11.2, 11.3, 11.4, 11.5, 11.6, 11.7, 11.8, 11.9, 11.10, 11.11, 11.12, 11.13_
+## Task List
 
-- [ ] 3. Implement embedding model singleton
-  - Create src/eduscale/models/embeddings.py
-  - Implement init_embeddings() function to load sentence-transformer model
-  - Implement embed_texts() function with module-level caching
-  - Support paraphrase-multilingual-mpnet-base-v2 model
-  - _Requirements: 12.1, 12.2, 12.3, 12.4, 12.5, 12.6_
-- [ ] 3.1 Write basic tests for embedding model
-  - Write tests/test_embeddings.py to test model loading and embedding generation
-  - Test that model is cached and not reloaded on subsequent calls
-  - Run tests: `pytest tests/test_embeddings.py -v`
-  - _Requirements: 12.1, 12.2, 12.3, 12.4, 12.5, 12.6_
+- [ ] 1. Project setup and configuration
+- [ ] 1.1 Extend core/config.py with Tabular Service settings
+  - Add BIGQUERY_PROJECT_ID, BIGQUERY_DATASET_ID, BIGQUERY_STAGING_DATASET_ID
+  - Add CLEAN_LAYER_BASE_PATH, CONCEPT_CATALOG_PATH
+  - Add AI models: EMBEDDING_MODEL_NAME="BAAI/bge-m3", LLM_MODEL_NAME="llama3.2:1b", LLM_ENDPOINT="http://localhost:11434", LLM_ENABLED=True
+  - Add INGEST_MAX_ROWS, PSEUDONYMIZE_IDS settings
+  - Add AI analysis settings: FEEDBACK_ANALYSIS_ENABLED, ENTITY_RESOLUTION_THRESHOLD, FEEDBACK_TARGET_THRESHOLD, MAX_TARGETS_PER_FEEDBACK, ENTITY_CACHE_TTL_SECONDS
+  - Add computed properties: bigquery_project, bigquery_staging_dataset
+  - _Requirements: Requirement 10, Requirement 12_
 
-- [ ] 4. Implement concepts catalog loader
-  - Create src/eduscale/tabular/concepts.py
-  - Define Concept, TableType, and ConceptsCatalog dataclasses
-  - Implement load_concepts_catalog() to parse YAML and precompute embeddings
-  - Implement get_table_type_anchors() and get_concepts() functions
-  - Cache embeddings to avoid recomputation
-  - _Requirements: 11.5, 11.6, 11.7, 11.8_
-- [ ] 4.1 Write basic tests for concepts catalog
-  - Write tests/test_concepts.py to test YAML loading and embedding precomputation
-  - Test with tests/fixtures/concepts_test.yaml
-  - Run tests: `pytest tests/test_concepts.py -v`
-  - _Requirements: 11.5, 11.6, 11.7, 11.8_
+- [ ] 1.2 Create concepts catalog YAML file
+  - Create config/concepts.yaml with 5 table types (ATTENDANCE, ASSESSMENT, FEEDBACK, INTERVENTION, RELATIONSHIP)
+  - Define all concepts from class-diagram.puml with multilingual synonyms (EN + CS)
+  - Include entity IDs, names, temporal fields, assessment, intervention, experiment, criteria, rule, feedback, analysis, junction fields
+  - _Requirements: Requirement 11_
 
-- [ ] 5. Implement text structure analysis
-  - Create src/eduscale/tabular/text_analyzer.py
-  - Define TextAnalysisResult dataclass
-  - Implement analyze_text_structure() function
-  - Sample first 1000 characters for structure detection
-  - Check for JSON structure (starts with { or [)
-  - Detect delimiters by counting occurrences (comma, semicolon, tab, pipe)
-  - Validate delimiter consistency across lines
-  - Detect header row characteristics
-  - Return format (csv, tsv, json, jsonl, free_form) with confidence score
-  - _Requirements: 1.1, 1.2, 1.3, 1.4, 1.5, 1.6_
-- [ ] 5.1 Write basic tests for text structure analysis
-  - Write tests/test_text_analyzer.py to test structure detection
-  - Test CSV, TSV, JSON, JSONL, and free-form text detection
-  - Test delimiter detection and confidence scoring
-  - Run tests: `pytest tests/test_text_analyzer.py -v`
-  - _Requirements: 1.1, 1.2, 1.3, 1.4, 1.5, 1.6_
+- [ ] 1.3 Update requirements.txt with new dependencies
+  - Add sentence-transformers>=2.3.0 (for BGE-M3), pandas>=2.0.0, pyarrow>=12.0.0
+  - Add pandera>=0.17.0, python-Levenshtein>=0.21.0, rapidfuzz>=3.0.0
+  - Add requests>=2.31.0 (for Ollama API calls)
+  - Add google-cloud-bigquery>=3.11.0 (if not present)
+  - Note: Ollama will be installed via curl script in Dockerfile
+  - _Requirements: Dependencies section_
 
-- [ ] 6. Implement DataFrame loading from text
-  - Create TabularSource dataclass in src/eduscale/tabular/pipeline.py
-  - Implement load_dataframe_from_text() function
-  - Retrieve text content from Cloud Storage using text_uri
-  - Call analyze_text_structure() to detect format
-  - Parse text based on detected format (CSV/TSV with detected delimiter, JSON/JSONL)
-  - Handle UTF-8 encoding first, fallback to cp1250 for Central European data
-  - For free-form text, create single-column DataFrame with text as observation
-  - Strip whitespace, normalize column names, store originals, drop empty columns
-  - Enforce INGEST_MAX_ROWS limit
-  - _Requirements: 2.1, 2.2, 2.3, 2.4, 2.5, 2.6, 2.7, 2.8, 20.1, 20.2, 21.1, 21.2, 21.3, 21.4, 21.5_
-- [ ] 6.1 Write basic tests for DataFrame loading from text
-  - Write tests/test_dataframe_loading.py using fixture text files (sample_text_csv.txt, sample_text_json.txt, sample_text_tsv.txt)
-  - Test column name normalization and original name preservation
-  - Test INGEST_MAX_ROWS enforcement
-  - Test encoding fallback for text parsing
-  - Test free-form text handling
-  - Run tests: `pytest tests/test_dataframe_loading.py -v`
-  - _Requirements: 2.1, 2.2, 2.3, 2.4, 2.5, 2.6, 2.7, 2.8, 20.1, 20.2, 21.1, 21.2, 21.3, 21.4, 21.5_
+- [ ] 2. Concepts catalog and embeddings module
+- [ ] 2.1 Implement concepts.py module
+  - Create Concept and TableType dataclasses
+  - Implement load_concepts_catalog() to parse YAML
+  - Implement init_embeddings() for lazy BGE-M3 model loading
+  - Implement embed_texts() using sentence-transformers with BGE-M3
+  - Cache model at module level for reuse
+  - Precompute embeddings for table type anchors and concept synonyms
+  - Model returns 1024-dimensional embeddings
+  - _Requirements: Requirement 11, Requirement 12_
 
-- [ ] 7. Implement AI table classification
-  - Create src/eduscale/tabular/classifier.py
+- [ ]* 2.2 Write unit tests for concepts module
+  - Test YAML loading with sample concepts_test.yaml
+  - Test embedding generation for sample texts
+  - Test model caching behavior
+  - _Requirements: Requirement 15_
+
+- [ ] 3. YAML frontmatter parsing
+- [ ] 3.1 Implement frontmatter parsing in pipeline.py
+  - Create FrontmatterData dataclass with top-level and nested fields
+  - Implement parse_frontmatter() to extract metadata from text files
+  - Parse top-level fields: file_id, region_id, text_uri, event_id, file_category
+  - Parse nested 'original' section: filename, content_type, size_bytes, bucket, object_path, uploaded_at
+  - Parse nested 'extraction' section: method, timestamp, success, duration_ms
+  - Parse nested 'content' section: text_length, word_count, character_count
+  - Parse nested 'document' section: page_count, sheet_count, slide_count
+  - Handle missing nested sections gracefully (return None for missing fields)
+  - Return (frontmatter_data, clean_text)
+  - _Requirements: Requirement 21_
+
+- [ ]* 3.2 Write unit tests for frontmatter parsing
+  - Test with sample text files containing YAML frontmatter
+  - Test with missing frontmatter
+  - Test with malformed YAML
+  - _Requirements: Requirement 15_
+
+- [ ] 4. DataFrame loading for tabular data
+- [ ] 4.1 Implement load_dataframe_from_text() in pipeline.py
+  - Load CSV/TSV using pandas.read_csv with detected delimiter
+  - Handle UTF-8 and cp1250 encodings
+  - Load JSON using pandas.json_normalize or line-by-line for JSONL
+  - Strip whitespace from column names and normalize to lower_snake_case
+  - Drop completely empty columns
+  - Check INGEST_MAX_ROWS limit
+  - _Requirements: Requirement 3_
+
+- [ ]* 4.2 Write unit tests for DataFrame loading
+  - Test with sample CSV, TSV, JSON, JSONL text files
+  - Test encoding handling
+  - Test row limit enforcement
+  - _Requirements: Requirement 15_
+
+- [ ] 5. AI table classification
+- [ ] 5.1 Implement classifier.py module
   - Implement classify_table() function
-  - Extract column headers and sample up to 5 non-null values per column
-  - Format text snippets as "column_name: value1; value2; value3"
+  - Extract features from column headers and sample values
   - Generate embeddings for features
   - Compute cosine similarity with table type anchors
-  - Apply softmax normalization for calibrated probabilities
-  - Return table type with highest score (or "MIXED" if confidence < 0.4)
-  - Log decision with top contributing features
-  - _Requirements: 3.1, 3.2, 3.3, 3.4, 3.5, 3.6, 3.7, 18.2, 22.1, 22.2, 22.3, 22.4, 22.5_
-- [ ] 7.1 Write basic tests for table classification
-  - Write tests/test_classifier.py with synthetic DataFrames for each table type
-  - Test ATTENDANCE, ASSESSMENT, FEEDBACK, INTERVENTION classification
-  - Test MIXED fallback for low confidence
-  - Verify logging of decisions
-  - Run tests: `pytest tests/test_classifier.py -v`
-  - _Requirements: 3.1, 3.2, 3.3, 3.4, 3.5, 3.6, 3.7, 18.2, 22.1, 22.2, 22.3, 22.4, 22.5_
+  - Apply softmax normalization
+  - Return table type with confidence (or FREE_FORM if < 0.4)
+  - Log decision with contributing features
+  - _Requirements: Requirement 3_
 
-- [ ] 8. Implement AI column mapping
-  - Create src/eduscale/tabular/mapping.py
-  - Define ColumnMapping dataclass
+- [ ]* 5.2 Write unit tests for table classification
+  - Test with synthetic DataFrames for each table type
+  - Test low confidence scenarios
+  - Test logging output
+  - _Requirements: Requirement 15_
+
+- [ ] 6. AI column mapping
+- [ ] 6.1 Implement mapping.py module
+  - Create ColumnMapping dataclass
   - Implement map_columns() function
-  - Build column descriptions with header and sample values
-  - Generate embeddings for each column
-  - Compute cosine similarity with concept embeddings
-  - Apply type-based score adjustments (+0.1, +0.05, -0.15)
-  - Assign status based on score thresholds (AUTO >=0.75, LOW_CONFIDENCE 0.55-0.75, UNKNOWN <0.55)
+  - Generate column descriptions with samples
+  - Compute embeddings for columns
+  - Calculate cosine similarity with concept embeddings
+  - Apply type-based score adjustments
+  - Assign status: AUTO (>=0.75), LOW_CONFIDENCE (0.55-0.75), UNKNOWN (<0.55)
   - Store top-3 candidates for explainability
-  - Log all mappings with scores
-  - _Requirements: 4.1, 4.2, 4.3, 4.4, 4.5, 4.6, 4.7, 4.8, 18.3, 18.4, 20.3, 23.1, 23.2, 23.3, 23.4, 23.5_
-- [ ] 8.1 Write basic tests for column mapping
-  - Write tests/test_mapping.py with known column names (e.g., "Student ID" → student_id)
-  - Test type-based scoring adjustments
-  - Test status assignment (AUTO, LOW_CONFIDENCE, UNKNOWN)
-  - Test top-3 candidates storage
-  - Verify logging of mappings
-  - Run tests: `pytest tests/test_mapping.py -v`
-  - _Requirements: 4.1, 4.2, 4.3, 4.4, 4.5, 4.6, 4.7, 4.8, 18.3, 18.4, 20.3, 23.1, 23.2, 23.3, 23.4, 23.5_
+  - _Requirements: Requirement 4_
 
-- [ ] 9. Implement Pandera validation schemas
-  - Create src/eduscale/tabular/schemas.py
-  - Define ATTENDANCE_SCHEMA with required columns and constraints
-  - Define ASSESSMENT_SCHEMA with test_score range validation
-  - Define FEEDBACK_SCHEMA for feedback data
-  - Define INTERVENTION_SCHEMA for intervention programs
-  - Define MIXED_SCHEMA with minimal constraints
-  - Implement validate_normalized_df() function
-  - Handle hard failures (missing required columns) with exceptions
-  - Handle soft failures (invalid values) with warnings and rejects file
-  - Write invalid rows to rejects Parquet file
-  - _Requirements: 5.1, 5.2, 5.3, 5.4, 5.5, 5.6, 5.7_
-- [ ] 9.1 Write basic tests for validation schemas
-  - Write tests/test_schemas.py with valid and invalid DataFrames
-  - Test hard failures raise exceptions
-  - Test soft failures write rejects file
-  - Test all schema types (ATTENDANCE, ASSESSMENT, FEEDBACK, INTERVENTION, MIXED)
-  - Run tests: `pytest tests/test_schemas.py -v`
-  - _Requirements: 5.1, 5.2, 5.3, 5.4, 5.5, 5.6, 5.7_
+- [ ]* 6.2 Write unit tests for column mapping
+  - Test with known column names and expected concepts
+  - Test type matching logic
+  - Test confidence thresholds
+  - _Requirements: Requirement 15_
 
-- [ ] 10. Implement data normalization
-  - Create src/eduscale/tabular/normalize.py
+- [ ] 7. Entity resolution module
+- [ ] 7.1 Implement entity_resolver.py in analysis/ module
+  - Create EntityMatch and EntityCache dataclasses
+  - Implement normalize_name() for name standardization
+  - Implement expand_initials() for initial expansion
+  - Implement resolve_entity() with ID exact → Name exact → Fuzzy → Embedding matching
+  - Use Levenshtein distance for fuzzy matching (threshold 0.85)
+  - Use embedding similarity for semantic matching (threshold 0.75)
+  - Implement create_new_entity() to insert into dimension tables
+  - Implement load_entity_cache() to query BigQuery dimension tables
+  - _Requirements: Requirement 24, Requirement 28_
+
+- [ ]* 7.2 Write unit tests for entity resolution
+  - Test exact name matches
+  - Test fuzzy matches with typos
+  - Test initial expansion ("И. Петров" → candidates)
+  - Test embedding-based matching
+  - Test new entity creation
+  - _Requirements: Requirement 15_
+
+- [ ] 8. Data normalization
+- [ ] 8.1 Implement normalize.py module
   - Implement normalize_dataframe() function
-  - Rename columns per mappings (AUTO/LOW_CONFIDENCE only)
-  - Cast dates using pd.to_datetime with format inference
-  - Cast numbers using pd.to_numeric with coercion
-  - Cast strings with strip and type conversion
-  - Add metadata columns (region_id, file_id, ingest_timestamp, source_table_type)
-  - Normalize school names (strip, title case)
-  - Pseudonymize student IDs if PSEUDONYMIZE_IDS enabled (SHA256 hash)
-  - Call Pandera validation
-  - _Requirements: 6.1, 6.2, 6.3, 6.4, 6.5, 6.6, 6.7, 6.8, 20.4_
-- [ ] 10.1 Write basic tests for data normalization
-  - Write tests/test_normalize.py to verify canonical structure
-  - Test column renaming and type casting
-  - Test metadata column addition
-  - Test school name normalization
-  - Test pseudonymization with PSEUDONYMIZE_IDS=True
-  - Run tests: `pytest tests/test_normalize.py -v`
-  - _Requirements: 6.1, 6.2, 6.3, 6.4, 6.5, 6.6, 6.7, 6.8, 18.4_
+  - Rename columns per AUTO/LOW_CONFIDENCE mappings
+  - Cast types: dates (pd.to_datetime), numbers (pd.to_numeric), strings (strip)
+  - Add metadata columns: region_id, file_id, ingest_timestamp, source_table_type
+  - Normalize school names (remove extra spaces, unify case)
+  - Pseudonymize IDs if PSEUDONYMIZE_IDS enabled (SHA256 hash)
+  - Preserve original values in metadata for audit
+  - _Requirements: Requirement 6_
 
-- [ ] 11. Implement clean layer storage
-  - Create src/eduscale/tabular/clean_layer.py
-  - Define CleanTargetInfo and CleanLocation dataclasses
+- [ ]* 8.2 Write unit tests for normalization
+  - Test column renaming
+  - Test type casting
+  - Test metadata addition
+  - Test pseudonymization
+  - _Requirements: Requirement 15_
+
+- [ ] 9. Pandera validation schemas
+- [ ] 9.1 Implement schemas.py module
+  - Define ATTENDANCE_SCHEMA with required columns and constraints
+  - Define ASSESSMENT_SCHEMA with required columns and constraints
+  - Define FEEDBACK_SCHEMA with required columns and constraints
+  - Define INTERVENTION_SCHEMA with required columns and constraints
+  - Define RELATIONSHIP_SCHEMA for junction tables
+  - Implement validate_normalized_df() function
+  - Handle hard failures (missing columns) vs soft failures (invalid values)
+  - Write rejects file for soft failures if configured
+  - _Requirements: Requirement 5_
+
+- [ ]* 9.2 Write unit tests for validation
+  - Test with valid DataFrames for each schema
+  - Test with missing required columns
+  - Test with invalid values
+  - Test rejects file creation
+  - _Requirements: Requirement 15_
+
+- [ ] 10. Clean layer storage
+- [ ] 10.1 Implement clean_layer.py module
+  - Create CleanLocation dataclass
   - Implement write_clean_parquet() function
-  - Compute deterministic paths for GCS and local storage
-  - Create directories for local storage
-  - Write Parquet using pandas.to_parquet with pyarrow engine
-  - Use google-cloud-storage client for GCS uploads
+  - Compute deterministic path: {table_type}/region={region_id}/file_id={file_id}.parquet
+  - Write to GCS if STORAGE_BACKEND="gcs"
+  - Write to local filesystem if STORAGE_BACKEND="local"
+  - Create directories if needed for local storage
   - Return CleanLocation with URI and size
-  - Log location and file size
-  - _Requirements: 7.1, 7.2, 7.3, 7.4, 7.5, 7.6, 7.7_
-- [ ] 11.1 Write basic tests for clean layer storage
-  - Write tests/test_clean_layer.py to test Parquet writing
-  - Test local storage with directory creation
-  - Test GCS storage (mock google-cloud-storage client)
-  - Test deterministic path generation
-  - Verify CleanLocation return values
-  - Run tests: `pytest tests/test_clean_layer.py -v`
-  - _Requirements: 7.1, 7.2, 7.3, 7.4, 7.5, 7.6, 7.7_
+  - _Requirements: Requirement 7_
 
-- [ ] 12. Implement BigQuery DWH client
-  - Create src/eduscale/dwh/ directory and __init__.py
-  - Create src/eduscale/dwh/client.py
-  - Implement DwhClient class with __init__ accepting project_id, dataset_id, staging_dataset_id
-  - Implement load_parquet_to_staging() method
-  - Create staging tables (stg_attendance, stg_assessment, stg_feedback, stg_intervention) if not exist
-  - Load Parquet from GCS URI using BigQuery load job
-  - Use explicit schemas aligned with normalized DataFrame
-  - Implement merge_staging_to_core() method
-  - Execute MERGE statements to dim_region, dim_school, dim_time, fact_assessment, fact_intervention, observations
-  - Partition tables by date, cluster by region_id
+- [ ]* 10.2 Write unit tests for clean layer
+  - Test Parquet writing to local filesystem
+  - Test path computation
+  - Mock GCS operations for cloud storage tests
+  - _Requirements: Requirement 15_
+
+- [ ] 11. BigQuery DWH client
+- [ ] 11.1 Implement dwh/client.py module
+  - Create DwhClient class
+  - Implement load_parquet_to_staging() to load from GCS to staging table
+  - Implement merge_staging_to_core() to MERGE staging → core tables
+  - Use explicit schemas for staging tables
+  - Partition by date, cluster by region_id
   - Set maximum_bytes_billed for cost control
-  - Return LoadJobResult and MergeResult with bytes_processed and cache_hit
-  - _Requirements: 8.1, 8.2, 8.3, 8.4, 8.5, 8.6, 8.7, 24.1, 24.2, 24.3, 24.4, 24.5, 24.6_
-- [ ] 12.1 Write basic tests for BigQuery DWH client
-  - Write tests/test_dwh_client.py using mocks or test BigQuery dataset
-  - Test load_parquet_to_staging() with mock BigQuery client
-  - Test merge_staging_to_core() MERGE statement generation
-  - Verify correct dataset IDs from settings
-  - Verify partitioning and clustering configuration
-  - Run tests: `pytest tests/test_dwh_client.py -v`
-  - _Requirements: 8.1, 8.2, 8.3, 8.4, 8.5, 8.6, 8.7, 24.1, 24.2, 24.3, 24.4, 24.5, 24.6_
+  - Return LoadJobResult with bytes_processed and cache_hit
+  - _Requirements: Requirement 8_
 
-- [ ] 13. Implement ingest runs tracking
-  - Create src/eduscale/tabular/runs_store.py
-  - Define IngestRun dataclass
-  - Implement RunsStore class
-  - Implement start_run() method to create new run in BigQuery
-  - Implement update_run_step() method to update status and step
-  - Implement get_run() method to retrieve run by file_id
-  - Create ingest_runs table in BigQuery if not exists
+- [ ]* 11.2 Write unit tests for DWH client
+  - Mock BigQuery operations
+  - Test staging table creation
+  - Test MERGE logic
+  - Test partitioning and clustering
+  - _Requirements: Requirement 15_
+
+- [ ] 12. Ingest runs tracking
+- [ ] 12.1 Implement runs_store.py module
+  - Create IngestRun dataclass
+  - Create RunsStore class
+  - Implement start_run() to create ingest_runs record in BigQuery
+  - Implement update_run_step() to update status and step
+  - Implement get_run() to query run by file_id
+  - Create ingest_runs table if not exists
   - Partition by created_at, cluster by region_id and status
-  - Store fields: file_id, region_id, status, step, error_message, created_at, updated_at
-  - _Requirements: 25.1, 25.2, 25.3, 25.4, 25.5, 25.6_
-- [ ] 13.1 Write basic tests for ingest runs tracking
-  - Write tests/test_runs_store.py using mock BigQuery client
-  - Test start_run() creates new run record
-  - Test update_run_step() updates status and step
-  - Test get_run() retrieves run by file_id
-  - Test table creation with correct schema
-  - Run tests: `pytest tests/test_runs_store.py -v`
-  - _Requirements: 25.1, 25.2, 25.3, 25.4, 25.5, 25.6_
+  - _Requirements: Requirement 20_
 
-- [ ] 14. Implement pipeline orchestration
-  - Update src/eduscale/tabular/pipeline.py
-  - Define IngestContext and IngestResult dataclasses
-  - Implement process_tabular_text() function (renamed from process_tabular_file)
-  - Retrieve text content from Cloud Storage using text_uri
-  - Initialize run with status STARTED, step RETRIEVE_TEXT
-  - Call analyze_text_structure() and load_dataframe_from_text(), update step to PARSED
-  - Call classify_table() and update step to CLASSIFIED
-  - Call map_columns() and update step to MAPPED
-  - Call normalize_dataframe() and update step to NORMALIZED
-  - Call validate_normalized_df() and update step to VALIDATED
-  - Call write_clean_parquet() and update step to CLEAN_WRITTEN
-  - Call DwhClient methods and update step to DWH_LOADED
-  - Update status to DONE on success
-  - Catch exceptions, log with context, update status to FAILED, re-raise
-  - _Requirements: 9.1, 9.2, 9.3, 9.4, 9.5, 9.6, 9.7, 9.8, 9.9, 18.1, 18.5_
-- [ ] 14.1 Write basic tests for pipeline orchestration
-  - Write tests/test_pipeline.py to test orchestration
-  - Test successful pipeline execution with all steps
-  - Test error handling and FAILED status updates
-  - Test ingest_runs tracking through pipeline
-  - Mock external dependencies (GCS, BigQuery)
-  - Run tests: `pytest tests/test_pipeline.py -v`
-  - _Requirements: 9.1, 9.2, 9.3, 9.4, 9.5, 9.6, 9.7, 9.8, 9.9, 18.1, 18.5_
+- [ ]* 12.2 Write unit tests for runs store
+  - Mock BigQuery operations
+  - Test run lifecycle (start → update → complete)
+  - Test error handling
+  - _Requirements: Requirement 15_
 
-- [ ] 15. Implement FastAPI integration for Tabular service
-  - Create src/eduscale/api/v1/routes_tabular.py
-  - Define TabularRequest and TabularResponse pydantic models
-  - Implement POST /api/v1/tabular/analyze endpoint
-  - Receive request from Transformer with text_uri, file_id, region_id, original_content_type, extraction_metadata
-  - Call process_tabular_text() with text_uri and metadata
-  - Return TabularResponse with status (INGESTED/FAILED), table_type, rows_loaded, bytes_processed, cache_hit, warnings, processing_time_ms
-  - Handle exceptions and return appropriate HTTP status codes (200 for success, 500 for failures)
-  - Log all requests and responses for audit trail
-  - Register router in src/eduscale/main.py
-  - _Requirements: 13.1, 13.2, 13.3, 13.4, 13.5, 13.6, 13.7, 14.1, 14.2, 14.3, 14.4, 14.5, 14.6, 26.1, 26.2, 26.3, 26.4, 26.5, 26.6_
-- [ ] 15.1 Write basic tests for FastAPI integration
-  - Write tests/test_tabular_api.py to test the /api/v1/tabular/analyze endpoint
-  - Test successful request with text_uri
-  - Test error handling for invalid text_uri or missing text content
-  - Test response format (TabularResponse with all required fields)
-  - Test integration with Transformer request format
-  - Run tests: `pytest tests/test_tabular_api.py -v`
-  - _Requirements: 13.1, 13.2, 13.3, 13.4, 13.5, 13.6, 13.7, 14.1, 14.2, 14.3, 14.4, 14.5, 14.6, 26.1, 26.2, 26.3, 26.4, 26.5, 26.6_
+- [ ] 13. Free-form text processing
+- [ ] 13.1 Implement free-form text processing in pipeline.py
+  - Detect FREE_FORM content type
+  - Extract entity mentions using LLM (llm_client.extract_entities)
+  - Apply entity resolution to each mention
+  - Compute sentiment_score using LLM (llm_client.analyze_sentiment)
+  - Store in observations table with metadata
+  - Create observation_targets junction records
+  - Preserve audio/PDF metadata from frontmatter
+  - _Requirements: Requirement 2_
 
-- [ ] 16. Create test fixtures
-  - Create tests/fixtures/ directory
-  - Create tests/fixtures/sample_text_csv.txt with CSV-formatted text (assessment data)
-  - Create tests/fixtures/sample_text_tsv.txt with TSV-formatted text (attendance data)
-  - Create tests/fixtures/sample_text_json.txt with JSON-formatted text (feedback data)
-  - Create tests/fixtures/sample_text_jsonl.txt with JSONL-formatted text
-  - Create tests/fixtures/sample_text_freeform.txt with unstructured text
-  - Create tests/fixtures/concepts_test.yaml with minimal concepts catalog
-  - _Requirements: 16.2_
+- [ ]* 13.2 Write unit tests for free-form processing
+  - Test entity extraction from sample texts
+  - Test sentiment analysis
+  - Test observations table storage
+  - _Requirements: Requirement 15_
 
-- [ ] 17. Implement health check endpoint
-  - Add GET /health endpoint in src/eduscale/api/v1/routes_tabular.py
-  - Return JSON with status "healthy", service name, and timestamp
-  - Check embedding model is loaded
-  - Check concepts catalog is loaded
-  - Return 200 for healthy, 503 for unhealthy
-  - _Requirements: 15.5_
+- [ ] 14. Feedback analysis module
+- [ ] 14.1 Implement feedback_analyzer.py in analysis/ module
+  - Create FeedbackTarget dataclass
+  - Implement analyze_feedback_batch() function
+  - Extract entity mentions from feedback text using LLM
+  - Apply entity resolution to mentions
+  - Generate embeddings for feedback text using BGE-M3
+  - Compute similarity with entity embeddings
+  - Combine LLM-based entity extraction and embedding-based matches
+  - Create FeedbackTarget records with relevance scores
+  - Assign confidence levels (HIGH/MEDIUM/LOW)
+  - _Requirements: Requirement 27_
 
-- [ ] 18. Implement privacy and security measures
-  - Ensure no external API calls with real data in all modules
-  - Verify sentence-transformers runs locally without external endpoints
-  - Implement pseudonymization logic in normalize.py using SHA256 hashing
-  - Configure logging to never log raw data values, only metadata and statistics
-  - Add validation that all processing occurs within configured GCP region
-  - Document privacy measures in code comments
-  - _Requirements: 17.1, 17.2, 17.3, 17.4, 17.5, 17.6_
+- [ ]* 14.2 Write unit tests for feedback analyzer
+  - Test with sample feedback text containing entity mentions
+  - Test entity extraction and resolution
+  - Test FeedbackTarget creation
+  - _Requirements: Requirement 15_
 
-- [ ] 19. Implement determinism and explainability features
-  - Add structured logging throughout pipeline using existing logging system
-  - Log classification decisions with top contributing column headers and anchor phrases in classifier.py
-  - Log column mapping decisions with similarity scores in mapping.py
-  - Ensure all algorithms are deterministic (no random sampling)
-  - Add code comments explaining key decisions and algorithms
-  - Structure code for junior dev understanding (clear naming, modular functions)
-  - _Requirements: 18.1, 18.2, 18.3, 18.4, 18.5, 18.6_
+- [ ] 16. LLM client for entity extraction and sentiment
+- [ ] 16.1 Implement llm_client.py in analysis/ module
+  - Create LLMClient class
+  - Implement extract_entities() using Ollama API
+  - Implement analyze_sentiment() using Ollama API
+  - Implement _call_ollama() internal method with error handling
+  - Use low temperature (0.1) for deterministic outputs
+  - Handle JSON parsing errors gracefully
+  - _Requirements: Requirement 12_
 
-- [ ] 20. Verify dependency licenses and document
-  - Review licenses for all dependencies in requirements.txt
-  - Verify sentence-transformers, pandas, pyarrow, pandera use MIT/Apache/BSD licenses
-  - Verify google-cloud-bigquery, google-cloud-storage, pyyaml, numpy, scikit-learn licenses
-  - Document any license concerns or restrictions
-  - Add license information to README or LICENSES file
-  - Verify sentence-transformer model (paraphrase-multilingual-mpnet-base-v2) has permissive license
-  - _Requirements: 19.1, 19.2, 19.3, 19.4, 19.5_
+- [ ]* 16.2 Write unit tests for LLM client
+  - Test entity extraction with sample texts
+  - Test sentiment analysis
+  - Test error handling
+  - _Requirements: Requirement 15_
 
-- [ ] 21. Implement integration tests
-  - Create tests/test_integration_tabular.py
-  - Write end-to-end test simulating Transformer request with text_uri (CSV text)
-  - Write end-to-end test with TSV text
-  - Write end-to-end test with JSON text
-  - Write end-to-end test with free-form text
-  - Test error handling at each pipeline stage (structure analysis errors, size errors, validation errors)
-  - Verify ingest_runs tracking accuracy through complete pipeline
-  - Verify data flows correctly to BigQuery staging and core tables
-  - Test response format matches TabularResponse specification
-  - _Requirements: 16.8 (integration tests section)_
+- [ ] 15. Pipeline orchestration
+- [ ] 15.1 Implement main pipeline orchestration in pipeline.py
+  - Implement process_tabular_text() function
+  - Parse frontmatter from text content
+  - Detect content type (TABULAR vs FREE_FORM)
+  - Route to appropriate processing path
+  - For TABULAR: load DataFrame → classify → map → resolve entities → normalize → validate → clean layer → DWH
+  - For FREE_FORM: extract entities → resolve → sentiment → observations table
+  - Track pipeline steps in ingest_runs
+  - Handle errors and update run status to FAILED
+  - Return IngestResult with status and metadata
+  - _Requirements: Requirement 9_
 
-- [ ] 22. Add type hints and code quality
-  - Add type hints to all function signatures in all modules
-  - Use typing.Literal, typing.Optional, dataclasses where appropriate
-  - Run mypy for type checking and fix any issues
-  - Ensure consistent code style across all modules
-  - Add docstrings to all public functions and classes
-  - Keep modules focused with single responsibility
-  - _Requirements: 18.6 (code quality for junior dev understanding)_
+- [ ]* 15.2 Write integration tests for pipeline
+  - Test end-to-end with sample CSV file
+  - Test end-to-end with sample PDF text
+  - Test error handling at each stage
+  - _Requirements: Requirement 15_
 
-- [ ] 23. Create Cloud Run deployment configuration
-  - Create infra/cloud-run-tabular-service.yaml for Tabular service
-  - Configure memory: 2GB minimum for embedding model
-  - Configure CPU: 2 vCPUs for embedding performance
-  - Configure max concurrency: 10 requests per instance
-  - Configure environment variables from settings
-  - Configure service account with Cloud Storage read and BigQuery write permissions
-  - Configure health check endpoint: /health
-  - Configure timeout: 300 seconds for long-running processing
-  - _Requirements: 15.1, 15.2, 15.3, 15.4, 15.5, deployment notes from design_
+- [ ] 16. CloudEvents API endpoint
+- [ ] 16.1 Implement routes_tabular.py FastAPI endpoints
+  - Create POST / endpoint for CloudEvents from Eventarc
+  - Parse CloudEvent to extract bucket, object_name, file_id, event_id
+  - Filter for text/*.txt pattern
+  - Download text content from GCS using StorageClient
+  - Call process_tabular_text() with text content
+  - Fire-and-forget Backend status update
+  - Return 200 to Eventarc (or 400/500 for errors)
+  - Log all steps with event_id as correlation_id
+  - _Requirements: Requirement 13, Requirement 22_
 
-- [ ] 24. Create deployment documentation
-  - Document sentence-transformers model download process (~400MB on first use)
-  - Document memory requirements (2GB RAM for embedding model)
-  - Document CPU requirements (2 vCPUs recommended)
-  - Document BigQuery dataset provisioning via Terraform
-  - Document concepts.yaml deployment with application container
-  - Create example .env file with all required environment variables
-  - Document Cloud Run deployment steps
-  - Document service account permissions required
-  - Document integration with Transformer service
-  - Add troubleshooting section for common issues
-  - _Requirements: 10.9 (configuration accessibility), deployment notes from design_
+- [ ] 16.2 Implement optional direct API endpoint for testing
+  - Create POST /api/v1/tabular/analyze endpoint
+  - Accept TabularRequest with text_uri and metadata
+  - Download text from Cloud Storage
+  - Call process_tabular_text()
+  - Return TabularResponse with status and metrics
+  - _Requirements: Requirement 14_
+
+- [ ] 16.3 Implement health check endpoint
+  - Create GET /health endpoint
+  - Return service status and model loading status
+  - _Requirements: Requirement 14_
+
+- [ ]* 16.4 Write API endpoint tests
+  - Test CloudEvent handling with sample events
+  - Test direct API endpoint
+  - Test error responses
+  - _Requirements: Requirement 15_
+
+- [ ] 17. Deployment configuration
+- [ ] 17.1 Create Dockerfile with Ollama
+  - Base image: python:3.11-slim
+  - Install Ollama via curl script
+  - Install Python dependencies (sentence-transformers, requests, etc.)
+  - Pre-download BGE-M3 model
+  - Create startup script to start Ollama + pull Llama 3.2 1B + start FastAPI
+  - _Requirements: Deployment Notes_
+
+- [ ] 17.2 Create Cloud Run configuration for Tabular service
+  - Create infra/tabular-config.yaml
+  - Configure memory: 4GB minimum (for BGE-M3 + Llama + overhead)
+  - Configure CPU: 2 vCPUs
+  - Configure max concurrency: 5 (lower due to LLM memory)
+  - Set environment variables: EMBEDDING_MODEL_NAME, LLM_MODEL_NAME, LLM_ENDPOINT
+  - Configure service account with BigQuery and GCS permissions
+  - _Requirements: Deployment Notes_
+
+- [ ] 17.3 Create Eventarc trigger for text files
+  - Add Eventarc trigger configuration to terraform
+  - Filter on text/*.txt pattern in configured bucket
+  - Route to Tabular service POST / endpoint
+  - _Requirements: Requirement 13_
+
+- [ ] 17.4 Update CI/CD workflow
+  - Create .github/workflows/deploy-tabular.yml
+  - Build Docker image with sentence-transformers
+  - Deploy to Cloud Run
+  - Run smoke tests after deployment
+  - _Requirements: Deployment Notes_
+
+- [ ] 18. Documentation and testing
+- [ ] 18.1 Create test fixtures
+  - Create tests/fixtures/sample_text_csv.txt with frontmatter
+  - Create tests/fixtures/sample_text_json.txt with frontmatter
+  - Create tests/fixtures/sample_feedback.txt with entity mentions
+  - Create tests/fixtures/concepts_test.yaml
+  - Create tests/fixtures/mock_entities.json
+  - _Requirements: Requirement 15_
+
+- [ ] 18.2 Create README for Tabular service
+  - Document service purpose and architecture
+  - Document configuration options
+  - Document API endpoints
+  - Document deployment process
+  - Include examples of CloudEvents and API requests
+  - _Requirements: Documentation_
+
+- [ ]* 18.3 Run full integration test suite
+  - Test complete pipeline with real files
+  - Verify data in BigQuery
+  - Test entity resolution accuracy
+  - Test feedback analysis
+  - _Requirements: Requirement 15_
+
+## Notes
+
+- Tasks marked with * are optional testing tasks that can be skipped for faster MVP
+- Each task should be completed and tested before moving to the next
+- Entity resolution is critical and should be thoroughly tested
+- **Content Type Detection:** Uses only frontmatter `original_content_type` field - no text structure analysis needed
+- **Backend Updates:** Fire-and-forget status updates to inform UI of processing completion
+- **Batch Analysis:** Removed from this spec - will be separate module/service
+- **AI Models:**
+  - BGE-M3 embedding model downloads on first use (~2.2GB)
+  - Llama 3.2 1B pulled by Ollama during container startup (~1.3GB)
+  - Total model size: ~3.5GB
+  - Cold start time: ~20-30 seconds
+- BigQuery tables are provisioned by terraform-gcp-infrastructure spec (tasks 11-18)
+- Cloud Run configuration: 4GB memory, 2 vCPUs, concurrency 5

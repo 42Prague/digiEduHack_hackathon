@@ -8,39 +8,67 @@ The Tabular service operates as part of a larger pipeline: User → Backend → 
 
 ## Glossary
 
-- **Tabular Service**: The microservice responsible for analyzing text structure and loading structured data to BigQuery
-- **Transformer Service**: Upstream service that converts various file formats (images, PDFs, audio) to text and passes text_uri to Tabular
+- **Tabular Service**: The microservice responsible for analyzing content structure (tabular or free-form) and loading data to BigQuery
+- **Transformer Service**: Upstream service that converts various file formats (Excel, PDFs, audio, images) to text and passes text_uri to Tabular
 - **MIME Decoder**: Orchestration service that receives Eventarc events and routes to appropriate processors (Transformer, Tabular)
 - **Text URI**: Cloud Storage URI pointing to extracted text file (e.g., gs://bucket/text/file_id.txt)
-- **Tabular Source**: A data structure containing file metadata (file_id, region_id, text_uri, original content type)
-- **Table Type**: Classification category for data tables (ATTENDANCE, ASSESSMENT, FEEDBACK, INTERVENTION, MIXED)
-- **Concept Key**: Canonical identifier for a data column (e.g., student_id, test_score, date)
-- **Column Mapping**: Association between source column names and canonical concept keys
+- **Content Type**: Classification of source data: TABULAR (structured tables), FREE_FORM (unstructured text), or MIXED
+- **Table Type**: Classification category for tabular data (ATTENDANCE, ASSESSMENT, FEEDBACK, INTERVENTION, RELATIONSHIP)
+- **Concept Key**: Canonical identifier for a data column in tabular data (e.g., student_id, test_score, date)
+- **Column Mapping**: AI-powered association between source column names and canonical concept keys (only for tabular data)
 - **Clean Layer**: Intermediate storage layer containing normalized Parquet files
 - **DWH**: Data Warehouse (BigQuery) for final structured data storage
 - **Embedding Model**: Sentence-transformer model for semantic text understanding
 - **Concepts Catalog**: YAML/JSON configuration defining table types and canonical concepts
 - **Ingest Run**: Tracked execution of the pipeline for a specific file
 - **Processing Status**: Status information returned to MIME Decoder (INGESTED, FAILED) with metadata
+- **Entity Resolution**: AI-driven process that identifies "И. Петров" and "Иван Петров" as the same person by matching against canonical entities in BigQuery dimension tables
+- **Junction Table**: Relational table that connects two or more entities (e.g., StudentTeacherSubject links students, teachers, subjects, and regions)
+- **Canonical Entity ID**: Unique identifier for an entity in BigQuery dimension tables (dim_teacher, dim_student, dim_region, etc.)
+- **Fuzzy Matching**: String similarity algorithm (Levenshtein distance) for matching name variations
+- **Embedding-Based Matching**: Semantic similarity using sentence-transformer embeddings for cross-language and synonym matching
 
 ## Requirements
 
-### Requirement 1: Text Structure Analysis
+### Requirement 1: Content Type Routing
 
-**User Story:** As a data engineer, I want the system to automatically analyze text structure and detect tabular data formats, so that diverse file types can be processed uniformly.
+**User Story:** As a data engineer, I want the system to route files to appropriate processing pipeline based on content type, so that diverse file types are handled correctly.
 
 #### Acceptance Criteria
 
-1. WHEN text_uri is provided from Transformer, THE Tabular Service SHALL retrieve the text content from Cloud Storage
-2. WHEN text content is retrieved, THE Tabular Service SHALL analyze the structure to determine if it contains tabular data (CSV, TSV, JSON, JSONL, or structured text)
-3. WHEN the text contains delimiter-separated values, THE Tabular Service SHALL detect the delimiter (comma, semicolon, tab, pipe)
-4. WHEN the text contains JSON structure, THE Tabular Service SHALL determine if it is a single JSON object or line-delimited JSON (JSONL)
-5. WHEN the text structure cannot be parsed as tabular data, THE Tabular Service SHALL classify it as free-form text and route to observations table
-6. WHEN structure analysis completes, THE Tabular Service SHALL log the detected format and confidence score
+1. WHEN text_uri is provided, THE Tabular Service SHALL retrieve the text content from Cloud Storage
+2. WHEN text content starts with YAML frontmatter delimiters (---), THE Tabular Service SHALL parse the frontmatter to extract metadata
+3. WHEN frontmatter is parsed, THE Tabular Service SHALL extract top-level fields (file_id, region_id, text_uri, event_id, file_category)
+4. WHEN frontmatter is parsed, THE Tabular Service SHALL extract nested 'original' section fields (filename, content_type, size_bytes, bucket, object_path, uploaded_at)
+5. WHEN frontmatter is parsed, THE Tabular Service SHALL extract nested 'extraction' section fields (method, timestamp, success, duration_ms)
+6. WHEN frontmatter is parsed, THE Tabular Service SHALL extract nested 'content' and 'document' section fields (text_length, word_count, page_count, etc.)
+7. WHEN frontmatter parsing completes, THE Tabular Service SHALL separate frontmatter from actual text content
+8. WHEN original.content_type indicates structured data (application/vnd.ms-excel, application/vnd.openxmlformats-officedocument.spreadsheetml.sheet, text/csv), THE Tabular Service SHALL route to TABULAR processing path
+9. WHEN original.content_type indicates unstructured data (application/pdf, audio/*, text/plain), THE Tabular Service SHALL route to FREE_FORM processing path
+10. WHEN original.content_type is application/json, THE Tabular Service SHALL attempt TABULAR parsing first, fallback to FREE_FORM if parsing fails
+11. THE Tabular Service SHALL log the routing decision with original.content_type for debugging
+12. THE Tabular Service SHALL support two processing paths: TABULAR (column mapping + entity resolution) and FREE_FORM (entity extraction from text)
 
-### Requirement 2: DataFrame Loading from Text
+### Requirement 2: Free-Form Text Processing
 
-**User Story:** As a data engineer, I want to load text content into pandas DataFrames, so that I can process structured data extracted from various file formats.
+**User Story:** As a data engineer, I want free-form text (PDF content, audio transcripts, unstructured feedback) processed and stored with entity extraction, so that all content types are searchable and analyzable.
+
+#### Acceptance Criteria
+
+1. WHEN content is classified as FREE_FORM, THE Tabular Service SHALL skip column mapping and DataFrame loading
+2. WHEN free-form text is processed, THE Tabular Service SHALL extract mentioned entities using NER (Named Entity Recognition) or embedding-based detection
+3. WHEN entities are detected in free-form text, THE Tabular Service SHALL apply entity resolution to match against canonical entities
+4. WHEN free-form text contains feedback-like content, THE Tabular Service SHALL compute sentiment_score using sentiment analysis
+5. WHEN free-form text is processed, THE Tabular Service SHALL store it in observations table with metadata: file_id, region_id, text_content, detected_entities, sentiment_score
+6. WHEN original content_type is audio/*, THE Tabular Service SHALL preserve audio metadata (duration, confidence, language) from frontmatter
+7. WHEN original content_type is application/pdf, THE Tabular Service SHALL preserve document metadata (page_count) from frontmatter
+8. THE Tabular Service SHALL support full-text search on observations table for free-form content
+9. THE Tabular Service SHALL create observation_targets junction records linking observations to detected entities (similar to FeedbackTarget)
+10. WHEN observation_targets are created, THE Tabular Service SHALL apply entity resolution to normalize entity mentions to canonical IDs
+
+### Requirement 3: DataFrame Loading from Text
+
+**User Story:** As a data engineer, I want to load tabular text content into pandas DataFrames, so that I can process structured data extracted from various file formats.
 
 #### Acceptance Criteria
 
@@ -177,79 +205,72 @@ The Tabular service operates as part of a larger pipeline: User → Backend → 
 
 #### Acceptance Criteria
 
-1. THE Concepts Catalog SHALL define table types: ATTENDANCE, ASSESSMENT, FEEDBACK, INTERVENTION, MIXED
+1. THE Concepts Catalog SHALL define 5 table types: ATTENDANCE, ASSESSMENT, FEEDBACK, INTERVENTION, RELATIONSHIP
 2. THE Concepts Catalog SHALL include anchor phrases for each table type in English and Czech
-3. THE Concepts Catalog SHALL define canonical concept keys with descriptions, expected data types, and synonyms
-4. THE Concepts Catalog SHALL include core entity concepts: student_id, teacher_id, parent_id, region_id, subject_id
-5. THE Concepts Catalog SHALL include entity name concepts: student_name, teacher_name, parent_name, school_name, region_name
-6. THE Concepts Catalog SHALL include temporal concepts: date, from_date, to_date
-7. THE Concepts Catalog SHALL include assessment concepts: test_score, subject
-8. THE Concepts Catalog SHALL include intervention concepts: intervention_id, intervention_type, participants_count
-9. THE Concepts Catalog SHALL include experiment concepts: experiment_id, experiment_name, experiment_status
-10. THE Concepts Catalog SHALL include criteria concepts: criteria_id, criteria_name, target_value, baseline_value
-11. THE Concepts Catalog SHALL include rule concepts: rule_id, rule_title, rule_type
-12. THE Concepts Catalog SHALL include feedback concepts: feedback_id, feedback_text, sentiment_score, feedback_category, author_id, author_type
-13. THE Concepts Catalog SHALL include generic concepts: description
-5. WHEN the application starts, THE Concepts Loader SHALL load the catalog from CONCEPT_CATALOG_PATH
-6. WHEN the catalog is loaded, THE Concepts Loader SHALL precompute embeddings for table type anchors and concept synonyms
-7. THE Concepts Loader SHALL provide functions to retrieve table type anchors, concepts, and concept embeddings
-8. THE Concepts Loader SHALL cache embeddings to avoid recomputation on each request
+3. THE Concepts Catalog SHALL define canonical concepts organized by category: entity IDs, entity names, temporal fields, assessment fields, intervention fields, experiment fields, criteria fields, rule fields, feedback fields, analysis fields, junction/relationship fields, and generic fields
+4. THE Concepts Catalog SHALL include multilingual synonyms (English and Czech), descriptions, and expected_type for each concept
+5. THE Concepts Catalog SHALL include concepts for all junction tables: StudentParent, StudentTeacherSubject, RegionRule, RegionCriteria, RegionExperiment, ExperimentCriteria, FeedbackTarget, AnalysisFeedback, AnalysisImpact
+6. THE Concepts Catalog SHALL include concepts for AnalysisResult entity (for ingesting pre-generated analysis data): analysis_id, analysis_timestamp, analysis_status, analysis_report
+7. THE Concepts Catalog SHALL include missing temporal and metadata fields: timestamp, source_url, weight, role, relevance_score, impact_score, target_type, target_id
+8. WHEN the application starts, THE Concepts Loader SHALL load the catalog from CONCEPT_CATALOG_PATH
+9. WHEN the catalog is loaded, THE Concepts Loader SHALL precompute embeddings for table type anchors and concept synonyms
+10. THE Concepts Loader SHALL provide functions to retrieve table type anchors, concepts, and concept embeddings
+11. THE Concepts Loader SHALL cache embeddings to avoid recomputation on each request
 
-### Requirement 12: Embedding Model Management
+**Note:** Detailed list of concepts is defined in `config/concepts.yaml`
 
-**User Story:** As an ML engineer, I want the embedding model loaded once and reused, so that inference is fast and resource-efficient.
+### Requirement 12: AI Models Management
+
+**User Story:** As an ML engineer, I want AI models loaded once and reused, so that inference is fast and resource-efficient.
 
 #### Acceptance Criteria
 
-1. THE Embeddings Module SHALL use sentence-transformers library for text embedding
-2. WHEN the application starts or first embedding is requested, THE Embeddings Module SHALL load the model specified by EMBEDDING_MODEL_NAME
-3. WHEN the model is loaded, THE Embeddings Module SHALL cache it in a module-level variable
-4. THE Embeddings Module SHALL provide an embed_texts function accepting a list of strings and returning numpy array of embeddings
-5. WHEN embed_texts is called, THE Embeddings Module SHALL use the cached model instance without reloading
-6. THE Embeddings Module SHALL support multilingual models like paraphrase-multilingual-mpnet-base-v2
+1. THE Tabular Service SHALL use BGE-M3 (BAAI/bge-m3) for text embeddings
+2. THE Tabular Service SHALL use Llama 3.2 1B via Ollama for entity extraction, sentiment analysis, and report generation
+3. WHEN the application starts, THE Embeddings Module SHALL load BGE-M3 model specified by EMBEDDING_MODEL_NAME
+4. WHEN the application starts, THE Ollama service SHALL start in background and pull Llama 3.2 1B model
+5. WHEN the embedding model is loaded, THE Embeddings Module SHALL cache it in a module-level variable
+6. THE Embeddings Module SHALL provide an embed_texts function accepting a list of strings and returning numpy array of 1024-dimensional embeddings
+7. WHEN embed_texts is called, THE Embeddings Module SHALL use the cached model instance without reloading
+8. THE LLM Client SHALL connect to Ollama at LLM_ENDPOINT (default: http://localhost:11434)
+9. THE LLM Client SHALL use low temperature (0.1) for deterministic outputs
+10. WHEN LLM calls fail, THE LLM Client SHALL log warnings and return safe defaults (empty list for entities, 0.0 for sentiment)
 
-### Requirement 13: Service Integration
+### Requirement 13: Event-Driven Integration
 
-**User Story:** As a system architect, I want the Tabular service to integrate with the event-driven pipeline, so that it processes data automatically and returns status to upstream services.
-
-#### Acceptance Criteria
-
-1. THE Tabular Service SHALL expose endpoint POST /api/v1/tabular/analyze for receiving requests from Transformer
-2. WHEN the endpoint receives a request with text_uri and metadata, THE Tabular Service SHALL retrieve the text content from Cloud Storage
-3. WHEN metadata includes file_id and region_id, THE Tabular Service SHALL use these for tracking and partitioning
-4. WHEN processing completes successfully, THE Tabular Service SHALL return status "INGESTED" with summary including rows loaded, table type, bytes_processed, and cache_hit
-5. WHEN processing fails, THE Tabular Service SHALL return status "FAILED" with error details and current processing step
-6. THE Tabular Service SHALL support both synchronous HTTP calls from Transformer and direct invocation for testing
-7. THE Tabular Service SHALL log all requests and responses for audit purposes
-
-### Requirement 14: Transformer Integration
-
-**User Story:** As a system architect, I want the Tabular service to receive processed text from Transformer, so that the pipeline can handle diverse file formats uniformly.
+**User Story:** As a system architect, I want the Tabular service to be triggered by Eventarc when text files are created, so that processing is fully event-driven and scalable.
 
 #### Acceptance Criteria
 
-1. WHEN Transformer completes text extraction, THE Transformer SHALL call the Tabular service with text_uri and metadata
-2. WHEN the request includes original_content_type, THE Tabular Service SHALL use it as a hint for structure analysis
-3. WHEN the request includes multiple text_uris (from archive unpacking), THE Tabular Service SHALL process each text file independently
-4. WHEN Transformer provides extraction_metadata, THE Tabular Service SHALL include it in audit logs
-5. WHEN the Tabular service completes processing, THE Tabular Service SHALL return processing status to Transformer
-6. THE Tabular Service SHALL handle both single file and batch processing requests from Transformer
+1. THE Tabular Service SHALL expose endpoint POST / for receiving CloudEvents from Eventarc
+2. WHEN the endpoint receives a CloudEvent with type "google.cloud.storage.object.v1.finalized", THE Tabular Service SHALL extract bucket and object_name from event data
+3. WHEN the object_name matches pattern "text/*.txt", THE Tabular Service SHALL process the text file
+4. WHEN the object_name does NOT match "text/*.txt", THE Tabular Service SHALL return 200 and skip processing
+5. WHEN CloudEvent is received, THE Tabular Service SHALL extract file_id from object_name (text/{file_id}.txt)
+6. WHEN file_id is extracted, THE Tabular Service SHALL download text content from Cloud Storage
+7. WHEN processing completes successfully, THE Tabular Service SHALL return 200 to Eventarc
+8. WHEN processing fails with retryable error, THE Tabular Service SHALL return 500 to trigger Eventarc retry
+9. WHEN processing fails with non-retryable error, THE Tabular Service SHALL return 400 to prevent retry
+10. THE Tabular Service SHALL support both CloudEvents from Eventarc and direct API calls for testing
+11. THE Tabular Service SHALL log all CloudEvents with correlation IDs for tracing
 
-### Requirement 15: Event-Driven Flow
+
+
+### Requirement 14: Event-Driven Flow
 
 **User Story:** As a system architect, I want the Tabular service to participate in the event-driven pipeline, so that processing is scalable, resilient, and observable.
 
 #### Acceptance Criteria
 
 1. WHEN the Tabular service is deployed, THE Tabular Service SHALL run as an independent Cloud Run service
-2. WHEN the Tabular service receives a request, THE Tabular Service SHALL process it asynchronously without blocking the caller
-3. WHEN processing completes or fails, THE Tabular Service SHALL return status immediately to the Transformer
+2. WHEN the Tabular service receives a CloudEvent, THE Tabular Service SHALL process it asynchronously without blocking Eventarc
+3. WHEN processing completes or fails, THE Tabular Service SHALL return status immediately to Eventarc
 4. THE Tabular Service SHALL scale independently based on processing load
 5. THE Tabular Service SHALL implement health check endpoints for Cloud Run monitoring
-6. WHEN the service is unavailable, THE upstream services SHALL retry with exponential backoff
+6. WHEN the service is unavailable, THE Eventarc SHALL retry with exponential backoff
 7. THE Tabular Service SHALL emit structured logs for observability and debugging
 
-### Requirement 16: Testing Coverage
+### Requirement 15: Testing Coverage
 
 **User Story:** As a software engineer, I want comprehensive unit tests, so that I can confidently refactor and extend the pipeline.
 
@@ -264,7 +285,7 @@ The Tabular service operates as part of a larger pipeline: User → Backend → 
 7. THE Test Suite SHALL verify that BigQuery load jobs and merge statements use correct dataset IDs from settings
 8. THE Test Suite SHALL include integration tests simulating requests from Transformer with text_uri
 
-### Requirement 17: Privacy and Security
+### Requirement 16: Privacy and Security
 
 **User Story:** As a compliance officer, I want the pipeline to be privacy-safe and not send data to external services, so that we maintain data sovereignty and GDPR compliance.
 
@@ -277,7 +298,7 @@ The Tabular service operates as part of a larger pipeline: User → Backend → 
 5. THE Tabular Service SHALL log only metadata and statistics, never raw data values in logs
 6. THE Tabular Service SHALL ensure all data processing occurs within the configured GCP region for data locality
 
-### Requirement 18: Determinism and Explainability
+### Requirement 17: Determinism and Explainability
 
 **User Story:** As a data scientist, I want the pipeline to be deterministic and explainable, so that I can debug issues and understand classification decisions.
 
@@ -290,7 +311,7 @@ The Tabular service operates as part of a larger pipeline: User → Backend → 
 5. THE Tabular Service SHALL use deterministic algorithms without random sampling or non-deterministic operations
 6. THE Tabular Service SHALL be understandable by a junior developer in less than 30 minutes through clear code structure and documentation
 
-### Requirement 19: Dependency Management
+### Requirement 18: Dependency Management
 
 **User Story:** As a legal compliance officer, I want all dependencies to use permissive licenses, so that we avoid legal risks in commercial deployment.
 
@@ -302,67 +323,26 @@ The Tabular service operates as part of a larger pipeline: User → Backend → 
 4. THE Tabular Service SHALL document all ML model licenses in the concepts catalog or configuration
 5. THE Tabular Service SHALL use sentence-transformers models with permissive licenses
 
-### Requirement 20: DataFrame Column Name Preservation
 
-**User Story:** As a data auditor, I want original column names preserved alongside normalized names, so that I can trace data lineage and verify mappings.
 
-#### Acceptance Criteria
+### Requirement 19: Data Warehouse Table Structure
 
-1. WHEN column names are normalized to lower snake case, THE Tabular Service SHALL store the original column names in a separate mapping
-2. THE Tabular Service SHALL include original column names in audit logs and metadata
-3. THE Tabular Service SHALL provide a mapping structure that includes both source_column (original) and concept_key (normalized)
-4. WHERE column mappings are stored, THE Tabular Service SHALL preserve the original column name for traceability
-
-### Requirement 21: Advanced Text Parsing
-
-**User Story:** As a data engineer, I want robust text parsing that handles various delimiters and encodings, so that I can ingest data from diverse sources.
+**User Story:** As a data analyst, I want data loaded into specific dimensional, fact, and junction tables, so that I can perform star schema analytics with full relational integrity.
 
 #### Acceptance Criteria
 
-1. WHEN parsing delimiter-separated text, THE Tabular Service SHALL use pandas.read_csv with sep=None and engine="python" for automatic separator detection
-2. WHEN automatic detection fails, THE Tabular Service SHALL attempt to sniff the first few lines to determine the separator
-3. WHEN parsing text, THE Tabular Service SHALL attempt UTF-8 encoding first, then fall back to cp1250 for Central European data
-4. WHEN encoding detection fails, THE Tabular Service SHALL log the encoding error and raise a clear exception
-5. THE Tabular Service SHALL handle text with comma, semicolon, tab, and pipe separators
+1. THE DWH Client SHALL load dimension data into tables: dim_region, dim_student, dim_teacher, dim_parent, dim_subject, dim_school, dim_time, dim_rule, dim_criteria, dim_experiment
+2. THE DWH Client SHALL load fact data into tables: fact_assessment, fact_intervention, fact_attendance
+3. THE DWH Client SHALL load junction table data into tables: student_parent, student_teacher_subject, region_rule, region_criteria, region_experiment, experiment_criteria, feedback_target, observation_targets, analysis_feedback, analysis_impact
+4. THE DWH Client SHALL load observation data into an observations table for free-form text (PDF content, audio transcripts, unstructured feedback)
+5. THE DWH Client SHALL load feedback data into a feedback table with polymorphic author references
+6. THE DWH Client SHALL load analysis results into an analysis_results table
+7. WHEN loading dimension tables, THE DWH Client SHALL use MERGE operations to handle slowly changing dimensions with valid_from and valid_to timestamps
+8. WHEN loading fact tables, THE DWH Client SHALL use INSERT operations or MERGE with deduplication logic based on composite keys
+9. WHEN loading junction tables, THE DWH Client SHALL use MERGE operations to maintain historical relationships with temporal validity
+10. THE DWH Client SHALL create staging tables with prefix "stg_" followed by the target table name
 
-### Requirement 22: Classification Algorithm Details
-
-**User Story:** As an ML engineer, I want specific classification algorithm implementation details, so that the system produces reliable and calibrated confidence scores.
-
-#### Acceptance Criteria
-
-1. WHEN extracting text features for classification, THE Tabular Service SHALL sample up to 5 non-null values per column
-2. WHEN computing aggregate similarity, THE Tabular Service SHALL use either mean or max cosine similarity between embeddings and anchors
-3. WHEN converting scores to confidence, THE Tabular Service SHALL apply softmax normalization over table type scores
-4. WHEN multiple table types have similar scores, THE Tabular Service SHALL use softmax to produce calibrated probabilities
-5. THE Tabular Service SHALL format text snippets as "column_name: value1; value2; value3" for embedding
-
-### Requirement 23: Column Mapping Scoring Details
-
-**User Story:** As an ML engineer, I want specific scoring rules for column mapping, so that type mismatches are penalized appropriately.
-
-#### Acceptance Criteria
-
-1. WHEN the inferred column dtype is numeric and concept expected_type is number, THE Tabular Service SHALL increase the similarity score by 0.1
-2. WHEN the inferred column dtype is datetime and concept expected_type is date, THE Tabular Service SHALL increase the similarity score by 0.1
-3. WHEN the inferred column dtype is string and concept expected_type is categorical or string, THE Tabular Service SHALL increase the similarity score by 0.05
-4. WHEN the inferred column dtype does not match concept expected_type, THE Tabular Service SHALL decrease the similarity score by 0.15
-5. THE Tabular Service SHALL compute base similarity using cosine similarity before applying type-based adjustments
-
-### Requirement 24: Data Warehouse Table Structure
-
-**User Story:** As a data analyst, I want data loaded into specific dimensional and fact tables, so that I can perform star schema analytics.
-
-#### Acceptance Criteria
-
-1. THE DWH Client SHALL load dimension data into tables: dim_region, dim_school, dim_time
-2. THE DWH Client SHALL load fact data into tables: fact_assessment, fact_intervention
-3. THE DWH Client SHALL load observation data into an observations table for unstructured or mixed data
-4. WHEN loading dimension tables, THE DWH Client SHALL use MERGE operations to handle slowly changing dimensions
-5. WHEN loading fact tables, THE DWH Client SHALL use INSERT operations or MERGE with deduplication logic
-6. THE DWH Client SHALL create staging tables with prefix "stg_" followed by the target table name
-
-### Requirement 25: Ingest Runs Storage Implementation
+### Requirement 20: Ingest Runs Storage Implementation
 
 **User Story:** As a DevOps engineer, I want ingest run tracking persisted in BigQuery, so that I have a durable audit trail for all ingestion operations.
 
@@ -375,15 +355,135 @@ The Tabular service operates as part of a larger pipeline: User → Backend → 
 5. THE Runs Store SHALL use the same BigQuery project and dataset configuration as the main DWH
 6. THE Runs Store SHALL create the ingest_runs table automatically if it does not exist with appropriate schema
 
-### Requirement 26: Status Response Format
+### Requirement 21: YAML Frontmatter Parsing
 
-**User Story:** As a system integrator, I want standardized status responses, so that upstream services can reliably process results.
+**User Story:** As a data engineer, I want the system to parse YAML frontmatter from text files, so that metadata from Transformer is available for processing.
 
 #### Acceptance Criteria
 
-1. WHEN processing completes successfully, THE Tabular Service SHALL return JSON with status "INGESTED", table_type, rows_loaded, bytes_processed, and cache_hit
-2. WHEN processing fails, THE Tabular Service SHALL return JSON with status "FAILED", error_message, and current_step
-3. WHEN processing encounters warnings, THE Tabular Service SHALL include warnings array in the response
-4. THE Tabular Service SHALL include processing_time_ms in all responses for performance monitoring
-5. THE Tabular Service SHALL return HTTP 200 for successful processing and HTTP 500 for failures
-6. THE response format SHALL be compatible with the Transformer service expectations
+1. WHEN text content starts with "---\n", THE Tabular Service SHALL identify it as YAML frontmatter
+2. WHEN frontmatter is detected, THE Tabular Service SHALL parse YAML content between first and second "---" delimiters
+3. WHEN frontmatter is parsed, THE Tabular Service SHALL extract file_id, region_id, text_uri, event_id
+4. WHEN frontmatter contains "original" section, THE Tabular Service SHALL extract filename, content_type, size_bytes, bucket, object_path, uploaded_at
+5. WHEN frontmatter contains "extraction" section, THE Tabular Service SHALL extract method, timestamp, success, duration_ms
+6. WHEN frontmatter contains "content" section, THE Tabular Service SHALL extract text_length, word_count, character_count
+7. WHEN frontmatter contains "document" section, THE Tabular Service SHALL extract page_count, sheet_count, slide_count
+8. WHEN frontmatter parsing fails, THE Tabular Service SHALL log warning and proceed with text content only
+9. WHEN frontmatter is successfully parsed, THE Tabular Service SHALL use extracted metadata for audit logging and tracking
+
+### Requirement 22: CloudEvents Handling
+
+**User Story:** As a system integrator, I want the Tabular service to handle CloudEvents from Eventarc, so that it integrates seamlessly with the event-driven architecture.
+
+#### Acceptance Criteria
+
+1. THE Tabular Service SHALL accept CloudEvents in JSON format with specversion "1.0"
+2. WHEN CloudEvent is received, THE Tabular Service SHALL validate required fields: type, source, subject, id, data
+3. WHEN CloudEvent data contains bucket and name fields, THE Tabular Service SHALL extract them
+4. WHEN CloudEvent id is present, THE Tabular Service SHALL use it as correlation_id for logging
+5. WHEN CloudEvent subject matches "objects/text/{file_id}.txt", THE Tabular Service SHALL extract file_id
+6. WHEN region_id is needed, THE Tabular Service SHALL extract it from frontmatter (not from path)
+7. THE Tabular Service SHALL return HTTP 200 for successful processing
+8. THE Tabular Service SHALL return HTTP 400 for invalid CloudEvents (no retry)
+9. THE Tabular Service SHALL return HTTP 500 for processing errors (Eventarc will retry)
+
+### Requirement 23: Status Response Format
+
+**User Story:** As a system integrator, I want standardized status responses, so that Backend service can reliably process results.
+
+#### Acceptance Criteria
+
+1. WHEN processing completes successfully, THE Tabular Service SHALL update Backend with status "INGESTED", table_type, rows_loaded, bytes_processed, and cache_hit
+2. WHEN processing fails, THE Tabular Service SHALL update Backend with status "FAILED", error_message, and current_step
+3. WHEN processing encounters warnings, THE Tabular Service SHALL include warnings array in the Backend update
+4. THE Tabular Service SHALL include processing_time_ms in all Backend updates for performance monitoring
+5. THE Tabular Service SHALL use fire-and-forget pattern for Backend updates (non-blocking)
+6. THE Tabular Service SHALL return HTTP 200 to Eventarc for successful processing and HTTP 500 for retryable failures
+
+### Requirement 24: Entity Resolution During Ingestion
+
+**User Story:** As a data engineer, I want entity names and IDs from diverse data sources automatically matched to canonical entities in the warehouse, so that data from different schools and systems is unified.
+
+#### Acceptance Criteria
+
+1. WHEN entity columns are identified (student_name, teacher_name, parent_name, region_name, subject, school_name), THE Tabular Service SHALL apply entity resolution
+2. WHEN entity IDs are present in source data, THE Tabular Service SHALL attempt to match them against canonical IDs in BigQuery dimension tables
+3. WHEN entity IDs are missing or unmatched, THE Tabular Service SHALL use name-based entity resolution
+4. WHEN entity names are processed, THE Tabular Service SHALL normalize names by removing extra whitespace, unifying case, and standardizing punctuation
+5. WHEN normalized names are compared against BigQuery entities, THE Tabular Service SHALL use fuzzy string matching with Levenshtein distance (threshold 0.85)
+6. WHEN names contain initials (e.g., "П. Свободова"), THE Tabular Service SHALL expand initials and try all candidate full names
+7. WHEN fuzzy matching fails, THE Tabular Service SHALL use embedding-based similarity matching (threshold 0.75)
+8. WHEN a match is found with HIGH confidence (>=0.85), THE Tabular Service SHALL replace source ID/name with canonical entity_id
+9. WHEN a match is found with MEDIUM confidence (0.70-0.85), THE Tabular Service SHALL flag for manual review but use canonical entity_id
+10. WHEN no match is found (confidence <0.70), THE Tabular Service SHALL create a new entity record in the appropriate dimension table
+11. THE Tabular Service SHALL preserve original source IDs and names in metadata columns for audit trail
+12. THE Tabular Service SHALL log all entity resolution decisions with confidence scores and match methods
+13. WHERE ENTITY_RESOLUTION_ENABLED setting is false, THE Tabular Service SHALL skip entity resolution and use source data as-is
+
+### Requirement 25: Junction Table Support
+
+**User Story:** As a data architect, I want the system to recognize and process junction tables that define relationships between entities, so that relational data structures are preserved in the warehouse.
+
+#### Acceptance Criteria
+
+1. THE Concepts Catalog SHALL define RELATIONSHIP as a distinct table type for junction tables
+2. WHEN a DataFrame contains columns matching junction table patterns (e.g., student_id + teacher_id + subject_id), THE Tabular Service SHALL classify it as RELATIONSHIP type
+3. WHEN RELATIONSHIP tables are detected, THE Tabular Service SHALL validate that all required foreign key columns are present
+4. WHEN junction tables contain temporal fields (from_date, to_date), THE Tabular Service SHALL validate date ranges and flag overlapping periods
+5. WHEN junction tables contain metadata fields (status, weight, role, relevance_score, impact_score), THE Tabular Service SHALL preserve these fields in normalized output
+6. WHEN junction tables contain polymorphic references (target_type, target_id), THE Tabular Service SHALL validate target_type against known entity types
+7. THE DWH Client SHALL load junction table data to dedicated junction tables in BigQuery (e.g., student_teacher_subject, region_rule, feedback_target)
+8. WHEN loading junction tables, THE DWH Client SHALL enforce referential integrity by validating foreign keys against dimension tables
+9. THE DWH Client SHALL use MERGE operations for junction tables to handle updates and maintain historical records
+
+### Requirement 26: Analysis Result Support
+
+**User Story:** As a data scientist, I want the system to ingest AI-generated analysis reports and their relationships to feedback, so that insights and recommendations are stored alongside source data.
+
+#### Acceptance Criteria
+
+1. THE Concepts Catalog SHALL include concepts for AnalysisResult entity: analysis_id, analysis_timestamp, analysis_status, analysis_report
+2. WHEN a DataFrame contains analysis result columns, THE Tabular Service SHALL classify it as FEEDBACK or MIXED type depending on content
+3. WHEN analysis result data is detected, THE Tabular Service SHALL validate that analysis_id is unique and analysis_report is non-empty
+4. WHEN analysis results reference feedback entries, THE Tabular Service SHALL validate feedback_id foreign keys
+5. WHEN analysis results specify impact targets, THE Tabular Service SHALL validate target_type and target_id combinations
+6. THE DWH Client SHALL load analysis results to an analysis_results table in BigQuery
+7. THE DWH Client SHALL load analysis-feedback relationships to analysis_feedback junction table
+8. THE DWH Client SHALL load analysis impacts to analysis_impact junction table with polymorphic target references
+9. WHEN loading analysis data, THE DWH Client SHALL partition by analysis_timestamp and cluster by analysis_status
+
+### Requirement 27: AI-Powered Feedback Analysis Module
+
+**User Story:** As a data analyst, I want feedback text automatically analyzed to identify mentioned entities and relationships, so that feedback is linked to relevant teachers, experiments, and criteria.
+
+#### Acceptance Criteria
+
+1. WHEN table_type is classified as FEEDBACK, THE Tabular Service SHALL invoke the AI Feedback Analysis module
+2. WHEN feedback text is analyzed, THE Analysis Module SHALL use the cached sentence-transformer model to generate text embeddings
+3. WHEN feedback embeddings are generated, THE Analysis Module SHALL compute similarity scores against all entity types (teacher, student, region, subject, experiment, criteria, rule)
+4. WHEN similarity score exceeds threshold (default 0.65), THE Analysis Module SHALL create FeedbackTarget record with target_type, target_id, and relevance_score
+5. WHEN entity names are mentioned in feedback text, THE Analysis Module SHALL apply entity resolution to match against known entities in BigQuery
+6. WHEN multiple entity candidates match, THE Analysis Module SHALL select the candidate with highest combined similarity score
+7. WHEN FeedbackTarget records are created, THE Analysis Module SHALL store them in feedback_target junction table
+8. WHEN feedback analysis completes, THE Analysis Module SHALL log all detected targets with relevance scores for audit
+9. WHERE FEEDBACK_ANALYSIS_ENABLED setting is false, THE Analysis Module SHALL skip feedback analysis
+10. THE Analysis Module SHALL process feedback analysis within the same transaction as data ingestion
+
+### Requirement 28: Entity Resolution for Feedback Analysis
+
+**User Story:** As a data analyst, I want the system to recognize that "И. Петров" in feedback refers to teacher "Иван Петров" in the database, so that feedback is correctly attributed to entities.
+
+#### Acceptance Criteria
+
+1. WHEN entity names are extracted from feedback text, THE Entity Resolver SHALL normalize names by removing extra whitespace, unifying case, and standardizing punctuation
+2. WHEN normalized names are compared against database entities, THE Entity Resolver SHALL use fuzzy string matching with Levenshtein distance
+3. WHEN names contain initials (e.g., "И. Петров"), THE Entity Resolver SHALL expand initials to common full names based on region-specific name databases
+4. WHEN multiple name candidates exist, THE Entity Resolver SHALL compute similarity scores for all candidates
+5. WHEN similarity score is >= 0.85, THE Entity Resolver SHALL consider it a HIGH_CONFIDENCE match
+6. WHEN similarity score is between 0.70 and 0.85, THE Entity Resolver SHALL consider it a MEDIUM_CONFIDENCE match
+7. WHEN similarity score is < 0.70, THE Entity Resolver SHALL not create entity link
+8. WHEN entity IDs are mentioned in feedback text, THE Entity Resolver SHALL use ID as primary match key
+9. THE Entity Resolver SHALL query BigQuery dimension tables (dim_teacher, dim_student, dim_region) for entity matching
+10. THE Entity Resolver SHALL cache entity lookups within the same ingestion run to avoid repeated queries
+
+

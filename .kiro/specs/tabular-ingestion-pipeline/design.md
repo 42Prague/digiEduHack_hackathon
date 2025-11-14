@@ -20,47 +20,100 @@ This design focuses on the Tabular service component, which is responsible for t
 
 ## Architecture
 
+### Event-Driven Architecture
+
+The Tabular Service is triggered by Eventarc when Transformer saves text files to Cloud Storage:
+
+```
+Cloud Storage (text/*.txt) → Eventarc Trigger → Tabular Service
+    ↓
+Parse CloudEvent → Extract file_id
+    ↓
+Download text from GCS → Parse YAML frontmatter
+    ↓
+[Existing pipeline: analyze → classify → map → normalize → validate → load]
+    ↓
+Update Backend (fire-and-forget) → Return 200 to Eventarc
+```
+
+**Key Integration Points:**
+1. **Eventarc Trigger**: Filters on `text/*.txt` pattern in configured bucket
+2. **CloudEvents**: Standard format for event delivery
+3. **Frontmatter**: All metadata embedded in text file (no separate API call needed)
+4. **Backend Updates**: Fire-and-forget status updates (don't block Eventarc response)
+
 ### High-Level Flow
 
 #### Full Pipeline Context
 ```
 User Upload → Backend → Cloud Storage
     ↓
-Eventarc (OBJECT_FINALIZE event)
+Eventarc Trigger #1 (uploads/*)
     ↓
 MIME Decoder (orchestration)
     ↓
 Transformer (format conversion)
     ↓
+Transformer saves text → gs://bucket/text/file_id.txt
+    ↓
+Eventarc Trigger #2 (text/*) ⭐ NEW
+    ↓
 **Tabular Service** (this component)
     ↓
-BigQuery → Status back to MIME Decoder → Backend → UI
+BigQuery → Status to Backend → UI
 ```
 
 #### Tabular Service Internal Flow
+
 ```
-Text URI from Transformer
+CloudEvent from Eventarc
     ↓
-[Retrieve Text from GCS] → text content
+[Parse CloudEvent] → Extract bucket, object_name, file_id, event_id
     ↓
-[Text Structure Analysis] → CSV/TSV/JSON/JSONL/free-form
+[Retrieve Text from GCS] → text content with frontmatter
     ↓
-[DataFrame Loading] → pandas.DataFrame
+[Parse YAML Frontmatter] → Extract metadata from nested structure:
+    - Top-level: file_id, region_id, text_uri, event_id, file_category
+    - original.*: filename, content_type, size_bytes, bucket, object_path, uploaded_at
+    - extraction.*: method, timestamp, success, duration_ms
+    - content.*: text_length, word_count, character_count
+    - document.*: page_count, sheet_count, slide_count
     ↓
-[AI Table Classification] → ATTENDANCE/ASSESSMENT/FEEDBACK/INTERVENTION/MIXED
+[Content Type Detection] → Check original.content_type from frontmatter
     ↓
-[AI Column Mapping] → source_column → concept_key mappings
-    ↓
-[Normalization] → Canonical DataFrame with metadata
-    ↓
-[Pandera Validation] → Quality checks
+    ├─────────────────────┬─────────────────────┐
+    ↓                     ↓                     
+TABULAR PATH         FREE_FORM PATH        
+(Excel, CSV,         (PDF, Audio,          
+ JSON arrays)         plain text)          
+    ↓                     ↓                     
+[DataFrame Loading]  [Entity Extraction]  
+    ↓                     ↓                     
+[AI Table           [Entity Resolution]   
+ Classification]         ↓                  
+    ↓                [Sentiment Analysis]      
+[AI Column Mapping]      ↓                
+    ↓                [Store in             
+[Entity Resolution]  observations table]      
+    ↓                     
+[Normalization]          
+    ↓                                        
+[Pandera Validation]
     ↓
 [Clean Layer Write] → Parquet (GCS)
     ↓
 [BigQuery Load] → Staging → MERGE → Core Tables
     ↓
-Return Status: INGESTED/FAILED with metadata
+[Update Backend] → Fire-and-forget status update
+    ↓
+Return 200 to Eventarc
 ```
+
+**Content Type Detection Logic:**
+- `application/vnd.ms-excel`, `text/csv`, `application/vnd.openxmlformats-officedocument.spreadsheetml.sheet` → TABULAR
+- `application/pdf`, `audio/*`, `text/plain` (from transcript) → FREE_FORM
+- `application/json` → Analyze structure (array of objects with consistent keys = TABULAR, otherwise FREE_FORM)
+- Unknown → Analyze text structure heuristically
 
 ### Module Structure
 
@@ -68,18 +121,21 @@ Return Status: INGESTED/FAILED with metadata
 src/eduscale/
 ├── core/
 │   └── config.py                    # Extended settings
-├── models/
-│   └── embeddings.py                # Sentence-transformer singleton
 ├── tabular/
-│   ├── text_analyzer.py             # Text structure analysis
-│   ├── concepts.py                  # Concepts catalog loader
+│   ├── concepts.py                  # Concepts catalog + embeddings (merged)
 │   ├── classifier.py                # AI table classification
 │   ├── mapping.py                   # AI column-to-concept mapping
-│   ├── schemas.py                   # Pandera validation schemas
+│   ├── schemas.py                   # Pandera validation schemas (separate for readability)
 │   ├── normalize.py                 # Data normalization
-│   ├── clean_layer.py               # Parquet writing
+│   ├── clean_layer.py               # Parquet writing (local/GCS abstraction)
 │   ├── runs_store.py                # BigQuery ingest runs tracking
-│   └── pipeline.py                  # Main orchestration
+│   ├── pipeline.py                  # Main orchestration + frontmatter parsing
+│   └── analysis/                    # 🆕 AI Analysis Module
+│       ├── __init__.py
+│       ├── feedback_analyzer.py     # Feedback text analysis & target detection
+│       ├── entity_resolver.py       # Entity resolution (fuzzy matching + embeddings)
+│       ├── llm_client.py            # LLM client for entity extraction and sentiment
+│       └── models.py                # Data models for analysis
 ├── dwh/
 │   └── client.py                    # BigQuery DWH operations
 └── api/
@@ -91,13 +147,209 @@ config/
 
 tests/
 ├── fixtures/
-│   ├── sample_text_csv.txt          # Text file with CSV content
-│   ├── sample_text_json.txt         # Text file with JSON content
-│   └── sample_text_tsv.txt          # Text file with TSV content
-└── test_tabular_service.py          # Comprehensive tests
+│   ├── sample_text_csv.txt          # Text file with CSV content + frontmatter
+│   ├── sample_text_json.txt         # Text file with JSON content + frontmatter
+│   ├── sample_text_tsv.txt          # Text file with TSV content + frontmatter
+│   ├── sample_feedback.txt          # Feedback text with entity mentions
+│   └── sample_cloudevent.json       # CloudEvent payload example
+├── test_frontmatter.py              # Frontmatter parsing tests
+├── test_classifier.py               # AI classification tests
+├── test_mapping.py                  # AI mapping tests
+├── test_schemas.py                  # Pandera validation tests
+├── test_clean_layer.py              # Parquet writing tests
+├── test_feedback_analyzer.py        # 🆕 Feedback analysis tests
+├── test_entity_resolver.py          # 🆕 Entity resolution tests
+└── test_integration.py              # End-to-end pipeline tests
+
+# REUSED (not created):
+# - services/transformer/storage.py (StorageClient)
+# - core/logging.py (logging patterns)
 ```
 
+**Modules: 8 core + 3 analysis = 11 total**
+**Tests: 5 core + 2 analysis = 7 total**
+
+## Reused Components from Existing Codebase
+
+Before implementing new components, we leverage existing, proven implementations:
+
+### 1. StorageClient (`services/transformer/storage.py`)
+
+**Reused functionality:**
+- `download_file()` - Download files from GCS with retry logic
+- `upload_text_streaming()` - Stream text uploads to GCS
+- `get_file_size()` - Get file metadata
+- Built-in retry logic with tenacity (3 attempts, exponential backoff)
+- Structured error handling (NotFound, Forbidden, generic exceptions)
+- Comprehensive logging with context
+
+**Usage in Tabular:**
+```python
+from eduscale.services.transformer.storage import StorageClient
+
+storage = StorageClient(project_id=settings.GCP_PROJECT_ID)
+text_content = storage.download_file(bucket, object_name, temp_path)
+```
+
+### 2. Logging Patterns (`core/logging.py`)
+
+**Reused functionality:**
+- Structured JSON logging for Cloud Logging
+- Correlation IDs for request tracing
+- Contextual extra fields
+- Log level management
+
+### 3. Config Management (`core/config.py`)
+
+**Reused functionality:**
+- Pydantic Settings with environment variable loading
+- Property-based computed values
+- Type validation
+- .env file support
+
+---
+
 ## Components and Interfaces
+
+### 0. CloudEvents Handler (routes_tabular.py)
+
+**Purpose**: Receive and parse CloudEvents from Eventarc
+
+**Interface**:
+```python
+@app.post("/")
+async def handle_cloud_event(request: Request) -> JSONResponse:
+    """Receive CloudEvents from Eventarc and trigger tabular processing."""
+```
+
+**CloudEvents Payload**:
+```json
+{
+  "specversion": "1.0",
+  "type": "google.cloud.storage.object.v1.finalized",
+  "source": "//storage.googleapis.com/projects/_/buckets/BUCKET",
+  "subject": "objects/text/abc123.txt",
+  "id": "event-id-456",
+  "time": "2025-11-14T10:30:10Z",
+  "data": {
+    "bucket": "eduscale-uploads-eu",
+    "name": "text/abc123.txt",
+    "contentType": "text/plain",
+    "size": "15000"
+  }
+}
+```
+
+**Response**:
+- 200: Successfully processed (or skipped non-text files)
+- 400: Invalid event payload (no retry)
+- 500: Processing error (Eventarc will retry)
+
+**Algorithm**:
+1. Parse CloudEvent from request body
+2. Validate event type (google.cloud.storage.object.v1.finalized)
+3. Extract bucket and object_name from data
+4. Check if object_name matches "text/*.txt" pattern
+5. Extract file_id from object_name (text/{file_id}.txt)
+6. Download text content from GCS
+7. Call process_tabular_text() with text content
+8. Fire-and-forget Backend status update
+9. Return 200 to Eventarc
+10. Log all steps with event_id as correlation_id
+
+### 0.5. Frontmatter Parser (pipeline.py)
+
+**Purpose**: Parse YAML frontmatter from text files
+
+**Interface**:
+```python
+@dataclass
+class FrontmatterData:
+    # Top-level fields
+    file_id: str
+    region_id: str
+    text_uri: str
+    event_id: str | None
+    file_category: str | None
+    
+    # Original file metadata (from 'original' section)
+    original_filename: str | None
+    original_content_type: str | None
+    original_size_bytes: int | None
+    bucket: str | None
+    object_path: str | None
+    uploaded_at: str | None
+    
+    # Extraction metadata (from 'extraction' section)
+    extraction_method: str | None
+    extraction_timestamp: str | None
+    extraction_success: bool | None
+    extraction_duration_ms: int | None
+    
+    # Content metrics (from 'content' section)
+    text_length: int | None
+    word_count: int | None
+    character_count: int | None
+    
+    # Document-specific metadata (from 'document' section)
+    page_count: int | None
+    sheet_count: int | None
+    slide_count: int | None
+
+def parse_frontmatter(text_content: str) -> tuple[FrontmatterData | None, str]:
+    """Parse YAML frontmatter and return metadata + clean text.
+    
+    Returns:
+        (frontmatter_data, text_without_frontmatter)
+    """
+```
+
+**Frontmatter Format** (from Transformer):
+```yaml
+---
+file_id: "abc123"
+region_id: "region-cz-01"
+event_id: "cloudevent-xyz"
+text_uri: "gs://bucket/text/abc123.txt"
+file_category: "pdf"
+
+original:
+  filename: "document.pdf"
+  content_type: "application/pdf"
+  size_bytes: 123456
+  bucket: "bucket-name"
+  object_path: "uploads/region/abc123.pdf"
+  uploaded_at: "2025-01-14T10:30:00Z"
+
+extraction:
+  method: "pdfplumber"
+  timestamp: "2025-01-14T10:31:00Z"
+  duration_ms: 1234
+  success: true
+
+content:
+  text_length: 5432
+  word_count: 987
+  character_count: 5432
+
+document:
+  page_count: 15
+---
+```
+
+**Algorithm**:
+1. Check if text starts with "---\n"
+2. Find second "---" delimiter
+3. Extract YAML content between delimiters
+4. Parse YAML using pyyaml
+5. Extract top-level fields: file_id, region_id, text_uri, event_id, file_category
+6. Extract nested 'original' section fields: filename, content_type, size_bytes, bucket, object_path, uploaded_at
+7. Extract nested 'extraction' section fields: method, timestamp, success, duration_ms
+8. Extract nested 'content' section fields: text_length, word_count, character_count
+9. Extract nested 'document' section fields: page_count, sheet_count, slide_count
+10. Map all fields to FrontmatterData dataclass
+11. Return metadata + text after second "---"
+12. If parsing fails, return (None, original_text)
 
 ### 1. Configuration (config.py)
 
@@ -117,9 +369,22 @@ class Settings(BaseSettings):
     BIGQUERY_STAGING_DATASET_ID: str = ""  # Defaults to BIGQUERY_DATASET_ID
     CLEAN_LAYER_BASE_PATH: str = "./data/clean"
     CONCEPT_CATALOG_PATH: str = "./config/concepts.yaml"
-    EMBEDDING_MODEL_NAME: str = "paraphrase-multilingual-mpnet-base-v2"
+    
+    # AI Models configuration
+    EMBEDDING_MODEL_NAME: str = "BAAI/bge-m3"  # BGE-M3 for embeddings
+    LLM_MODEL_NAME: str = "llama3.2:1b"  # Llama 3.2 1B via Ollama
+    LLM_ENDPOINT: str = "http://localhost:11434"  # Ollama in same container
+    LLM_ENABLED: bool = True
+    
     INGEST_MAX_ROWS: int = 200_000
     PSEUDONYMIZE_IDS: bool = False
+    
+    # AI Analysis settings
+    FEEDBACK_ANALYSIS_ENABLED: bool = True
+    ENTITY_RESOLUTION_THRESHOLD: float = 0.85  # Fuzzy matching threshold
+    FEEDBACK_TARGET_THRESHOLD: float = 0.65  # Embedding similarity threshold
+    MAX_TARGETS_PER_FEEDBACK: int = 10  # Max FeedbackTarget records per feedback
+    ENTITY_CACHE_TTL_SECONDS: int = 3600  # Cache entity lookups for 1 hour
     
     @property
     def bigquery_project(self) -> str:
@@ -133,54 +398,13 @@ class Settings(BaseSettings):
 ```
 
 
-### 2. Text Structure Analysis (text_analyzer.py)
 
-**Purpose**: Analyze text structure and detect tabular data format
 
-**Interface**:
-```python
-@dataclass
-class TextAnalysisResult:
-    format: Literal["csv", "tsv", "json", "jsonl", "free_form"]
-    confidence: float
-    delimiter: str | None
-    has_header: bool
-    estimated_rows: int
 
-def analyze_text_structure(text_content: str) -> TextAnalysisResult:
-    """Analyze text structure and detect format."""
-```
 
-**Algorithm**:
-1. Sample first 1000 characters for structure detection
-2. Check for JSON structure (starts with `{` or `[`)
-3. Detect delimiters by counting occurrences of common separators (`,`, `;`, `\t`, `|`)
-4. Validate delimiter consistency across lines
-5. Detect header row by checking first line characteristics
-6. Return format with confidence score
-7. If no clear structure, classify as free_form
+### 2. Concepts Catalog + Embeddings (concepts.py)
 
-### 3. Embedding Model (embeddings.py)
-
-**Purpose**: Singleton sentence-transformer model for semantic understanding
-
-**Interface**:
-```python
-def init_embeddings() -> None:
-    """Load and cache the embedding model."""
-
-def embed_texts(texts: list[str]) -> np.ndarray:
-    """Generate embeddings for a list of texts."""
-```
-
-**Implementation**:
-- Module-level cached model instance
-- Lazy loading on first use
-- Support for multilingual models (paraphrase-multilingual-mpnet-base-v2)
-
-### 4. Concepts Catalog (concepts.py)
-
-**Purpose**: Load and manage canonical concepts and table types
+**Purpose**: Load and manage canonical concepts, table types, and embedding model
 
 **Data Model**:
 ```python
@@ -205,6 +429,14 @@ class ConceptsCatalog:
 
 **Interface**:
 ```python
+# Embedding functions (merged from embeddings.py)
+def init_embeddings() -> None:
+    """Load and cache the sentence-transformer model."""
+
+def embed_texts(texts: list[str]) -> np.ndarray:
+    """Generate embeddings for a list of texts."""
+
+# Concepts catalog functions
 def load_concepts_catalog(path: str) -> ConceptsCatalog:
     """Load catalog from YAML and precompute embeddings."""
 
@@ -214,6 +446,12 @@ def get_table_type_anchors() -> list[TableType]:
 def get_concepts() -> list[Concept]:
     """Get all concepts with embeddings."""
 ```
+
+**Implementation Notes:**
+- Module-level cached embedding model (lazy loading)
+- BGE-M3 model: 1024-dimensional embeddings, hybrid retrieval support
+- Precompute embeddings at startup for performance
+- Model size: ~2.2GB, supports 100+ languages including Czech
 
 **How Synonym Matching Works**:
 The synonyms in concepts.yaml are NOT used for exact string matching. Instead:
@@ -264,10 +502,16 @@ table_types:
       - "intervence"
       - "remedial actions"
   
-  - name: MIXED
+  - name: RELATIONSHIP
     anchors:
-      - "mixed data types"
-      - "unstructured information"
+      - "entity relationships and connections"
+      - "junction table data"
+      - "relační data"
+      - "student-teacher-subject assignments"
+      - "region-rule associations"
+      - "experiment-criteria mappings"
+  
+
 
 concepts:
   # Core Entity Identifiers
@@ -357,6 +601,15 @@ concepts:
       - "Region"
       - "Název oblasti"
       - "District Name"
+  
+  - key: region_type
+    description: "Type of region (school, district, municipality)"
+    expected_type: categorical
+    synonyms:
+      - "Region Type"
+      - "Type"
+      - "Typ oblasti"
+      - "Administrative Level"
   
   # Temporal Fields
   - key: date
@@ -622,10 +875,141 @@ concepts:
       - "Details"
       - "Information"
       - "Poznámky"
+  
+  # Analysis Result Fields
+  - key: analysis_id
+    description: "Unique analysis result identifier"
+    expected_type: string
+    synonyms:
+      - "Analysis ID"
+      - "AnalysisID"
+      - "ID analýzy"
+      - "Report ID"
+  
+  - key: analysis_timestamp
+    description: "Timestamp when analysis was performed"
+    expected_type: date
+    synonyms:
+      - "Analysis Timestamp"
+      - "Analysis Date"
+      - "Čas analýzy"
+      - "Report Date"
+  
+  - key: analysis_status
+    description: "Status of analysis (PROCESSING, COMPLETED, FAILED)"
+    expected_type: categorical
+    synonyms:
+      - "Analysis Status"
+      - "Status"
+      - "Stav analýzy"
+      - "Report Status"
+  
+  - key: analysis_report
+    description: "Text content of analysis report"
+    expected_type: string
+    synonyms:
+      - "Analysis Report"
+      - "Report"
+      - "Zpráva analýzy"
+      - "Analysis Text"
+      - "Findings"
+  
+  # Junction Table / Relationship Fields
+  - key: student_teacher_subject_id
+    description: "Unique identifier for student-teacher-subject relationship"
+    expected_type: string
+    synonyms:
+      - "Relationship ID"
+      - "Assignment ID"
+      - "ID vztahu"
+  
+  - key: weight
+    description: "Weight or importance factor"
+    expected_type: number
+    synonyms:
+      - "Weight"
+      - "Váha"
+      - "Importance"
+      - "Priority"
+  
+  - key: role
+    description: "Role in relationship or experiment"
+    expected_type: categorical
+    synonyms:
+      - "Role"
+      - "Role Type"
+      - "Úloha"
+      - "Function"
+  
+  - key: relevance_score
+    description: "Relevance score for feedback target"
+    expected_type: number
+    synonyms:
+      - "Relevance"
+      - "Relevance Score"
+      - "Skóre relevance"
+      - "Confidence"
+  
+  - key: impact_score
+    description: "Impact score for analysis impact"
+    expected_type: number
+    synonyms:
+      - "Impact"
+      - "Impact Score"
+      - "Skóre dopadu"
+      - "Effect Score"
+  
+  - key: target_type
+    description: "Type of polymorphic target entity"
+    expected_type: categorical
+    synonyms:
+      - "Target Type"
+      - "Entity Type"
+      - "Typ cíle"
+      - "Reference Type"
+  
+  - key: target_id
+    description: "ID of polymorphic target entity"
+    expected_type: string
+    synonyms:
+      - "Target ID"
+      - "Entity ID"
+      - "ID cíle"
+      - "Reference ID"
+  
+  - key: timestamp
+    description: "Generic timestamp field"
+    expected_type: date
+    synonyms:
+      - "Timestamp"
+      - "Time"
+      - "Čas"
+      - "DateTime"
+  
+  - key: source_url
+    description: "Source URL for rules or references"
+    expected_type: string
+    synonyms:
+      - "Source URL"
+      - "URL"
+      - "Zdrojová URL"
+      - "Link"
+      - "Reference URL"
+  
+  - key: status
+    description: "Generic status field for relationships and entities"
+    expected_type: categorical
+    synonyms:
+      - "Status"
+      - "Stav"
+      - "State"
+      - "Active Status"
 ```
 
 
-### 5. DataFrame Loading from Text (pipeline.py)
+
+
+### 3. DataFrame Loading from Text (pipeline.py)
 
 **Purpose**: Load text content into pandas DataFrames
 
@@ -636,19 +1020,18 @@ class TabularSource:
     file_id: str
     region_id: str
     text_uri: str
-    original_content_type: str | None
-    extraction_metadata: dict | None
+    frontmatter: FrontmatterData
 
 def load_dataframe_from_text(
     text_content: str, 
-    analysis: TextAnalysisResult
+    frontmatter: FrontmatterData
 ) -> pd.DataFrame:
-    """Load text into DataFrame based on detected structure."""
+    """Load text into DataFrame based on content type from frontmatter."""
 ```
 
 **Algorithm**:
 1. Retrieve text content from Cloud Storage using text_uri
-2. Analyze structure using text_analyzer.analyze_text_structure()
+2. Detect format from frontmatter.original_content_type
 3. Load based on detected format:
    - CSV/TSV: `pd.read_csv(sep=delimiter, engine="python")` with UTF-8 encoding first, fallback to cp1250
    - JSON: `pd.json_normalize()` for single JSON, line-by-line for JSONL
@@ -661,7 +1044,7 @@ def load_dataframe_from_text(
 9. Return DataFrame with metadata
 
 
-### 6. AI Table Classification (classifier.py)
+### 4. AI Table Classification (classifier.py)
 
 **Purpose**: Classify table type using embeddings
 
@@ -677,10 +1060,11 @@ def classify_table(df: pd.DataFrame, catalog: ConceptsCatalog) -> tuple[str, flo
 3. Generate embeddings for all feature texts
 4. Compute cosine similarity with table type anchors (use mean or max)
 5. Apply softmax normalization over table type scores for calibrated probabilities
-6. Return table type with highest score (or "MIXED" if confidence < 0.4)
+6. If confidence < 0.4, classify as FREE_FORM and route to observations table
+7. Return table type with highest score
 7. Log decision with top contributing column headers and anchor phrases
 
-### 7. AI Column Mapping (mapping.py)
+### 5. AI Column Mapping (mapping.py)
 
 **Purpose**: Map source columns to canonical concepts
 
@@ -706,11 +1090,11 @@ class ColumnMapping:
 4. Assign status: AUTO (>=0.75), LOW_CONFIDENCE (0.55-0.75), UNKNOWN (<0.55)
 5. Store top-3 candidates, log all mappings
 
-### 8. Pandera Validation (schemas.py)
+### 6. Pandera Validation (schemas.py)
 
 **Purpose**: Define and enforce data quality schemas per table type
 
-**Schemas**: ATTENDANCE_SCHEMA, ASSESSMENT_SCHEMA, FEEDBACK_SCHEMA, INTERVENTION_SCHEMA, MIXED_SCHEMA
+**Schemas**: ATTENDANCE_SCHEMA, ASSESSMENT_SCHEMA, FEEDBACK_SCHEMA, INTERVENTION_SCHEMA, RELATIONSHIP_SCHEMA
 
 **Interface**:
 ```python
@@ -724,7 +1108,7 @@ def validate_normalized_df(df: pd.DataFrame, table_type: str) -> pd.DataFrame:
 - **Rejects file**: Invalid rows written to `{clean_layer_base}/rejects/{table_type}/region={region_id}/{file_id}_rejects.parquet`
 - Return validated DataFrame (with invalid rows removed if soft failures occurred)
 
-### 9. Data Normalization (normalize.py)
+### 7. Data Normalization (normalize.py)
 
 **Purpose**: Transform raw data to canonical structure
 
@@ -748,7 +1132,7 @@ def normalize_dataframe(
 5. Clean data: normalize school names, pseudonymize IDs if enabled (SHA256 hash)
 6. Validate with Pandera schema
 
-### 10. Clean Layer Storage (clean_layer.py)
+### 8. Clean Layer Storage (clean_layer.py)
 
 **Purpose**: Write normalized data as Parquet
 
@@ -767,7 +1151,7 @@ def write_clean_parquet(df_norm: pd.DataFrame, target_info: CleanTargetInfo) -> 
 - GCS: `gs://{bucket}/clean/{table_type}/region={region_id}/file_id={file_id}.parquet`
 - Local: `{base_path}/clean/{table_type}/region={region_id}/{file_id}.parquet`
 
-### 11. BigQuery DWH Client (dwh/client.py)
+### 9. BigQuery DWH Client (dwh/client.py)
 
 **Purpose**: Load data into BigQuery data warehouse
 
@@ -789,14 +1173,14 @@ class DwhClient:
 - **Staging**: `stg_attendance`, `stg_assessment`, `stg_feedback`, `stg_intervention`
 - **Dimensions**: `dim_region`, `dim_school`, `dim_time`
 - **Facts**: `fact_assessment`, `fact_intervention`
-- **Observations**: `observations` (for MIXED data)
+- **Observations**: `observations` (for FREE_FORM data: PDF text, audio transcripts, unstructured feedback)
 
 **Features**:
 - Partition by date, cluster by region_id
 - Use maximum_bytes_billed for cost control
 - Return bytes_processed and cache_hit metadata
 
-### 12. Ingest Runs Tracking (runs_store.py)
+### 10. Ingest Runs Tracking (runs_store.py)
 
 **Purpose**: Track ingestion pipeline execution in BigQuery
 
@@ -823,7 +1207,7 @@ class RunsStore:
 
 **BigQuery Table**: `ingest_runs` partitioned by created_at, clustered by region_id and status
 
-### 13. Pipeline Orchestration (pipeline.py)
+### 11. Pipeline Orchestration (pipeline.py)
 
 **Purpose**: Coordinate all pipeline stages
 
@@ -846,11 +1230,30 @@ def process_tabular_file(file_id: str, region_id: str, storage_meta: dict) -> In
 
 **Error Handling**: Catch exceptions, log with context, update run status to FAILED, re-raise
 
-### 14. FastAPI Integration (api/v1/routes_tabular.py)
+### 12. API Endpoints (api/v1/routes_tabular.py)
 
-**Purpose**: REST API for receiving requests from Transformer
+**Purpose**: Handle CloudEvents from Eventarc and provide testing API
 
-**Endpoint**:
+**Primary Endpoint (CloudEvents)**:
+```python
+@app.post("/")
+async def handle_cloud_event(request: Request) -> JSONResponse:
+    """Receive CloudEvents from Eventarc for text file processing."""
+```
+
+**CloudEvent Flow**:
+1. Parse CloudEvent from request body
+2. Validate event type and extract bucket, object_name, event_id
+3. Filter for text/*.txt pattern (skip others)
+4. Extract file_id from object_name
+5. Download text content from GCS
+6. Parse YAML frontmatter to extract metadata
+7. Call process_tabular_text() with text content and frontmatter metadata
+8. Fire-and-forget Backend status update
+9. Return 200 to Eventarc (or 400/500 for errors)
+10. Log all steps with event_id as correlation_id
+
+**Testing Endpoint (Direct API - Optional)**:
 ```python
 @dataclass
 class TabularRequest:
@@ -872,46 +1275,471 @@ class TabularResponse:
     processing_time_ms: int
 
 @router.post("/api/v1/tabular/analyze")
-async def analyze_tabular(request: TabularRequest) -> TabularResponse:
-    """Analyze text structure and load to BigQuery."""
+async def analyze_tabular_direct(request: TabularRequest) -> TabularResponse:
+    """Direct API for testing without Eventarc (optional)."""
 ```
 
-**Flow**:
-1. Receive request from Transformer with text_uri and metadata
-2. Retrieve text content from Cloud Storage
-3. Call process_tabular_text() with text content and metadata
-4. Return response with status, table_type, rows_loaded, and BigQuery metrics
-5. Include warnings array for non-fatal issues
-6. Log request and response for audit trail
+**Direct API Flow** (for testing only):
+1. Receive request with text_uri and metadata
+2. Download text content from Cloud Storage
+3. Parse frontmatter if present
+4. Call process_tabular_text() with text content
+5. Return response with status and metrics
+
+**Health Check**:
+```python
+@router.get("/health")
+async def health_check() -> dict:
+    """Health check endpoint for Cloud Run."""
+```
+
+**Note**: The primary integration is via CloudEvents (POST /). The direct API endpoint (/api/v1/tabular/analyze) is optional and can be used for testing or manual triggering.
+
+---
+
+## AI Analysis Module Components
+
+### 13. Feedback Analyzer (analysis/feedback_analyzer.py)
+
+**Purpose**: Analyze feedback text to identify mentioned entities and create FeedbackTarget records
+
+**Applies to both:**
+- **Tabular feedback**: Entity resolution on structured columns (teacher_name, student_name, etc.)
+- **Free-form feedback**: Entity extraction + resolution from text_content
+
+**Data Models**:
+```python
+@dataclass
+class FeedbackTarget:
+    feedback_id: str
+    target_type: str  # "teacher", "student", "experiment", "criteria", "region", "subject"
+    target_id: str
+    relevance_score: float
+    confidence: Literal["HIGH", "MEDIUM", "LOW"]
+
+@dataclass
+class FeedbackAnalysisResult:
+    feedback_id: str
+    targets: list[FeedbackTarget]
+    processing_time_ms: int
+```
+
+**Interface**:
+```python
+def analyze_feedback_batch(
+    df_feedback: pd.DataFrame,
+    region_id: str,
+    frontmatter: FrontmatterData,
+    catalog: ConceptsCatalog
+) -> list[FeedbackTarget]:
+    """Analyze feedback DataFrame and return detected targets."""
+```
+
+**Algorithm**:
+1. For each feedback row, extract feedback_id and feedback_text
+2. **Extract entity mentions from text** using LLM (Llama 3.2):
+   - Call llm_client.extract_entities(feedback_text)
+   - LLM returns: [{"text": "Петрова", "type": "person"}, {"text": "математика", "type": "subject"}]
+   - Names: "Петрова", "Новак", "И. Петров"
+   - Subjects: "математика", "физика"
+   - Experiments: "эксперимент X"
+3. **Apply entity resolution to each mention**:
+   - "Петрова" → fuzzy match → teacher_id (uuid-123)
+   - "Новак" → fuzzy match → student_id (uuid-456)
+   - "математика" → embedding match → subject_id (uuid-789)
+4. Generate embedding for full feedback_text using cached sentence-transformer model
+5. Query BigQuery for all entities in the same region (teachers, students, experiments, criteria)
+6. For each entity type:
+   - Generate embeddings for entity names/descriptions
+   - Compute cosine similarity between feedback embedding and entity embeddings
+   - If similarity >= 0.65, create FeedbackTarget candidate
+7. Combine name-based matches (from step 3) and embedding-based matches (from step 6)
+8. Deduplicate targets and select top-N per feedback (max 10 targets)
+9. Assign confidence levels: HIGH (>=0.80), MEDIUM (0.65-0.80), LOW (<0.65)
+10. Return list of FeedbackTarget records for bulk insert to BigQuery
+
+**Example:**
+```python
+# Input feedback text
+text = "Учитель Петрова отлично объясняет математику. Ученик Новак показывает прогресс."
+
+# Step 1: Extract mentions using LLM
+llm_client = LLMClient()
+mentions = llm_client.extract_entities(text)
+# Returns: [
+#     {"text": "Петрова", "type": "person"},
+#     {"text": "Новак", "type": "person"},
+#     {"text": "математику", "type": "subject"}
+# ]
+
+# Step 2: Resolve each mention (determine if person is teacher/student/parent)
+resolved = [
+    {"mention": "Петрова", "entity_id": "teacher-uuid-123", "confidence": 0.92, "method": "FUZZY"},
+    {"mention": "Новак", "entity_id": "student-uuid-456", "confidence": 0.88, "method": "FUZZY"},
+    {"mention": "математику", "entity_id": "subject-uuid-789", "confidence": 0.85, "method": "EMBEDDING"}
+]
+
+# Step 3: Create FeedbackTarget records
+targets = [
+    FeedbackTarget(feedback_id, "teacher", "teacher-uuid-123", 0.92, "HIGH"),
+    FeedbackTarget(feedback_id, "student", "student-uuid-456", 0.88, "HIGH"),
+    FeedbackTarget(feedback_id, "subject", "subject-uuid-789", 0.85, "HIGH")
+]
+```
+
+**Performance Optimization**:
+- Batch entity queries (single query per entity type)
+- Cache entity embeddings within ingestion run
+- Use vectorized operations for similarity computation
+
+### 14. Entity Resolver (analysis/entity_resolver.py)
+
+**Purpose**: Resolve entity name/ID variations to canonical entity IDs from BigQuery dimension tables
+
+**Scope**: Used for ALL entity types during ingestion, not just for feedback analysis
+
+**Data Models**:
+```python
+@dataclass
+class EntityMatch:
+    entity_id: str
+    entity_name: str
+    entity_type: str
+    similarity_score: float
+    match_method: Literal["ID_EXACT", "NAME_EXACT", "FUZZY", "EMBEDDING", "NEW"]
+    confidence: Literal["HIGH", "MEDIUM", "LOW"]
+    source_value: str  # Original value from source data
+
+@dataclass
+class EntityCache:
+    """In-memory cache of entities for fast lookups during ingestion run"""
+    teachers: dict[str, str]  # normalized_name -> teacher_id
+    students: dict[str, str]
+    parents: dict[str, str]
+    regions: dict[str, str]
+    subjects: dict[str, str]
+    schools: dict[str, str]
+    # Also store by ID for ID-based lookups
+    teacher_ids: dict[str, str]  # source_id -> canonical_teacher_id
+    student_ids: dict[str, str]
+    # Store embeddings for semantic matching
+    teacher_embeddings: dict[str, np.ndarray]
+    student_embeddings: dict[str, np.ndarray]
+```
+
+**Interface**:
+```python
+def resolve_entity(
+    source_value: str,
+    entity_type: str,
+    region_id: str,
+    cache: EntityCache,
+    value_type: Literal["id", "name"] = "name"
+) -> EntityMatch:
+    """Resolve entity from source data to canonical ID.
+    
+    Returns EntityMatch with match_method="NEW" if no match found.
+    """
+
+def normalize_name(name: str) -> str:
+    """Normalize name for matching."""
+
+def expand_initials(name: str, region_id: str) -> list[str]:
+    """Expand initials to common full names."""
+
+def create_new_entity(
+    entity_type: str,
+    source_value: str,
+    region_id: str,
+    dwh_client: DwhClient
+) -> str:
+    """Create new entity in dimension table and return new ID."""
+```
+
+**Algorithm**:
+
+**normalize_name()**:
+1. Convert to lowercase
+2. Remove extra whitespace (multiple spaces → single space)
+3. Strip leading/trailing whitespace
+4. Remove periods from initials ("И." → "И")
+5. Standardize punctuation
+6. Return normalized string
+
+**expand_initials()**:
+1. Detect if name contains single-letter initials (e.g., "И. Петров")
+2. Query region-specific name database for common first names starting with initial
+3. Generate candidate full names (e.g., ["Иван Петров", "Игорь Петров", "Илья Петров"])
+4. Return list of candidates (max 5)
+
+**resolve_entity()**:
+1. Determine if source_value is ID or name based on value_type parameter
+2. If value_type == "id":
+   - Check cache for exact ID match (e.g., teacher_ids[source_value])
+   - If found, return EntityMatch with match_method="ID_EXACT", confidence="HIGH"
+   - If not found, proceed to name-based matching
+3. Normalize input value (name)
+4. Check cache for exact normalized name match (O(1) lookup)
+5. If exact match found, return EntityMatch with match_method="NAME_EXACT", confidence="HIGH"
+6. If no exact match, try fuzzy matching:
+   - Use Levenshtein distance with threshold 0.85
+   - If name contains initials (e.g., "П. Свободова"), expand and try all candidates
+   - If fuzzy match found with score >= 0.85, return with match_method="FUZZY", confidence="HIGH"
+   - If fuzzy match found with score 0.70-0.85, return with confidence="MEDIUM"
+7. If no fuzzy match, use embedding similarity:
+   - Generate embedding for source_value
+   - Compute cosine similarity with all cached entity embeddings
+   - Select best match if similarity >= 0.75, return with match_method="EMBEDDING", confidence="HIGH"
+   - If similarity 0.65-0.75, return with confidence="MEDIUM"
+8. If no match found (all scores < thresholds):
+   - Call create_new_entity() to insert into dimension table
+   - Return EntityMatch with match_method="NEW", confidence="LOW"
+
+**create_new_entity()**:
+1. Generate new UUID for entity_id
+2. Build entity record with source_value as name
+3. Set metadata.source = "auto_created_from_ingestion"
+4. Set metadata.original_source_value = source_value
+5. Insert into appropriate dimension table (dim_teacher, dim_student, etc.)
+6. Add to cache for subsequent lookups in same ingestion run
+7. Log creation with source file_id for audit
+8. Return new entity_id
+
+**Entity Cache Loading**:
+```python
+def load_entity_cache(region_id: str, dwh_client: DwhClient) -> EntityCache:
+    """Load entities from BigQuery for the region."""
+```
+- Query ALL dimension tables: dim_teacher, dim_student, dim_parent, dim_region, dim_subject, dim_school
+- For region-specific entities (teachers, students), filter by region_id
+- For global entities (subjects, regions), load all
+- Build normalized_name → entity_id mappings
+- Build source_id → canonical_id mappings (from metadata.source_ids if available)
+- Precompute embeddings for all entity names
+- Return EntityCache for fast lookups during ingestion run
+- Cache TTL: duration of ingestion run (no cross-run caching to ensure fresh data)
+
+
+
+### 15. LLM Client (analysis/llm_client.py)
+
+**Purpose**: Interface to Ollama for LLM-based tasks
+
+**Interface**:
+```python
+class LLMClient:
+    def __init__(self, endpoint: str = "http://localhost:11434"):
+        self.endpoint = endpoint
+        self.model = settings.LLM_MODEL_NAME
+    
+    def extract_entities(self, text: str) -> list[dict]:
+        """Extract named entities from text using LLM."""
+    
+    def analyze_sentiment(self, text: str) -> float:
+        """Analyze sentiment using LLM, return -1.0 to +1.0."""
+    
+
+    
+    def _call_ollama(self, prompt: str, max_tokens: int = 500) -> str:
+        """Internal method to call Ollama API."""
+```
+
+**Implementation**:
+```python
+def extract_entities(self, text: str) -> list[dict]:
+    prompt = f"""Extract person names, subjects, and locations from this Czech/English educational text.
+    Return ONLY a JSON array with this exact format: [{{"text": "name", "type": "person|subject|location"}}]
+    Do not include any explanation, only the JSON array.
+    
+    Text: {text}
+    
+    JSON:"""
+    
+    response = self._call_ollama(prompt, max_tokens=200)
+    try:
+        return json.loads(response.strip())
+    except json.JSONDecodeError:
+        logger.warning(f"Failed to parse LLM response: {response}")
+        return []
+
+def analyze_sentiment(self, text: str) -> float:
+    prompt = f"""Analyze the sentiment of this educational feedback (Czech/English).
+    Return ONLY a single number from -1.0 (very negative) to +1.0 (very positive).
+    Do not include any explanation, only the number.
+    
+    Text: {text}
+    
+    Score:"""
+    
+    response = self._call_ollama(prompt, max_tokens=10)
+    try:
+        return float(response.strip())
+    except ValueError:
+        logger.warning(f"Failed to parse sentiment: {response}")
+        return 0.0
+
+def _call_ollama(self, prompt: str, max_tokens: int = 500) -> str:
+    import requests
+    
+    response = requests.post(
+        f"{self.endpoint}/api/generate",
+        json={
+            "model": self.model,
+            "prompt": prompt,
+            "stream": False,
+            "options": {
+                "num_predict": max_tokens,
+                "temperature": 0.1  # Low temperature for deterministic outputs
+            }
+        },
+        timeout=30
+    )
+    response.raise_for_status()
+    return response.json()["response"]
+```
+
+### 16. Analysis Models (analysis/models.py)
+
+**Purpose**: Shared data models for analysis module
+
+```python
+from dataclasses import dataclass
+from datetime import datetime
+from typing import Literal
+
+@dataclass
+class FeedbackTarget:
+    feedback_id: str
+    target_type: str
+    target_id: str
+    relevance_score: float
+    confidence: Literal["HIGH", "MEDIUM", "LOW"]
+
+@dataclass
+class EntityMatch:
+    entity_id: str
+    entity_name: str
+    entity_type: str
+    similarity_score: float
+    match_method: Literal["EXACT", "FUZZY", "EMBEDDING", "ID"]
+
+@dataclass
+class AnalysisImpact:
+    analysis_id: str
+    target_type: str
+    target_id: str
+    impact_score: float
+    sentiment_avg: float
+
+
+    analysis_status: Literal["PROCESSING", "COMPLETED", "FAILED"]
+    analysis_report: str
+    feedback_count: int
+    impact_targets: list[AnalysisImpact]
+```
+
+---
+
+## Updated Pipeline Flow with AI Analysis
+
+### Enhanced Pipeline Steps
+
+```
+CloudEvent from Eventarc
+    ↓
+[Parse CloudEvent] → Extract bucket, object_name, file_id, event_id
+    ↓
+[Retrieve Text from GCS] → text content with frontmatter
+    ↓
+[Parse YAML Frontmatter] → Extract nested metadata structure
+    ↓
+[Content Type Detection] → Use frontmatter.original_content_type
+    ↓
+[DataFrame Loading] → pandas.DataFrame
+    ↓
+[AI Table Classification] → ATTENDANCE/ASSESSMENT/FEEDBACK/INTERVENTION/RELATIONSHIP (or route to FREE_FORM if confidence < 0.4)
+    ↓
+[AI Column Mapping] → source_column → concept_key mappings
+    ↓
+🆕 [Load Entity Cache] → Query BigQuery dimension tables for region
+    ↓
+🆕 [Entity Resolution] → Match ALL entity columns to canonical IDs
+    │   ├─ student_id/student_name → canonical student_id
+    │   ├─ teacher_id/teacher_name → canonical teacher_id
+    │   ├─ parent_id/parent_name → canonical parent_id
+    │   ├─ region_id/region_name → canonical region_id
+    │   ├─ subject_id/subject → canonical subject_id
+    │   └─ school_name → canonical school_id
+    ↓
+[Normalization] → Canonical DataFrame with resolved entity IDs + metadata
+    ↓
+[Pandera Validation] → Quality checks
+    ↓
+[Clean Layer Write] → Parquet (GCS)
+    ↓
+[BigQuery Load] → Staging → MERGE → Core Tables
+    ↓
+🆕 [IF table_type == FEEDBACK]:
+    ↓
+    [Feedback Text Analysis] → Detect entity mentions in text_content
+    ↓
+    [Entity Resolution for Mentions] → Match mentioned entities to canonical IDs
+    ↓
+    [Create FeedbackTarget] → Insert polymorphic relationships to BigQuery
+    ↓
+[Update Backend] → Fire-and-forget status update
+    ↓
+Return 200 to Eventarc
+```
+
+### Key Changes:
+
+1. **Entity Resolution moved BEFORE Normalization**: Now resolves ALL entity references, not just feedback
+2. **Entity Cache loaded once per ingestion**: Reused for all entity lookups
+3. **Feedback Analysis separate**: Only for detecting entities MENTIONED in feedback text (polymorphic FeedbackTarget)
+4. **New entities auto-created**: If no match found, creates new dimension table record
+
+
 
 ## Service Integration
 
-### Transformer → Tabular Flow
+### Transformer → Tabular Flow (Event-Driven)
 
 1. **Transformer completes text extraction**
-   - Saves extracted text to Cloud Storage (gs://bucket/text/file_id.txt)
-   - Prepares metadata (file_id, region_id, original_content_type)
+   - Extracts text from file
+   - Builds YAML frontmatter with nested metadata structure (original.*, extraction.*, content.*, document.*)
+   - Uploads text WITH frontmatter to GCS (gs://bucket/text/file_id.txt)
+   - Returns text_uri to MIME Decoder
 
-2. **Transformer calls Tabular service**
-   - POST /api/v1/tabular/analyze
-   - Payload: TabularRequest with text_uri and metadata
+2. **GCS emits OBJECT_FINALIZE event**
+   - Event triggered when text file is created
+   - Contains bucket, object_name, contentType, size
 
-3. **Tabular processes request**
-   - Retrieves text from Cloud Storage
-   - Analyzes structure and loads to BigQuery
-   - Returns TabularResponse with status and metrics
+3. **Eventarc filters and routes event**
+   - Filters for `text/*.txt` pattern
+   - Delivers CloudEvent to Tabular service
 
-4. **Transformer receives response**
-   - Forwards status to MIME Decoder
-   - MIME Decoder updates Backend
-   - Backend updates UI
+4. **Tabular processes CloudEvent**
+   - Parses CloudEvent to extract file_id
+   - Downloads text file from text_uri
+   - Parses YAML frontmatter to extract metadata
+   - Analyzes text structure (AFTER frontmatter)
+   - Loads to BigQuery
+   - Updates Backend (fire-and-forget)
+   - Returns 200 to Eventarc
+
+5. **Backend receives status update**
+   - Updates file processing status
+   - Updates UI with data health and preview
 
 ### Event-Driven Characteristics
 
-- **Asynchronous**: Tabular processes requests without blocking Transformer
+- **Fully Asynchronous**: Tabular triggered independently via Eventarc
+- **Decoupled**: Transformer doesn't know about Tabular
 - **Scalable**: Cloud Run scales Tabular service based on load
-- **Resilient**: Transformer retries on failures with exponential backoff
-- **Observable**: Structured logs and metrics for monitoring
+- **Resilient**: Eventarc retries on failures with exponential backoff
+- **Observable**: Structured logs with CloudEvent correlation IDs
+- **Consistent**: Same pattern as uploads → MIME Decoder flow
 
 ## Data Models
 
@@ -965,34 +1793,45 @@ Errors are logged with full context and re-raised for HTTP error responses.
 
 ### Unit Tests
 
-1. **filetypes.py**: Test detection for CSV, XLSX, JSON, JSONL with various extensions and MIME types
-2. **classifier.py**: Test classification with synthetic DataFrames for each table type
-3. **mapping.py**: Test column mapping with known column names and expected concepts
+**Core Pipeline Tests:**
+1. **classifier.py**: Test classification with synthetic DataFrames for each table type
+2. **mapping.py**: Test column mapping with known column names and expected concepts
 4. **normalize.py**: Test type casting, metadata addition, data cleaning
 5. **schemas.py**: Test Pandera validation with valid and invalid data
 6. **clean_layer.py**: Test Parquet writing to local and GCS (mocked)
 7. **dwh/client.py**: Test BigQuery operations with mocks or test dataset
 
+**🆕 AI Analysis Tests:**
+8. **feedback_analyzer.py**: Test feedback target detection with sample feedback text
+9. **entity_resolver.py**: Test name normalization, fuzzy matching, and initial expansion
+   - Test exact matches: "Иван Петров" → "Иван Петров"
+   - Test fuzzy matches: "Иван Пeтров" (typo) → "Иван Петров"
+   - Test initial variations: "И. Петров" → ["Иван Петров", "Игорь Петров"]
+   - Test embedding-based matching for semantic similarity
+
 ### Integration Tests
 
-1. End-to-end pipeline with sample CSV/XLSX/JSON files
+1. End-to-end pipeline with sample CSV/TSV/JSON files
 2. Verify data flows from raw file to BigQuery tables
 3. Test error handling at each pipeline stage
 4. Verify ingest_runs tracking accuracy
+5. 🆕 Test feedback ingestion with automatic FeedbackTarget creation
 
 ### Test Fixtures
 
 - `tests/fixtures/sample_assessment.csv`: Sample assessment data
 - `tests/fixtures/sample_attendance.xlsx`: Sample attendance data
-- `tests/fixtures/sample_feedback.json`: Sample feedback data
+- `tests/fixtures/sample_feedback.json`: Sample feedback data with entity mentions
+- `tests/fixtures/sample_feedback.txt`: Feedback text with Czech names and initials
 - `tests/fixtures/concepts_test.yaml`: Minimal concepts catalog for testing
+- `tests/fixtures/mock_entities.json`: Mock teacher/student/region data for entity resolution tests
 
 ## Dependencies
 
 ### New Python Packages
 
 ```
-sentence-transformers>=2.2.0
+sentence-transformers>=2.3.0  # For BGE-M3 embeddings
 pandas>=2.0.0
 pyarrow>=12.0.0
 openpyxl>=3.1.0
@@ -1003,9 +1842,15 @@ python-magic>=0.4.27  # optional
 pyyaml>=6.0
 numpy>=1.24.0
 scikit-learn>=1.3.0  # for cosine_similarity
+python-Levenshtein>=0.21.0  # for fuzzy string matching
+rapidfuzz>=3.0.0  # faster alternative to python-Levenshtein
+requests>=2.31.0  # for Ollama API calls
 ```
 
-All dependencies use MIT/Apache 2.0 licenses.
+**System Dependencies:**
+- Ollama (installed via curl script in Dockerfile)
+
+All Python dependencies use MIT/Apache 2.0 licenses.
 
 ## Performance Considerations
 
@@ -1026,20 +1871,65 @@ All dependencies use MIT/Apache 2.0 licenses.
 ## Deployment Notes
 
 1. **Cloud Run Service**: Deploy as independent Cloud Run service named "tabular-service"
-2. **Model Download**: sentence-transformers downloads models on first use (~400MB)
-3. **Memory**: Embedding model requires ~1GB RAM, configure Cloud Run with 2GB minimum
-4. **CPU**: Configure Cloud Run with 2 vCPUs for embedding performance
-5. **Concurrency**: Set max concurrency to 10 to balance throughput and memory usage
-6. **BigQuery Setup**: Terraform provisions datasets and tables
+2. **AI Models**:
+   - BGE-M3 embedding model: ~2.2GB (downloaded on first use)
+   - Llama 3.2 1B via Ollama: ~1.3GB (pulled during container startup)
+   - Total model size: ~3.5GB
+3. **Memory**: Configure Cloud Run with 4GB minimum (models + application overhead)
+4. **CPU**: Configure Cloud Run with 2 vCPUs for model inference performance
+5. **Concurrency**: Set max concurrency to 5 (lower due to LLM memory usage)
+6. **Startup**: Cold start ~20-30 seconds (Ollama startup + model loading)
+6. **BigQuery Setup**: 
+   - Terraform provisions datasets (core and staging) via terraform-gcp-infrastructure spec
+   - Terraform creates all required tables (dimensions, facts, observations, ingest_runs)
+   - Tables are pre-configured with partitioning and clustering
+   - Dataset location matches region variable for data locality
+   - Staging tables auto-expire after 7 days (configurable)
 7. **Concepts Catalog**: Deploy concepts.yaml with application container
 8. **Environment Variables**: Configure all settings via Cloud Run environment variables
+   - BIGQUERY_DATASET_ID should match terraform bigquery_dataset_id variable
+   - BIGQUERY_STAGING_DATASET_ID should match terraform bigquery_staging_dataset_id variable
 9. **Service Account**: Grant Cloud Run service account permissions for:
    - Cloud Storage read access (for text_uri retrieval)
-   - BigQuery write access (for data loading)
+   - BigQuery write access (for data loading to both core and staging datasets)
+   - Roles: roles/storage.objectViewer, roles/bigquery.dataEditor, roles/bigquery.jobUser
 10. **Health Checks**: Configure Cloud Run health check endpoint at /health
 11. **Logging**: Enable structured logging with JSON format for Cloud Logging integration
 12. **Monitoring**: Set up Cloud Monitoring alerts for:
     - High error rates
     - Long processing times
     - Memory usage spikes
+13. **Terraform Integration**: 
+    - Run terraform-gcp-infrastructure spec tasks 11-18 to provision BigQuery resources
+    - Verify BigQuery outputs match Tabular service configuration
+    - Ensure dataset location matches Cloud Run service region
+
+14. **Docker Image with Ollama**:
+```dockerfile
+FROM python:3.11-slim
+
+# Install Ollama
+RUN curl -fsSL https://ollama.com/install.sh | sh
+
+# Install Python dependencies
+COPY requirements.txt .
+RUN pip install --no-cache-dir -r requirements.txt
+
+# Pre-download BGE-M3 model (optional, speeds up first run)
+RUN python -c "from sentence_transformers import SentenceTransformer; SentenceTransformer('BAAI/bge-m3')"
+
+# Copy application code
+COPY src/ /app/src/
+COPY config/ /app/config/
+WORKDIR /app
+
+# Create startup script
+RUN echo '#!/bin/bash\n\
+ollama serve &\n\
+sleep 5\n\
+ollama pull llama3.2:1b\n\
+uvicorn src.eduscale.api.v1.routes_tabular:app --host 0.0.0.0 --port 8080' > /start.sh && chmod +x /start.sh
+
+CMD ["/start.sh"]
+```
 

@@ -132,22 +132,80 @@
   - Note this as production improvement opportunity
   - _Related to: simplicity principle for MVP_
 
+- [ ] 21. Create service account for Tabular service trigger
+  - Add google_service_account resource for tabular-trigger-sa in infra/terraform/iam.tf
+  - Add display_name "Tabular Service Eventarc Trigger SA"
+  - Add description "Service account for Eventarc trigger to invoke Tabular service"
+  - _Requirements: 10.5_
+
+- [ ] 22. Configure Tabular service account permissions
+  - Add Cloud Run Invoker role for Tabular Cloud Run service
+  - Add Eventarc Event Receiver role at project level
+  - Ensure no Cloud Storage permissions are granted
+  - _Requirements: 10.5_
+
+- [ ] 23. Create Eventarc trigger for Tabular service
+  - Add google_eventarc_trigger resource for Tabular service in infra/terraform/eventarc.tf
+  - Set name to "${var.project_name}-tabular-trigger"
+  - Set location to var.region (EU)
+  - Configure service_account to use tabular-trigger-sa
+  - Add matching_criteria for event type: google.cloud.storage.object.v1.finalized
+  - Add matching_criteria for bucket name from Cloud Storage bucket resource
+  - Add matching_criteria for object prefix "text/"
+  - Add destination block pointing to Tabular Cloud Run service
+  - Configure same retry policy as MIME Decoder trigger (5 retries, exponential backoff)
+  - Add depends_on for Cloud Storage bucket and Tabular Cloud Run service
+  - _Requirements: 10.1, 10.2, 10.3, 10.4, 10.5, 10.6, 10.7_
+
+- [ ] 24. Add Tabular trigger output
+  - Add tabular_trigger_name output to infra/terraform/outputs.tf
+  - Output the trigger name for verification
+  - _Requirements: 10.8_
+
+- [ ] 25. Update monitoring dashboard for Tabular trigger
+  - Add Tabular trigger metrics to Cloud Monitoring dashboard
+  - Add charts for Tabular event_count, delivery_success_count, delivery_failure_count
+  - Add chart for Tabular delivery_latency percentiles
+  - Create alert policy for Tabular high failure rate (>10% failures)
+  - Create alert policy for Tabular high latency (p95 > 60s, AI processing takes longer)
+  - Create alert policy for no text file events (0 events for >2 hours)
+  - _Requirements: 10.7_
+
+- [ ] 26. Test Tabular Eventarc trigger (REQUIRES DEPLOYMENT)
+  - Apply Terraform configuration to create Tabular trigger
+  - Upload a test file that triggers Transformer
+  - Wait for Transformer to save text file to text/*.txt
+  - Verify OBJECT_FINALIZE event is emitted for text file
+  - Check Tabular service logs for event receipt
+  - Verify event payload contains correct metadata
+  - Verify data is loaded to BigQuery
+  - _Requirements: 10.1, 10.2, 10.3, 10.4_
+
+- [ ] 27. Update documentation for Tabular trigger
+  - Update infra/terraform/README.md with Tabular trigger information
+  - Document the two-trigger architecture (uploads → MIME Decoder, text → Tabular)
+  - Add Tabular trigger testing instructions
+  - Document Tabular trigger monitoring and alerting
+  - Add troubleshooting section for Tabular trigger issues
+  - _Requirements: 10.8_
+
 ---
 
 ## Implementation Summary
 
-**Completed Tasks (16/20)**:
-- ✅ Tasks 1-12: Infrastructure and code implementation
-- ✅ Tasks 17-20: Documentation
+**Completed Tasks (16/27)**:
+- ✅ Tasks 1-12: MIME Decoder infrastructure and code implementation
+- ✅ Tasks 17-20: MIME Decoder documentation
 
-**Pending Tasks (4/20) - Require GCP Deployment**:
-- ⏸️ Task 13: Test Eventarc trigger (requires deployment)
-- ⏸️ Task 14: Test retry mechanism (requires deployment)
-- ⏸️ Task 15: Test event filtering (requires deployment)
-- ⏸️ Task 16: Verify regional configuration (requires deployment)
+**Pending Tasks (11/27)**:
+- ⏸️ Tasks 13-16: MIME Decoder testing (requires deployment)
+- 🆕 Tasks 21-25: Tabular service trigger implementation
+- ⏸️ Task 26: Tabular trigger testing (requires deployment)
+- 🆕 Task 27: Tabular trigger documentation
 
 **Next Steps**:
-1. Deploy infrastructure using `terraform apply`
-2. Build and push MIME Decoder Docker image
-3. Execute testing tasks 13-16
-4. Verify all requirements are met
+1. Implement Tabular service trigger (tasks 21-25)
+2. Deploy infrastructure using `terraform apply`
+3. Build and push MIME Decoder and Tabular Docker images
+4. Execute testing tasks 13-16 and 26
+5. Verify all requirements are met

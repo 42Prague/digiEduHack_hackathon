@@ -178,3 +178,100 @@ This specification defines the Terraform infrastructure-as-code configuration fo
 6. THE Terraform Configuration SHALL include comments explaining complex configurations
 7. THE Terraform Configuration SHALL use the local backend by default with optional GCS backend configuration
 8. THE Terraform Configuration SHALL be formatted according to Terraform style conventions
+
+### Requirement 13
+
+**User Story:** As a data engineer, I want BigQuery datasets provisioned via Terraform, so that the Tabular service can load structured data into the data warehouse
+
+#### Acceptance Criteria
+
+1. THE Terraform Configuration SHALL enable the BigQuery API (bigquery.googleapis.com)
+2. THE Terraform Configuration SHALL create a BigQuery dataset for core tables with configurable dataset_id
+3. THE Terraform Configuration SHALL create a BigQuery dataset for staging tables with configurable staging_dataset_id
+4. THE Terraform Configuration SHALL set the dataset location to the value of the region variable for data locality
+5. THE Terraform Configuration SHALL configure dataset default table expiration for staging tables (7 days)
+6. THE Terraform Configuration SHALL NOT set table expiration for core dataset
+7. THE Terraform Configuration SHALL add dataset descriptions explaining their purpose
+8. THE Terraform Configuration SHALL declare dependencies on BigQuery API enablement
+
+### Requirement 14
+
+**User Story:** As a data engineer, I want BigQuery tables created via Terraform, so that the Tabular service has the correct schema for data loading
+
+#### Acceptance Criteria
+
+1. THE Terraform Configuration SHALL create dimension tables: dim_region, dim_school, dim_time in the core dataset
+2. THE Terraform Configuration SHALL create fact tables: fact_assessment, fact_intervention in the core dataset
+3. THE Terraform Configuration SHALL create an observations table for unstructured data in the core dataset
+4. THE Terraform Configuration SHALL create an ingest_runs table for pipeline tracking in the core dataset
+5. THE Terraform Configuration SHALL partition fact tables by date column
+6. THE Terraform Configuration SHALL cluster fact tables by region_id
+7. THE Terraform Configuration SHALL partition ingest_runs table by created_at
+8. THE Terraform Configuration SHALL cluster ingest_runs table by region_id and status
+9. THE Terraform Configuration SHALL define explicit schemas for all tables matching the Tabular service data models
+10. THE Terraform Configuration SHALL declare dependencies on dataset creation
+
+### Requirement 15
+
+**User Story:** As a DevOps engineer, I want BigQuery configuration variables, so that I can customize dataset names and settings without modifying code
+
+#### Acceptance Criteria
+
+1. THE Terraform Configuration SHALL define a bigquery_dataset_id variable with default value "jedouscale_core"
+2. THE Terraform Configuration SHALL define a bigquery_staging_dataset_id variable with default value "jedouscale_staging"
+3. THE Terraform Configuration SHALL define a bigquery_staging_table_expiration_days variable with default value 7
+4. THE Terraform Configuration SHALL provide descriptions for all BigQuery-related variables
+5. THE Terraform Configuration SHALL use these variables in all BigQuery resource definitions
+
+### Requirement 16
+
+**User Story:** As a developer, I want Terraform outputs for BigQuery resources, so that I can easily access dataset and table information
+
+#### Acceptance Criteria
+
+1. THE Terraform Configuration SHALL output bigquery_dataset_id containing the core dataset ID
+2. THE Terraform Configuration SHALL output bigquery_staging_dataset_id containing the staging dataset ID
+3. THE Terraform Configuration SHALL output bigquery_dataset_location containing the dataset location
+4. THE Terraform Configuration SHALL output bigquery_tables containing a list of created table names
+5. THE Terraform Configuration SHALL include descriptions for all BigQuery outputs
+
+### Requirement 17
+
+**User Story:** As a DevOps engineer, I want a dedicated service account for Tabular Service, so that it has appropriate permissions for data processing operations
+
+#### Acceptance Criteria
+
+1. THE Terraform Configuration SHALL create a google_service_account resource named "tabular_service"
+2. THE Terraform Configuration SHALL set account_id to "tabular-service"
+3. THE Terraform Configuration SHALL set display_name to "Tabular Service Account"
+4. THE Terraform Configuration SHALL set description to "Service account for Tabular Service running on Cloud Run"
+5. THE Terraform Configuration SHALL grant this service account Storage Object Viewer role on the uploads bucket
+6. THE Terraform Configuration SHALL grant this service account BigQuery Data Editor role at project level
+7. THE Terraform Configuration SHALL grant this service account BigQuery Job User role at project level
+
+### Requirement 18
+
+**User Story:** As a data engineer, I want Eventarc trigger for text files, so that Tabular Service is automatically invoked when Transformer produces text output
+
+#### Acceptance Criteria
+
+1. THE Terraform Configuration SHALL create a google_eventarc_trigger resource named "text_trigger"
+2. WHEN enable_eventarc variable is true, THE Terraform Configuration SHALL create the text trigger
+3. THE Terraform Configuration SHALL configure the trigger to match "google.cloud.storage.object.v1.finalized" events
+4. THE Terraform Configuration SHALL configure the trigger to filter events by bucket name
+5. THE Terraform Configuration SHALL configure the trigger to filter events by object name pattern "text/*"
+6. THE Terraform Configuration SHALL route events to the Tabular Cloud Run service
+7. THE Terraform Configuration SHALL use the Eventarc service account for invoking the Tabular service
+8. THE Terraform Configuration SHALL grant Eventarc service account "roles/run.invoker" permission on Tabular service
+9. THE Terraform Configuration SHALL declare dependencies on Eventarc API, IAM permissions, and storage bucket
+
+### Requirement 19
+
+**User Story:** As a DevOps engineer, I want Tabular Service configuration variables, so that I can customize the service name without modifying code
+
+#### Acceptance Criteria
+
+1. THE Terraform Configuration SHALL define a tabular_service_name variable with default value "tabular-service"
+2. THE Terraform Configuration SHALL provide a description for the tabular_service_name variable
+3. THE Terraform Configuration SHALL use this variable in Eventarc trigger configuration
+4. THE Terraform Configuration SHALL use this variable in IAM permission configuration

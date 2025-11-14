@@ -3,7 +3,7 @@
 ## Introduction
 
 The Eventarc Integration provides event-driven automation for the data processing pipeline.
-When files are uploaded to Cloud Storage, Eventarc automatically triggers the MIME Decoder service to begin processing. This eliminates the need for polling and ensures immediate processing of uploaded files.
+When files are uploaded to Cloud Storage, Eventarc automatically triggers the MIME Decoder service to begin processing. When the Transformer service saves extracted text files, Eventarc triggers the Tabular service for data warehouse loading. This eliminates the need for polling and ensures immediate processing of uploaded files and extracted text.
 
 ## Glossary
 
@@ -136,3 +136,18 @@ When files are uploaded to Cloud Storage, Eventarc automatically triggers the MI
 3. THE Terraform configuration SHALL output the trigger name
 4. THE Terraform configuration SHALL depend on Cloud Storage bucket and MIME Decoder service resources
 5. THE Terraform configuration SHALL use consistent naming conventions with other infrastructure components
+
+### Requirement 10: Tabular Service Event Trigger
+
+**User Story:** As a system architect, I want Eventarc to trigger the Tabular service when text files are created, so that the data processing pipeline is fully event-driven.
+
+#### Acceptance Criteria
+
+1. THE Eventarc Trigger SHALL be defined in Terraform for the Tabular service
+2. WHEN the Tabular trigger is created, THE Eventarc Trigger SHALL subscribe to OBJECT_FINALIZE events from the configured Cloud Storage bucket
+3. WHEN an OBJECT_FINALIZE event occurs for text/*.txt files, THE Eventarc Trigger SHALL route the event to the Tabular Cloud Run service
+4. THE Tabular Eventarc Trigger SHALL include event filters for bucket name and text/* prefix
+5. THE Tabular Eventarc Trigger SHALL use a dedicated service account with Cloud Run Invoker permissions for the Tabular service
+6. THE Tabular Eventarc Trigger SHALL be created in the same region as the Tabular Cloud Run service
+7. THE Tabular Eventarc Trigger SHALL follow the same retry and error handling patterns as the MIME Decoder trigger
+8. THE Terraform configuration SHALL output the Tabular trigger name for verification
