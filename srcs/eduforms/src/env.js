@@ -17,6 +17,7 @@ export const env = createEnv({
     NODE_ENV: z
       .enum(["development", "test", "production"])
       .default("development"),
+      SKIP_MIGRATIONS: z.boolean()
   },
 
   /**
@@ -37,7 +38,8 @@ export const env = createEnv({
     DATABASE_URL: process.env.DATABASE_URL,
     NODE_ENV: process.env.NODE_ENV,
     ADMIN_NAME: process.env.ADMIN_NAME,
-    ADMIN_PASS: process.env.ADMIN_PASS
+    ADMIN_PASS: process.env.ADMIN_PASS,
+    SKIP_MIGRATIONS: process.env.SKIP_MIGRATIONS
   },
   /**
    * Run `build` or `dev` with `SKIP_ENV_VALIDATION` to skip env validation. This is especially
