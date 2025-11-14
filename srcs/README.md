@@ -65,7 +65,7 @@ ollama pull embeddinggemma     # embedding model (OLLAMA_EMBED_MODEL)
 
 * Exposes port **11434** → override via `OLLAMA_PORT=<port>`.
 * Stores downloaded models in the named docker volume `ollama_data`.
-* Auto-pulls `llama3.1:8b` on startup via `chat/docker-entrypoint.sh`.
+* Auto-pulls `llama3.1:8b` and `embeddinggemma` on startup via `chat/docker-entrypoint.sh`.
 
 ### **2. backend (FastAPI + SQLite)**
 
@@ -88,7 +88,7 @@ The Docker image now launches Uvicorn with `--reload`, so `docker compose up bac
 
 ### **4. frontend (EduZmena file upload UI)**
 
-* Builds from `./eduzmena-frontend/file-upload`
+* Builds from `./eduzmena-frontend`
 * Runs [`live-server`](https://www.npmjs.com/package/live-server) inside the container
 * Serves the static upload UI on **[http://localhost:4173](http://localhost:4173)**
 * Talks to the backend (`http://localhost:8000`) and tusd (`http://localhost:1080`) by default
@@ -237,7 +237,7 @@ rm -rf ./data              # wipe DB + uploads
 ```
 
 ## 7. How to deploy to production
-* Everything is running in Docker, so as far as you have running Docker, you should be fine.
+* Everything is running in Docker. Therefore, as far as you have a running Docker instance, you should be fine to run this app.
 
 ## 8. Known limitations
 * Hallucinations and factual inaccuracies – possible limitations linked to the smaller model size.
