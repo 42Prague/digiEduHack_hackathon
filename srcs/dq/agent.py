@@ -1,9 +1,8 @@
-from openai import OpenAI
 import os
 
-API_KEY = os.getenv("META_API_KEY")
+from openai import OpenAI
 
-# print("Api key:", API_KEY)
+API_KEY = os.getenv("META_API_KEY")
 
 client = OpenAI(
     base_url="https://api.featherless.ai/v1",
@@ -31,11 +30,11 @@ prompt = """
 
 def call_agent(prompt: str, text: str) -> str:
     response = client.chat.completions.create(
-        model='meta-llama/Llama-3.3-70B-Instruct',
+        model="meta-llama/Llama-3.3-70B-Instruct",
         messages=[
             {"role": "system", "content": prompt},
-            {"role": "user", "content": text}
+            {"role": "user", "content": text},
         ],
-        temperature=0
+        temperature=0,
     )
     return response.choices[0].message.content

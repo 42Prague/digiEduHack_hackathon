@@ -1,4 +1,5 @@
-from agent import call_agent
+from srcs.dq.agent import call_agent
+
 
 def create_prompt(source_features: list[str]) -> str:
     return f"""
@@ -37,6 +38,7 @@ def create_user_message(target_feature: str, target_feature_values) -> str:
     <values>{target_feature_values}</values>
 </target_feature>
 """
+
 
 def map_feature(target_feature: str, target_feature_values, source_features: list[str]):
     prompt = create_prompt(source_features)

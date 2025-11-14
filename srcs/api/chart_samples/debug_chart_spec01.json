@@ -1,0 +1,24 @@
+{
+    "chart_type": "bar",
+    "data": [
+        {
+            "training_type": "Soft Skills",
+            "mean_score_improvement": 0.93
+        },
+        {
+            "training_type": "AI Intro",
+            "mean_score_improvement": 0.41
+        },
+        {
+            "training_type": "Leadership",
+            "mean_score_improvement": 1.15
+        },
+        {
+            "training_type": "IT Basics",
+            "mean_score_improvement": 0.58
+        }
+    ],
+    "title": "Mean Score Improvement by Training Type",
+    "x": "training_type",
+    "y": "mean_score_improvement"
+}

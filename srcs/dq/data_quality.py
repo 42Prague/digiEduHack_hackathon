@@ -1,17 +1,17 @@
-from handlers.text_handlers.pdf_text_handler import PDFTextHandler
-from handlers.text_handlers.docx_text_handler import DocxTextHandler
-from handlers.text_handlers.txt_text_handler import TxtTextHandler
+from srcs.dq.handlers.text_handlers.pdf_text_handler import PDFTextHandler
+from srcs.dq.handlers.text_handlers.docx_text_handler import DocxTextHandler
+from srcs.dq.handlers.text_handlers.txt_text_handler import TxtTextHandler
 
-from handlers.table_handlers.csv_table_handler import CSVTableHandler
-from handlers.table_handlers.xlsx_table_handler import XLSXTableHandler
-from handlers.table_handlers.json_table_handler import JSONTableHandler
+from srcs.dq.handlers.table_handlers.csv_table_handler import CSVTableHandler
+from srcs.dq.handlers.table_handlers.xlsx_table_handler import XLSXTableHandler
+from srcs.dq.handlers.table_handlers.json_table_handler import JSONTableHandler
 
-from handlers.audio_handlers.generic_audio_handler import GenericAudioHandler
+from srcs.dq.handlers.audio_handlers.generic_audio_handler import GenericAudioHandler
 
-from wrapper import process_df
+from srcs.dq.wrapper import process_df
 
-from agent import call_agent, prompt
-from db_manager import MongoDBManager
+from srcs.dq.agent import call_agent, prompt
+from srcs.dq.db_manager import MongoDBManager
 
 
 class DataQualityProcessor:

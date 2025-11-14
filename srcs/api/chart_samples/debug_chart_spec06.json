@@ -1,0 +1,51 @@
+{
+    "chart_type": "bar",
+    "title": "Average Satisfaction by School and City",
+    "data": [
+        {
+            "school": "Alpha",
+            "city": "Ostrava",
+            "avg_satisfaction": 3.78
+        },
+        {
+            "school": "Alpha",
+            "city": "Prague",
+            "avg_satisfaction": 4.54
+        },
+        {
+            "school": "Beta",
+            "city": "Ostrava",
+            "avg_satisfaction": 3.14
+        },
+        {
+            "school": "Delta",
+            "city": "Ostrava",
+            "avg_satisfaction": 4.31
+        },
+        {
+            "school": "Delta",
+            "city": "Prague",
+            "avg_satisfaction": 3.81
+        },
+        {
+            "school": "Gamma",
+            "city": "Brno",
+            "avg_satisfaction": 3.71
+        },
+        {
+            "school": "Gamma",
+            "city": "Ostrava",
+            "avg_satisfaction": 4.43
+        },
+        {
+            "school": "Gamma",
+            "city": "Prague",
+            "avg_satisfaction": 4.21
+        }
+    ],
+    "x": "school",
+    "y": "avg_satisfaction",
+    "group_by": [
+        "city"
+    ]
+}

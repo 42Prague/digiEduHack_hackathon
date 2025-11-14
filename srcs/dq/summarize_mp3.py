@@ -1,9 +1,11 @@
-import tempfile
-import ffmpeg
 import json
 import os
-from vosk import Model, KaldiRecognizer
-from agent import call_agent, prompt
+import tempfile
+
+import ffmpeg
+from vosk import KaldiRecognizer, Model
+
+from srcs.dq.agent import call_agent, prompt
 
 # -------------------------------
 #  VOSK MODEL
@@ -17,11 +19,10 @@ model = Model(VOSK_MODEL_PATH)
 # -------------------------------
 def convert_to_wav(input_path: str, sample_rate: int = 16000) -> str:
     fd, tmp_wav_path = tempfile.mkstemp(suffix=".wav")
-    
+
     os.close(fd)
     (
-        ffmpeg
-        .input(input_path)
+        ffmpeg.input(input_path)
         .output(tmp_wav_path, ac=1, ar=sample_rate, format="wav")
         .overwrite_output()
         .run(quiet=True)
@@ -34,7 +35,7 @@ def convert_to_wav(input_path: str, sample_rate: int = 16000) -> str:
 # -------------------------------
 def transcribe_audio(path: str) -> str:
     wav_path = convert_to_wav(path)
-    
+
     try:
         rec = KaldiRecognizer(model, 16000)
         rec.SetWords(True)
@@ -62,6 +63,7 @@ def transcribe_audio(path: str) -> str:
 
 def clean_czech_text(text: str) -> str:
     return text.replace("[unk]", "").strip()
+
 
 # -------------------------------
 #  SUMMARIZATION VIA LLAMA

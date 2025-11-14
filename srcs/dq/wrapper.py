@@ -1,8 +1,8 @@
 import pandas as pd
-import pprint
 
-from embedding import Embedding
-from storage import Storage
+from srcs.dq.embedding import Embedding
+from srcs.dq.storage import Storage
+
 
 def process_df(df):
     embedder = Embedding()
