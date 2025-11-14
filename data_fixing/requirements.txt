@@ -1,0 +1,63 @@
+# ====================================================================
+# REQUIREMENTS FILE
+# Student Performance Dashboard & Analysis
+# ====================================================================
+
+# Core dependencies
+pandas>=2.0.0
+numpy>=1.24.0
+
+# Visualization
+plotly>=5.14.0
+matplotlib>=3.7.0
+seaborn>=0.12.0
+
+# Statistical analysis
+statsmodels>=0.14.0
+scipy>=1.10.0
+
+# Mixed effects models (R alternative in Python)
+# Note: R with lme4 is still recommended for best results
+
+# Streamlit dashboard
+streamlit>=1.28.0
+
+# Database connectivity
+sqlalchemy>=2.0.0
+psycopg2-binary>=2.9.0  # PostgreSQL
+pymysql>=1.1.0          # MySQL
+# cx_Oracle>=8.0        # Oracle (uncomment if needed)
+
+# Utilities
+python-dateutil>=2.8.0
+
+# Excel support (REQUIRED for demographics configuration)
+openpyxl>=3.1.0
+xlsxwriter>=3.1.0
+
+# Optional: Advanced statistics
+# scikit-learn>=1.3.0   # For additional ML-based analysis
+# pingouin>=0.5.0       # Additional statistical tests
+
+# ====================================================================
+# INSTALLATION INSTRUCTIONS
+# ====================================================================
+#
+# 1. Create a virtual environment:
+#    python -m venv venv
+#
+# 2. Activate the virtual environment:
+#    - Windows: venv\Scripts\activate
+#    - Mac/Linux: source venv/bin/activate
+#
+# 3. Install requirements:
+#    pip install -r requirements.txt
+#
+# 4. For R analysis (recommended for mixed effects models):
+#    Install R from https://www.r-project.org/
+#    Then in R console:
+#    install.packages(c("lme4", "lmerTest", "ggplot2", 
+#                       "dplyr", "tidyr", "performance", "sjPlot"))
+#
+# ====================================================================
+

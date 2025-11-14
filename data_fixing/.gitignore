@@ -1,0 +1,125 @@
+# ====================================================================
+# .gitignore for Student Performance Survey System
+# ====================================================================
+
+# Streamlit secrets (IMPORTANT - contains database credentials!)
+.streamlit/secrets.toml
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+MANIFEST
+
+# Virtual environments
+venv/
+env/
+ENV/
+.venv
+
+# IDEs
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+
+# Database files
+*.db
+*.sqlite
+*.sqlite3
+teacher_survey.db
+
+# Logs
+*.log
+logs/
+
+# Jupyter Notebook
+.ipynb_checkpoints
+*.ipynb
+
+# Environment variables
+.env
+.env.local
+
+# Data files (if sensitive)
+*.csv
+data/
+exports/
+
+# R files
+.Rhistory
+.RData
+.Rproj.user
+
+# Output files
+*.png
+*.jpg
+*.pdf
+plots/
+figures/
+results/
+*.html
+
+# Temporary files
+*.tmp
+*.bak
+*.backup
+temp/
+tmp/
+
+# OS generated files
+Thumbs.db
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+
+# Testing
+.pytest_cache/
+.coverage
+htmlcov/
+
+# Documentation builds
+docs/_build/
+
+# Backup files
+*~
+
+# ====================================================================
+# EXCEPTIONS (files to keep in git)
+# ====================================================================
+
+# Keep template/example files
+!data_structure_template.csv
+!.streamlit/secrets.toml.example
+
+# Keep documentation
+!*.md
+!README.md
+
+# ====================================================================
+
+
+
+
