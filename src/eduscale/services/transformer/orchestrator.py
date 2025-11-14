@@ -329,13 +329,12 @@ async def transform_file(
                 # Determine language (default to English, could be configurable)
                 language_code = settings.SPEECH_LANGUAGE_EN
 
-                # For long audio, we need the GCS URI
-                gcs_uri = f"gs://{bucket}/{object_name}"
-
                 extracted_text, audio_meta = transcribe_audio(
                     temp_file_path,
-                    gcs_uri=gcs_uri,
                     language_code=language_code,
+                    storage_client=storage_client,
+                    bucket=bucket,
+                    file_id=file_id,
                 )
                 transcription_duration_ms = int((time.time() - start_time) * 1000)
 
