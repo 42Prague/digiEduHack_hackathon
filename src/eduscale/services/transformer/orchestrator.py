@@ -326,8 +326,8 @@ async def transform_file(
             logger.info("Transcribing audio file", extra={"file_id": file_id})
             start_time = time.time()
             try:
-                # Determine language (default to English, could be configurable)
-                language_code = settings.SPEECH_LANGUAGE_EN
+                # Determine language (default to Czech)
+                language_code = settings.SPEECH_LANGUAGE_CS
 
                 extracted_text, audio_meta = await transcribe_audio(
                     temp_file_path,
