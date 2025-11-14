@@ -318,14 +318,14 @@ def convert_to_linear16(file_path: Path, output_path: Path) -> tuple[int, int]:
 
 def split_audio_into_chunks(
     file_path: Path,
-    chunk_duration: int = 60,
+    chunk_duration: int = 50,
     overlap: float = 1.0,
 ) -> list[tuple[Path, float]]:
     """Split audio file into chunks with overlap using ffmpeg.
 
     Args:
         file_path: Path to the audio file (LINEAR16 WAV format)
-        chunk_duration: Duration of each chunk in seconds (default: 60)
+        chunk_duration: Duration of each chunk in seconds (default: 50)
         overlap: Overlap between chunks in seconds (default: 1.0)
 
     Returns:
@@ -668,10 +668,10 @@ def transcribe_audio_short(
 async def transcribe_audio_chunk_async(
     gcs_uri: str, language_code: str = "en-US"
 ) -> tuple[str, float]:
-    """Transcribe audio chunk asynchronously using Google Speech API Long-Running Recognition.
+    """Transcribe audio chunk asynchronously using Google Speech API synchronous recognition.
 
     Args:
-        gcs_uri: GCS URI of the audio chunk (LINEAR16 WAV format)
+        gcs_uri: GCS URI of the audio chunk (LINEAR16 WAV format, <= 50 seconds)
         language_code: Language code (e.g., 'en-US', 'cs-CZ')
 
     Returns:
@@ -682,11 +682,11 @@ async def transcribe_audio_chunk_async(
     """
     try:
         logger.debug(
-            "Transcribing chunk asynchronously with long-running recognition",
+            "Transcribing chunk asynchronously",
             extra={"gcs_uri": gcs_uri, "language": language_code},
         )
 
-        # Run long-running API call in executor to avoid blocking
+        # Run synchronous API call in executor to avoid blocking
         loop = asyncio.get_event_loop()
 
         def _transcribe():
@@ -699,11 +699,8 @@ async def transcribe_audio_chunk_async(
                 enable_automatic_punctuation=True,
             )
 
-            # Use long_running_recognize for GCS URIs (supports up to 480 minutes)
-            operation = client.long_running_recognize(config=config, audio=audio)
-
-            # Wait for the operation to complete
-            response = operation.result(timeout=300)  # 5 minutes timeout
+            # Use synchronous recognize for short chunks (<= 60 seconds)
+            response = client.recognize(config=config, audio=audio)
 
             if not response.results:
                 return "", 0.0
@@ -962,10 +959,10 @@ async def transcribe_audio(
 
         try:
             # Choose transcription method based on duration
-            if metadata.duration_seconds and metadata.duration_seconds > 60:
+            if metadata.duration_seconds and metadata.duration_seconds > 50:
                 # Long audio: split into chunks and process in parallel
                 logger.info(
-                    "Audio is longer than 60 seconds, using chunked processing",
+                    "Audio is longer than 50 seconds, using chunked processing",
                     extra={"duration": metadata.duration_seconds},
                 )
 
@@ -976,7 +973,7 @@ async def transcribe_audio(
                     )
 
                 # 1. Split audio into chunks
-                chunks = split_audio_into_chunks(converted_path, chunk_duration=60, overlap=1.0)
+                chunks = split_audio_into_chunks(converted_path, chunk_duration=50, overlap=1.0)
                 chunks_temp_dir = chunks[0][0].parent if chunks else None
 
                 logger.info(
@@ -1017,7 +1014,7 @@ async def transcribe_audio(
             else:
                 # Short audio: use synchronous recognition with converted file
                 logger.info(
-                    "Audio is short (<= 60 seconds), using direct recognition",
+                    "Audio is short (<= 50 seconds), using direct recognition",
                     extra={"duration": metadata.duration_seconds},
                 )
                 transcript, confidence = transcribe_audio_short(converted_path, language_code)
