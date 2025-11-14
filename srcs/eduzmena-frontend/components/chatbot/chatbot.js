@@ -1,7 +1,7 @@
 // Chatbot WebSocket client with JSON response processing
 
 const CONFIG = {
-    wsUrl: "http://localhost:8000/chat",
+    wsUrl: "ws://localhost:8000/chat/",
     // Fields to extract from JSON response (tried in order)
     responseFields: ["response", "message", "text", "content", "data.response", "data.message", "result", "answer"],
     errorFields: ["error", "error_message", "errorMessage", "message"]
@@ -14,6 +14,7 @@ const sendBtn = document.getElementById("send-btn");
 let socket = null;
 let reconnectAttempts = 0;
 const maxReconnectAttempts = 5;
+let currentBotMessage = null; // Current bot message element being streamed to
 
 /**
  * Get value from object using dot notation path
@@ -69,14 +70,40 @@ function processMessage(data) {
 }
 
 /**
- * Add message to chat window
+ * Create a new message element
  */
-function appendMessage(text, sender, isError = false) {
+function createMessageElement(sender, isError = false) {
     const div = document.createElement("div");
     div.className = `message ${sender}${isError ? ' error' : ''}`;
-    div.textContent = text;
     chatWindow.appendChild(div);
     chatWindow.scrollTop = chatWindow.scrollHeight;
+    return div;
+}
+
+/**
+ * Add complete message to chat window
+ */
+function appendMessage(text, sender, isError = false) {
+    const div = createMessageElement(sender, isError);
+    div.textContent = text;
+}
+
+/**
+ * Append text to current streaming message (or create new one)
+ */
+function appendToStreamingMessage(text, sender = "bot") {
+    if (!currentBotMessage) {
+        currentBotMessage = createMessageElement(sender);
+    }
+    currentBotMessage.textContent += text;
+    chatWindow.scrollTop = chatWindow.scrollHeight;
+}
+
+/**
+ * Finish current streaming message
+ */
+function finishStreamingMessage() {
+    currentBotMessage = null;
 }
 
 /**
@@ -119,8 +146,39 @@ function connect() {
         };
 
         socket.onmessage = (event) => {
-            const processed = processMessage(event.data);
-            appendMessage(processed.content, "bot", processed.type === 'error');
+            try {
+                const json = typeof event.data === 'string' ? JSON.parse(event.data) : event.data;
+                
+                // Check for "done" event (end of stream) - don't display it, just finish
+                if (json.event === 'done') {
+                    finishStreamingMessage();
+                    return; // Exit early, don't process this message
+                }
+                
+                // Extract text from chunk (ModelResponse has 'content' field)
+                // The backend sends: { role: "...", content: "text chunk" }
+                let chunkText = null;
+                
+                // Try to get content directly (most common case)
+                if (json.content != null) {
+                    chunkText = String(json.content);
+                } else {
+                    // Fallback to extractResponse for other formats
+                    chunkText = extractResponse(json);
+                }
+                
+                // Append to current streaming message (joins all chunks together)
+                if (chunkText) {
+                    appendToStreamingMessage(chunkText);
+                }
+            } catch (e) {
+                console.error("Error processing message:", e);
+                // Only append if it's not the done event
+                const dataStr = String(event.data);
+                if (!dataStr.includes('"event"') || !dataStr.includes('"done"')) {
+                    appendToStreamingMessage(dataStr);
+                }
+            }
         };
     } catch (error) {
         console.error("Connection error:", error);
@@ -135,13 +193,21 @@ function sendMessage() {
     const text = chatInput.value.trim();
     if (!text || !socket || socket.readyState !== WebSocket.OPEN) return;
 
+    // Finish any previous streaming message
+    finishStreamingMessage();
+    
+    // Send message to server
     socket.send(text);
+    
+    // Show user message
     appendMessage(text, "user");
     chatInput.value = "";
     
     // Remove status on first message
     const status = chatWindow.querySelector('.status-message');
     if (status) status.remove();
+    
+    // Prepare for new bot response (will be created when first chunk arrives)
 }
 
 // Initialize
