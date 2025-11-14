@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>EduZmena - Home</title>
+    <base href="./" />
+    <link rel="stylesheet" href="css/global.css">
+    <link rel="stylesheet" href="css/landing-page.css">
+</head>
+<body data-page="home">
+    <nav class="nav">
+        <div class="nav-container">
+            <a href="index.html" class="nav-brand">EduZmena</a>
+            <ul class="nav-links">
+                <li><a href="index.html" class="nav-link" data-id="home">Home</a></li>
+                <li><a href="components/chatbot/chatbot.html" class="nav-link" data-id="chatbot">Chatbot</a></li>
+                <li><a href="components/file-upload/src/pages/upload.html" class="nav-link" data-id="upload">File Upload</a></li>
+                <li><a href="components/file-upload/src/pages/admin.html" class="nav-link" data-id="admin">Admin</a></li>
+            </ul>
+        </div>
+    </nav>
+    
+    <div class="container">
+        <div class="landing-hero">
+            <h1>EduZmena</h1>
+            <p>Digital education platform with AI chatbot, file management, and administrative tools.</p>
+        </div>
+
+        <div class="landing-cards">
+            <a href="components/chatbot/chatbot.html" class="landing-card">
+                <div class="landing-card-icon">💬</div>
+                <h2>Chatbot</h2>
+                <p>Interact with our AI assistant powered by your custom model. Ask questions and get intelligent responses in real-time via WebSocket.</p>
+                <div class="landing-card-arrow">→</div>
+            </a>
+
+            <a href="components/file-upload/src/pages/upload.html" class="landing-card">
+                <div class="landing-card-icon">📤</div>
+                <h2>File Upload</h2>
+                <p>Upload and manage files using the TUS protocol. Organize files by region and school with drag-and-drop support.</p>
+                <div class="landing-card-arrow">→</div>
+            </a>
+
+            <a href="components/file-upload/src/pages/admin.html" class="landing-card">
+                <div class="landing-card-icon">⚙️</div>
+                <h2>Admin Panel</h2>
+                <p>Manage regions, schools, and view uploaded files. Configure your system settings and monitor file uploads.</p>
+                <div class="landing-card-arrow">→</div>
+            </a>
+        </div>
+    </div>
+</body>
+</html>
+

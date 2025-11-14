@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>File Upload Service - EduZmena</title>
+    <base href="../../../../" />
+    <link href="https://releases.transloadit.com/uppy/v5.1.11/uppy.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="components/file-upload/src/css/upload.css">
+</head>
+<body data-page="upload">
+    <nav class="nav">
+        <div class="nav-container">
+            <a href="index.html" class="nav-brand">EduZmena</a>
+            <ul class="nav-links">
+                <li><a href="index.html" class="nav-link" data-id="home">Home</a></li>
+                <li><a href="components/chatbot/chatbot.html" class="nav-link" data-id="chatbot">Chatbot</a></li>
+                <li><a href="components/file-upload/src/pages/upload.html" class="nav-link" data-id="upload">File Upload</a></li>
+                <li><a href="components/file-upload/src/pages/admin.html" class="nav-link" data-id="admin">Admin</a></li>
+            </ul>
+        </div>
+    </nav>
+    
+    <div class="container">
+        <div class="page-header">
+            <h1>File Upload Service</h1>
+        </div>
+        <div id="files-drag-drop"></div>
+        <div class="config-section">
+            <div class="config-section-item">
+                <label for="region">Region</label>
+                <select name="region" id="region">
+                    <option value="">Select a region</option>
+                </select>
+            </div>
+            <div class="config-section-item">
+                <label for="school">School</label>
+                <select name="school" id="school">
+                    <option value="">Select a school</option>
+                </select>
+            </div>
+        </div>
+    </div>
+    <script type="module" src='components/file-upload/src/js/upload.js'></script>
+</body>
+</html>

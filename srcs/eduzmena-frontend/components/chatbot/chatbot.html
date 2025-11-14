@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Chatbot - EduZmena</title>
+    <base href="../../" />
+    <link rel="stylesheet" href="components/chatbot/chatbot.css" />
+</head>
+<body data-page="chatbot">
+    <nav class="nav">
+        <div class="nav-container">
+            <a href="index.html" class="nav-brand">EduZmena</a>
+            <ul class="nav-links">
+                <li><a href="index.html" class="nav-link" data-id="home">Home</a></li>
+                <li><a href="components/chatbot/chatbot.html" class="nav-link" data-id="chatbot">Chatbot</a></li>
+                <li><a href="components/file-upload/src/pages/upload.html" class="nav-link" data-id="upload">File Upload</a></li>
+                <li><a href="components/file-upload/src/pages/admin.html" class="nav-link" data-id="admin">Admin</a></li>
+            </ul>
+        </div>
+    </nav>
+    
+    <div class="container">
+        <div class="page-header">
+            <h1>Chatbot</h1>
+        </div>
+
+        <div id="chat-window" class="chat-window"></div>
+
+        <div class="chat-input-wrapper">
+            <input id="chat-input" type="text" placeholder="Type a message..." />
+            <button id="send-btn">Send</button>
+        </div>
+    </div>
+    <script src="components/chatbot/chatbot.js"></script>
+</body>
+</html>

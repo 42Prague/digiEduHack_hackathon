@@ -3,15 +3,26 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Admin Panel - Schools & Regions</title>
-    <link rel="stylesheet" href="../css/styles.css">
-    <link rel="stylesheet" href="../css/admin.css">
+    <title>Admin Panel - EduZmena</title>
+    <base href="../../../../" />
+    <link rel="stylesheet" href="components/file-upload/src/css/admin.css">
 </head>
-<body>
+<body data-page="admin">
+    <nav class="nav">
+        <div class="nav-container">
+            <a href="index.html" class="nav-brand">EduZmena</a>
+            <ul class="nav-links">
+                <li><a href="index.html" class="nav-link" data-id="home">Home</a></li>
+                <li><a href="components/chatbot/chatbot.html" class="nav-link" data-id="chatbot">Chatbot</a></li>
+                <li><a href="components/file-upload/src/pages/upload.html" class="nav-link" data-id="upload">File Upload</a></li>
+                <li><a href="components/file-upload/src/pages/admin.html" class="nav-link" data-id="admin">Admin</a></li>
+            </ul>
+        </div>
+    </nav>
+    
     <div class="admin-container">
         <div class="admin-header">
             <h1>Admin Panel - Schools & Regions</h1>
-            <a href="upload.html" class="back-link">← Back to Upload</a>
         </div>
 
         <div id="alert-container"></div>
@@ -59,9 +70,8 @@
             </div>
         </div>
     </div>
-
-    <script type="module" src="../js/admin.js"></script>
-    <script type="module" src="../js/list-files.js"></script>
+    <script type="module" src="components/file-upload/src/js/admin.js"></script>
+    <script type="module" src="components/file-upload/src/js/list-files.js"></script>
 </body>
 </html>
 
