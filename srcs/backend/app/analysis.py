@@ -1,6 +1,7 @@
 import os
 import math
-from typing import Dict, Any, Optional
+from datetime import datetime
+from typing import Dict, Any, Optional, Literal, Sequence, Tuple
 
 from sqlmodel import Session
 
@@ -9,44 +10,47 @@ from .ollama_client import ask_llm  # helper for calling ollama
 
 UPLOAD_DIR = "/data/uploads"  # or whatever tusd uses inside /data
 
-ATTENDANCE_FIELDS = [
-    "school_year",
-    "date",
-    "year",
-    "month",
-    "semester",
-    "intervention",
-    "intervention_type",
-    "intervention_detail",
-    "target_group",
-    "participant_name",
-    "organization_school",
-    "school_grade",
-    "school_type",
-    "region",
-    "feedback",
+FieldType = Literal["list", "string", "date"]
+FieldSchema = Sequence[Tuple[str, FieldType]]
+
+ATTENDANCE_SCHEMA: FieldSchema = [
+    ("school_year", "list"),
+    ("date", "date"),
+    ("year", "list"),
+    ("month", "list"),
+    ("semester", "list"),
+    ("intervention", "list"),
+    ("intervention_type", "list"),
+    ("intervention_detail", "string"),
+    ("target_group", "list"),
+    ("participant_name", "string"),
+    ("organization_school", "list"),
+    ("school_grade", "list"),
+    ("school_type", "list"),
+    ("region", "list"),
+    ("feedback", "string"),
 ]
 
-FEEDBACK_FIELDS = [
-    "school_year",
-    "date",
-    "year",
-    "month",
-    "semester",
-    "participant_name",
-    "organization_school",
-    "school_grade",
-    "school_type",
-    "region",
-    "intervention",
-    "intervention_type",
-    "intervention_detail",
-    "target_group",
-    "overall_satisfaction",
-    "lecturer_performance_and_skills",
-    "planned_goals",
-    "gained_professional_development",
-    "open_feedback",
+FEEDBACK_SCHEMA: FieldSchema = [
+    ("school_year", "list"),
+    ("date", "date"),
+    ("year", "list"),
+    ("month", "list"),
+    ("semester", "list"),
+    ("participant_name", "string"),
+    ("organization_school", "list"),
+    ("school_grade", "list"),
+    ("school_type", "list"),
+    ("region", "list"),
+    ("intervention", "list"),
+    ("intervention_type", "list"),
+    ("intervention_detail", "string"),
+    ("target_group", "list"),
+    ("overall_satisfaction", "list"),
+    ("lecturer_performance_and_skills", "list"),
+    ("planned_goals", "list"),
+    ("gained_professional_development", "list"),
+    ("open_feedback", "string"),
 ]
 
 def extract_text_from_file(path: str) -> str:
@@ -202,11 +206,65 @@ def _is_empty_value(value: Any) -> bool:
     return False
 
 
-def _extract_expected_fields(data: Dict[str, Any], fields: list[str]) -> Optional[Dict[str, Any]]:
+def _clean_to_string(value: Any) -> Optional[str]:
+    if value is None:
+        return None
+    if isinstance(value, str):
+        cleaned = value.strip()
+        return cleaned or None
+    if isinstance(value, (int, float)):
+        return str(value)
+    if isinstance(value, bool):
+        return "true" if value else "false"
+    return str(value).strip() or None
+
+
+def _normalize_list(value: Any) -> Optional[list[Any]]:
+    if isinstance(value, list):
+        normalized = []
+        for item in value:
+            cleaned = _clean_to_string(item)
+            if cleaned is not None:
+                normalized.append(cleaned)
+        return normalized or None
+
+    cleaned = _clean_to_string(value)
+    if cleaned is None:
+        return None
+    return [cleaned]
+
+
+def _normalize_date(value: Any) -> Optional[str]:
+    cleaned = _clean_to_string(value)
+    if not cleaned:
+        return None
+
+    known_formats = ("%Y-%m-%d", "%d.%m.%Y", "%d.%m.%y", "%d/%m/%Y", "%d/%m/%y")
+    for fmt in known_formats:
+        try:
+            parsed = datetime.strptime(cleaned, fmt)
+            return parsed.date().isoformat()
+        except ValueError:
+            continue
+    return cleaned
+
+
+def _normalize_field_value(value: Any, field_type: FieldType) -> Optional[Any]:
+    if field_type == "list":
+        return _normalize_list(value)
+    if field_type == "date":
+        return _normalize_date(value)
+    return _clean_to_string(value)
+
+
+def _extract_expected_fields(data: Dict[str, Any], schema: FieldSchema) -> Optional[Dict[str, Any]]:
     payload: Dict[str, Any] = {}
-    for field in fields:
-        if field in data and not _is_empty_value(data[field]):
-            payload[field] = data[field]
+    for field, field_type in schema:
+        if field not in data:
+            continue
+        normalized = _normalize_field_value(data[field], field_type)
+        if normalized is not None:
+            payload[field] = normalized
     return payload or None
 
 
@@ -244,12 +302,12 @@ def apply_structured_metadata(file_meta: FileMeta, llm_json: Dict[str, Any]) -> 
     recognized_type = declared_type if declared_type in {"attendance_checklist", "feedback_form", "record"} else None
 
     if recognized_type == "attendance_checklist":
-        file_meta.attendance_data = _extract_expected_fields(data, ATTENDANCE_FIELDS)
+        file_meta.attendance_data = _extract_expected_fields(data, ATTENDANCE_SCHEMA)
         file_meta.analysis_type = recognized_type
         return
 
     if recognized_type == "feedback_form":
-        file_meta.feedback_data = _extract_expected_fields(data, FEEDBACK_FIELDS)
+        file_meta.feedback_data = _extract_expected_fields(data, FEEDBACK_SCHEMA)
         file_meta.analysis_type = recognized_type
         return
 
