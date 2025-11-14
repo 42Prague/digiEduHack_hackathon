@@ -668,7 +668,7 @@ def transcribe_audio_short(
 async def transcribe_audio_chunk_async(
     gcs_uri: str, language_code: str = "en-US"
 ) -> tuple[str, float]:
-    """Transcribe audio chunk asynchronously using Google Speech API.
+    """Transcribe audio chunk asynchronously using Google Speech API Long-Running Recognition.
 
     Args:
         gcs_uri: GCS URI of the audio chunk (LINEAR16 WAV format)
@@ -682,11 +682,11 @@ async def transcribe_audio_chunk_async(
     """
     try:
         logger.debug(
-            "Transcribing chunk asynchronously",
+            "Transcribing chunk asynchronously with long-running recognition",
             extra={"gcs_uri": gcs_uri, "language": language_code},
         )
 
-        # Run synchronous API call in executor to avoid blocking
+        # Run long-running API call in executor to avoid blocking
         loop = asyncio.get_event_loop()
 
         def _transcribe():
@@ -698,7 +698,12 @@ async def transcribe_audio_chunk_async(
                 language_code=language_code,
                 enable_automatic_punctuation=True,
             )
-            response = client.recognize(config=config, audio=audio)
+
+            # Use long_running_recognize for GCS URIs (supports up to 480 minutes)
+            operation = client.long_running_recognize(config=config, audio=audio)
+
+            # Wait for the operation to complete
+            response = operation.result(timeout=300)  # 5 minutes timeout
 
             if not response.results:
                 return "", 0.0
