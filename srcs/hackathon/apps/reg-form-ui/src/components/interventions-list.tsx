@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { ArrowRight, Plus } from "lucide-react";
 import { useRouter } from "next/navigation";
+import NewInterventionModal from "./new-intervention-modal";
 
 interface Intervention {
   id: string;

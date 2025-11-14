@@ -32,7 +32,10 @@ const eduDocumentRecord = z.object({
   listOfFiles: z.object({
     reports: z.array(
       z.object({
+        processed: z.boolean,
+        type: z.string(),
         fileName: z.string(),
+        path: z.string(),
         uploadedAt: z.string(), // Or z.coerce.date()
       })
     ),

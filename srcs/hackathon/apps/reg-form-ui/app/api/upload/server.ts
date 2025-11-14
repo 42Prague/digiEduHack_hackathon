@@ -7,17 +7,27 @@ import path from 'path';
 import * as fs from 'fs';
 
 // Configuration
-const PROJECT_ID = '1015067005262';
-const BUCKET_NAME = 'eduzmena';
-const KEY_FILENAME = '/home/mbartos/hackathon-eduzmena/digiEduHack_hackathon/srcs/hackathon/apps/reg-form-ui/src/so-concrete-0f03da1c36ac.json';
+// Get variables from environment
+const PROJECT_ID = process.env.GCP_PROJECT_ID;
+const BUCKET_NAME = process.env.GCS_BUCKET_NAME;
+const SA_KEY_JSON = process.env.GCP_SA_KEY_JSON;
+
+// Essential check
+if (!SA_KEY_JSON || !PROJECT_ID || !BUCKET_NAME) {
+  throw new Error("Missing GCP environment variables for Storage initialization.");
+}
+
+// 1. Parse the JSON string from the environment variable
+const credentials = JSON.parse(SA_KEY_JSON);
 
 // Initialize Google Cloud Storage
 const storage = new Storage({
   projectId: PROJECT_ID,
-  keyFilename: KEY_FILENAME
+  // 2. Use the parsed credentials object directly
+  credentials: credentials
 });
-const bucket = storage.bucket(BUCKET_NAME);
 
+const bucket = storage.bucket(BUCKET_NAME);
 // Types
 interface UploadOptions {
   folder?: string;
