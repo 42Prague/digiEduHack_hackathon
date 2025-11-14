@@ -16,6 +16,13 @@ class Settings(BaseSettings):
     app_host: str = "0.0.0.0"
     app_port: int = 8000
 
+    # PostgreSQL (shared between session store + tooling)
+    server_host: str = "localhost"
+    server_port: int = 5432
+    server_db: str = "postgres"
+    server_user: str = "postgres"
+    server_password: str = "postgres"
+
     class Config:
         env_file = ".env"
         env_prefix = ""
