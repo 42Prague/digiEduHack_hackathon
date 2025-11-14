@@ -178,7 +178,7 @@ function renderSchools() {
                     </div>
                 </div>
                 <div class="list-item-actions">
-                    <button class="btn btn-danger" onclick="deleteSchool('${school.id}')">Smazat</button>
+                    <button class="btn btn-danger" onclick="deleteSchool('${school.id}')">Delete</button>
                 </div>
             </div>
         `
@@ -239,9 +239,9 @@ function renderSchoolPagination({ totalItems, totalPages, start, end }) {
 
 function renderRegionSelects() {
     const configs = [
-        { id: 'school-region', placeholder: 'Vyberte region' },
-        { id: 'files-region-filter', placeholder: 'Všechny regiony' },
-        { id: 'schools-region-filter', placeholder: 'Všechny regiony' }
+        { id: 'school-region', placeholder: 'Select region' },
+        { id: 'files-region-filter', placeholder: 'All regions' },
+        { id: 'schools-region-filter', placeholder: 'All schools' }
     ]
 
     configs.forEach(({ id, placeholder }) => {
@@ -276,7 +276,7 @@ function renderSchoolFilterSelect() {
 
     const regionFilter = document.getElementById('files-region-filter')?.value || ''
     const prevValue = select.value
-    select.innerHTML = '<option value="">Všechny školy</option>'
+    select.innerHTML = '<option value="">All schools</option>'
 
     const availableSchools = regionFilter
         ? schools.filter(s => String(s.region_id) === regionFilter)
@@ -298,7 +298,7 @@ function renderDocumentTypeFilterSelect() {
     if (!select) return
 
     const prevValue = select.value
-    select.innerHTML = '<option value="">Všechny typy dokumentů</option>'
+    select.innerHTML = '<option value="">All document types</option>'
 
     const typeMap = new Map()
     files.forEach(file => {
@@ -306,7 +306,7 @@ function renderDocumentTypeFilterSelect() {
         const value = type ?? UNKNOWN_DOCUMENT_TYPE_VALUE
         if (!typeMap.has(value)) {
             typeMap.set(value, {
-                label: label || 'Neznámý typ dokumentu',
+                label: label || 'Unknown document type',
                 icon: icon || ''
             })
         }
@@ -354,7 +354,7 @@ function getFileFormatInfo(file) {
 function getDocumentTypeInfo(file) {
     const raw = file.llm_summary
     if (!raw) {
-        return { type: null, icon: '📄', label: 'Neznámý typ dokumentu' }
+        return { type: null, icon: '📄', label: 'Unknown document type' }
     }
 
     let obj = raw
@@ -362,7 +362,7 @@ function getDocumentTypeInfo(file) {
         try {
             obj = JSON.parse(raw)
         } catch (e) {
-            return { type: null, icon: '📄', label: 'Neznámý typ dokumentu' }
+            return { type: null, icon: '📄', label: 'Unknown document type' }
         }
     }
 
@@ -370,13 +370,13 @@ function getDocumentTypeInfo(file) {
 
     switch (detectedType) {
         case 'attendance_checklist':
-            return { type: detectedType, icon: '📋', label: 'Docházka' }
+            return { type: detectedType, icon: '📋', label: 'Attendance checklist' }
         case 'feedback_form':
-            return { type: detectedType, icon: '📝', label: 'Formulář zpětné vazby' }
+            return { type: detectedType, icon: '📝', label: 'Feedback form' }
         case 'record':
-            return { type: detectedType, icon: '📄', label: 'Záznam' }
+            return { type: detectedType, icon: '📄', label: 'Record' }
         default:
-            return { type: detectedType, icon: '❔', label: 'Neznámý typ dokumentu' }
+            return { type: detectedType, icon: '❔', label: 'Unknown document type' }
     }
 }
 
@@ -385,7 +385,7 @@ function renderFileFormatFilterSelect() {
     if (!select) return
 
     const prevValue = select.value
-    select.innerHTML = '<option value="">Všechny formáty</option>'
+    select.innerHTML = '<option value="">All formats</option>'
 
     const formatMap = new Map()
     files.forEach(file => {
@@ -446,8 +446,8 @@ function renderFiles() {
 
     if (!filteredFiles.length) {
         const emptyMessage = schoolFilter
-            ? 'Pro zadanou školu nejsou nahrány žádné soubory'
-            : 'Zatím nejsou nahrány žádné soubory'
+            ? 'No files uploaded for the selected school'
+            : 'No files uploaded yet'
         container.innerHTML = `<div class="empty-state">${emptyMessage}</div>`
         renderFilePagination({ totalItems: 0, totalPages: 0, start: 0, end: 0 })
         return
@@ -553,11 +553,11 @@ function renderFiles() {
                 </div>
                 <div class="list-item-actions" style="display: flex; flex-direction: column; gap: 8px;">
                     <button class="btn btn-secondary" onclick="previewFile('${file.id}')">
-                        Náhled souboru
+                        Preview file
                     </button>
 
                     <button class="btn btn-warning" onclick="retryFile('${file.id}')">
-                        Reexekuovat analýzu
+                        Refresh analysis
                     </button>
                 </div>
             </div>
@@ -592,11 +592,11 @@ function renderFilePagination({ totalItems, totalPages, start, end }) {
         <div class="pagination-info">Ukazují se ${rangeStart}-${rangeEnd} z ${totalItems}</div>
         <div class="pagination-controls">
             <button type="button" class="btn btn-secondary" data-action="prev" ${prevDisabled ? 'disabled' : ''}>
-                Předchozí
+                Previous
             </button>
             <div class="pagination-page">Page ${currentPage} / ${pageCount}</div>
             <button type="button" class="btn btn-secondary" data-action="next" ${nextDisabled ? 'disabled' : ''}>
-                Další
+                Next
             </button>
         </div>
     `
@@ -634,10 +634,10 @@ async function addRegion(name) {
         const payload = { name: name.trim() }
         const newRegion = await regionsApi.create(payload)
         await loadData()
-        showAlert(`Region "${newRegion.name}" byl úspěšně přidán (ID: ${newRegion.id})`)
+        showAlert(`Region "${newRegion.name}" was successfully added (ID: ${newRegion.id})`)
     } catch (error) {
-        console.error('Chyba při přidávání regionu:', error)
-        showAlert(error.message || 'Nepodařilo se přidat region', 'error')
+        console.error('Error adding region:', error)
+        showAlert(error.message || 'Failed to add region', 'error')
     }
 }
 
@@ -649,53 +649,53 @@ async function addSchool(name, regionId) {
         }
         const newSchool = await schoolsApi.create(payload)
         await loadData()
-        showAlert(`Škola "${newSchool.name}" byla úspěšně přidána (ID: ${newSchool.id})`)
+        showAlert(`School "${newSchool.name}" was successfully added (ID: ${newSchool.id})`)
     } catch (error) {
-        console.error('Chyba při přidávání školy:', error)
-        showAlert(error.message || 'Nepodařilo se přidat školu', 'error')
+        console.error('Error adding school:', error)
+        showAlert(error.message || 'Failed to add school', 'error')
     }
 }
 
 async function deleteRegion(id) {
-    if (!confirm('Opravdu chcete smazat tento region?')) {
+    if (!confirm('Are you sure you want to delete this region?')) {
         return
     }
 
     try {
         await regionsApi.remove(id)
         await loadData()
-        showAlert('Region byl úspěšně smazán')
+        showAlert('Region was successfully deleted')
     } catch (error) {
-        console.error('Chyba při mazání regionu:', error)
-        showAlert(error.message || 'Nepodařilo se smazat region', 'error')
+        console.error('Error deleting region:', error)
+        showAlert(error.message || 'Failed to delete region', 'error')
     }
 }
 
 async function retryFile(id) {
-    if (!confirm('Opravdu chcete znovu spustit analýzu tohoto souboru?')) return
+    if (!confirm('Are you sure you want to refresh the analysis of this file?')) return
 
     try {
         await filesApi.retry(id)
-        showAlert('Analýza byla úspěšně reexekuována', 'success')
+        showAlert('Analysis was successfully refreshed', 'success')
         await loadData()
     } catch (err) {
-        console.error('Chyba při reexekuci analýzy:', err)
-        showAlert('Nepodařilo se reexekuovat analýzu', 'error')
+        console.error('Error refreshing analysis:', err)
+        showAlert('Failed to refresh analysis', 'error')
     }
 }
 
 async function deleteSchool(id) {
-    if (!confirm('Opravdu chcete smazat tuto školu?')) {
+    if (!confirm('Are you sure you want to delete this school?')) {
         return
     }
 
     try {
         await schoolsApi.remove(id)
         await loadData()
-        showAlert('Škola byla úspěšně smazána')
+        showAlert('School was successfully deleted')
     } catch (error) {
-        console.error('Chyba při mazání školy:', error)
-        showAlert(error.message || 'Nepodařilo se smazat školu', 'error')
+        console.error('Error deleting school:', error)
+        showAlert(error.message || 'Failed to delete school', 'error')
     }
 }
 
