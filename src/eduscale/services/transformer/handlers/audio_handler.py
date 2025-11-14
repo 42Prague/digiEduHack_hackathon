@@ -761,34 +761,39 @@ async def process_chunks_parallel(
             extra={"total_chunks": len(chunk_uris), "language": language_code},
         )
 
-        # Create tasks for all chunks
-        tasks = []
-        for gcs_uri, start_offset in chunk_uris:
-            task = transcribe_audio_chunk_async(gcs_uri, language_code)
-            tasks.append((task, start_offset))
+        # Create tasks for all chunks with their offsets
+        tasks_with_offsets = [
+            (transcribe_audio_chunk_async(gcs_uri, language_code), start_offset, idx)
+            for idx, (gcs_uri, start_offset) in enumerate(chunk_uris, start=1)
+        ]
 
-        # Wait for all tasks to complete
+        # Execute all tasks in parallel using asyncio.gather
+        tasks = [task for task, _, _ in tasks_with_offsets]
+
+        try:
+            # Wait for all tasks to complete in parallel
+            transcription_results = await asyncio.gather(*tasks)
+        except Exception as e:
+            logger.error(
+                "One or more chunk transcriptions failed",
+                extra={"error": str(e)},
+            )
+            raise TranscriptionError(f"Parallel transcription failed: {e}") from e
+
+        # Build results list with offsets
         results = []
-        for idx, (task, start_offset) in enumerate(tasks, start=1):
-            try:
-                transcript, confidence = await task
-                results.append((transcript, confidence, start_offset))
-                logger.info(
-                    f"Chunk {idx}/{len(tasks)} processed successfully",
-                    extra={
-                        "chunk_index": idx,
-                        "start_offset": start_offset,
-                        "transcript_length": len(transcript),
-                    },
-                )
-            except Exception as e:
-                logger.error(
-                    f"Chunk {idx}/{len(tasks)} processing failed",
-                    extra={"chunk_index": idx, "start_offset": start_offset, "error": str(e)},
-                )
-                raise TranscriptionError(
-                    f"Failed to process chunk {idx} at offset {start_offset}: {e}"
-                ) from e
+        for idx, ((transcript, confidence), (_, start_offset, chunk_idx)) in enumerate(
+            zip(transcription_results, tasks_with_offsets), start=1
+        ):
+            results.append((transcript, confidence, start_offset))
+            logger.info(
+                f"Chunk {chunk_idx}/{len(tasks)} processed successfully",
+                extra={
+                    "chunk_index": chunk_idx,
+                    "start_offset": start_offset,
+                    "transcript_length": len(transcript),
+                },
+            )
 
         logger.info(
             "All chunks processed successfully",
@@ -797,12 +802,15 @@ async def process_chunks_parallel(
 
         return results
 
+    except TranscriptionError:
+        # Re-raise TranscriptionError as-is
+        raise
     except Exception as e:
         logger.error(
             "Failed to process chunks in parallel",
             extra={"error": str(e)},
         )
-        raise
+        raise TranscriptionError(f"Parallel processing failed: {e}") from e
 
 
 def merge_transcription_results(
