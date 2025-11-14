@@ -759,6 +759,10 @@ curl -X POST http://localhost:8000/upload -F "files=@test.csv"
 - Cache dashboard insights
 
 ---
+## Pitch
+https://docs.google.com/presentation/d/1oBflmGxKJicJpsR0fD87uP56MSvI4RRhqiuY_AdTllI/edit?usp=sharing 
+
+---
 
 ## Contributing
 
