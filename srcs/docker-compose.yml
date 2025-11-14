@@ -88,6 +88,7 @@ services:
       - OLLAMA_MODEL=${OLLAMA_MODEL:-llama3.1:8b}
       - DATABASE_URL=sqlite:////data/app.db
       - BACKEND_TEST_PROMPT=${BACKEND_TEST_PROMPT:-Say hi from the backend container}
+      - WHISPER_URL=http://whisper:8000/transcribe
     volumes:
       - ./data:/data
     command: ["python", "-m", "app.worker"]
@@ -116,6 +117,21 @@ services:
     volumes:
       - metabase_data:/metabase-data
 
+  whisper:
+    build:
+      context: ./whisper
+    restart: unless-stopped
+    environment:
+      - WHISPER_MODEL=${WHISPER_MODEL:-small}   # or medium / large-v3 if you have GPU
+      - WHISPER_DEVICE=${WHISPER_DEVICE:-cpu}   # or cuda
+      - WHISPER_COMPUTE_TYPE=${WHISPER_COMPUTE_TYPE:-int8}
+    volumes:
+      - ./data:/data        # same as tusd, so whisper sees uploaded files
+    networks:
+      - internal
+    ports:
+      - "8001:8000"         # optional, for testing from host; inside network use whisper:8000
+  
 volumes:
   ollama_data:
     driver: local

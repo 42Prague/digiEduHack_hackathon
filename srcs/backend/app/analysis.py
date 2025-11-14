@@ -1,7 +1,9 @@
 import os
 import math
-from typing import Dict, Any
+from typing import Dict, Any, Optional
+
 from sqlmodel import Session
+
 from .models import FileMeta
 from .ollama_client import ask_llm  # helper for calling ollama
 
@@ -22,6 +24,7 @@ def extract_text_from_file(path: str) -> str:
         with open(path, "r", encoding="utf-8", errors="ignore") as f:
             return f.read()
 
+
 def compute_basic_stats(text: str) -> Dict[str, Any]:
     words = text.split()
     word_count = len(words)
@@ -35,6 +38,7 @@ def compute_basic_stats(text: str) -> Dict[str, Any]:
         "avg_words_per_sentence": avg_words_per_sentence,
         "char_count": char_count,
     }
+
 
 def build_llm_prompt(text: str) -> str:
     MAX_CHARS = 8000
@@ -81,17 +85,29 @@ Document content (possibly truncated):
 \"\"\"{sample}\"\"\"
 """
 
-def analyze_file(session: Session, file_meta: FileMeta) -> None:
-    # resolve path from tus_id (depends on how tusd stores files; adjust)
-    path = os.path.join(UPLOAD_DIR, file_meta.tus_id)
-    if not os.path.exists(path):
-        raise FileNotFoundError(path)
+def analyze_file(
+    session: Session,
+    file_meta: FileMeta,
+    override_text: Optional[str] = None,
+) -> None:
+    """
+    Analyze the file and generate metadata.
 
-    text = extract_text_from_file(path)
+    If override_text is provided (e.g. a Whisper transcript for audio),
+    use that instead of reading/extracting from the original file.
+    """
+    if override_text is not None:
+        text = override_text
+    else:
+        # resolve path from tus_id (depends on how tusd stores files; adjust if needed)
+        path = os.path.join(UPLOAD_DIR, file_meta.tus_id)
+        if not os.path.exists(path):
+            raise FileNotFoundError(path)
+
+        text = extract_text_from_file(path)
+
     basic_stats = compute_basic_stats(text)
-
     prompt = build_llm_prompt(text)
-    # print(f"PROMPT: {prompt}")
     llm_json = ask_llm(prompt)
 
     file_meta.extracted_text = text  # optional, maybe store only if small
