@@ -188,7 +188,8 @@ def load_schema_context() -> SchemaContext:
         ingest_runs,
     ]
     
-    system_prompt = get_system_prompt(dataset_id, tables)
+    # Generate system prompt with current dataset_id and tables
+    system_prompt = _build_system_prompt(dataset_id, tables)
     
     logger.info(f"Loaded schema context for dataset: {dataset_id}")
     
@@ -199,15 +200,16 @@ def load_schema_context() -> SchemaContext:
     )
 
 
-def get_system_prompt() -> str:
-    """Generate system prompt for LLM SQL generation.
+def _build_system_prompt(dataset_id: str, tables: list[TableSchema]) -> str:
+    """Build system prompt from dataset ID and tables.
+    
+    Args:
+        dataset_id: BigQuery dataset ID
+        tables: List of table schemas
     
     Returns:
         System prompt string with schema context and instructions
     """
-    context = load_schema_context()
-    dataset_id = context.dataset_id
-    tables = context.tables
     
     # Build table schema documentation
     schema_doc = []
@@ -348,3 +350,15 @@ def get_cached_schema_context() -> SchemaContext:
         _schema_context_cache = load_schema_context()
     
     return _schema_context_cache
+
+
+def get_system_prompt() -> str:
+    """Get system prompt for LLM SQL generation.
+    
+    Uses cached schema context.
+    
+    Returns:
+        System prompt string with schema context and instructions
+    """
+    context = get_cached_schema_context()
+    return context.system_prompt
