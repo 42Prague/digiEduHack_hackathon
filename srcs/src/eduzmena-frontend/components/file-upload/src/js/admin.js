@@ -58,11 +58,23 @@ function escapeHtml(str) {
 
 function showAlert(message, type = 'success') {
     const alertContainer = document.getElementById('alert-container')
+    if (!alertContainer) return
+
     const alert = document.createElement('div')
-    alert.className = `alert alert-${type}`
+    alert.className = `alert alert-${type} alert-popover`
     alert.textContent = message
+
     alertContainer.innerHTML = ''
     alertContainer.appendChild(alert)
+
+    requestAnimationFrame(() => {
+        alert.classList.add('is-visible')
+    })
+
+    setTimeout(() => {
+        alert.classList.remove('is-visible')
+        alert.classList.add('is-leaving')
+    }, 2600)
 
     setTimeout(() => {
         alert.remove()
