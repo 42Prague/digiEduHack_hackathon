@@ -1,0 +1,21 @@
+.bars {
+	display: flex;
+	align-items: flex-end;
+	gap: 6px;
+	height: 140px;
+}
+.bar {
+	flex: 1 1 0;
+	background: #e8f0ff;
+	border: 1px solid var(--border);
+	border-radius: 6px 6px 0 0;
+	box-shadow: 0 1px 0 rgba(2,6,23,.04) inset;
+}
+.donut-wrap {
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	height: 140px;
+}
+
+

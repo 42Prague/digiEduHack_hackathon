@@ -1,0 +1,50 @@
+<h2 style="margin-top:0">{{ scope === 'region' ? ('nav.regionalUpload' | translate) : ('nav.schoolUpload' | translate) }}</h2>
+<div class="card">
+	<div class="grid cols-2">
+		<label>
+			<div>{{ scope === 'region' ? ('region.id' | translate) : ('school.id' | translate) }}</div>
+			<input class="input" [(ngModel)]="scopeId" [placeholder]="scope === 'region' ? ('region.idExample' | translate) : ('school.idExample' | translate)">
+		</label>
+		<div>
+			<div>{{ 'upload.file' | translate }}</div>
+			<div class="dropzone" [class.drag-over]="dragOver"
+				 (dragover)="onDragOver($event)"
+				 (dragleave)="onDragLeave($event)"
+				 (drop)="onDrop($event)"
+				 (click)="fileInput.click()">
+				<div *ngIf="!selectedFile">{{ 'upload.dragHere' | translate }}</div>
+				<div *ngIf="selectedFile" class="file-chip">
+					<span>{{ selectedFile.name }}</span>
+					<span class="muted">{{ (selectedFile.size/1024 | number:'1.0-0') }} KB</span>
+				</div>
+				<input #fileInput type="file" (change)="onFileInputChange($event)" hidden>
+			</div>
+		</div>
+	</div>
+
+	<div class="actions">
+		<button class="btn" (click)="startUpload()" [disabled]="status==='uploading'">{{ 'upload.upload' | translate }}</button>
+		<button class="btn secondary" (click)="reset()" [disabled]="status==='uploading' && progress<100">{{ 'common.reset' | translate }}</button>
+	</div>
+
+	<div *ngIf="status==='uploading'" class="progress">
+		<div class="bar" [style.width.%]="progress"></div>
+	</div>
+
+	<div *ngIf="status==='success'" class="success">
+		<div class="badge primary">{{ 'common.success' | translate }}</div>
+		<span>{{ message }}</span>
+	</div>
+	<div *ngIf="status==='error' && errors.length" class="errors">
+		<div class="badge danger">{{ 'upload.blocked' | translate }}</div>
+		<ul>
+			<li *ngFor="let e of errors">{{ e }}</li>
+		</ul>
+	</div>
+
+	<div class="note">
+		<strong>{{ 'common.tips' | translate }}</strong> {{ 'upload.tips' | translate }}
+	</div>
+</div>
+
+

@@ -1,0 +1,34 @@
+<div class="grid cols-3" style="align-items:center">
+	<h2 style="margin-top:0">{{ 'nav.regions' | translate }}</h2>
+	<div>
+		<input
+			class="input"
+			type="search"
+			[placeholder]="'common.searchByNameOrAddress' | translate"
+			[(ngModel)]="searchTerm"
+			(ngModelChange)="onSearchTerm($event)"
+		/>
+	</div>
+	<div style="display:flex;gap:8px;justify-content:flex-end">
+		<select class="input" [(ngModel)]="sort" (ngModelChange)="onSortChange($event)">
+			<option value="nameAsc">{{ 'common.nameAZ' | translate }}</option>
+			<option value="nameDesc">{{ 'common.nameZA' | translate }}</option>
+		</select>
+		<a class="btn" routerLink="/regions/new" *ngIf="isGlobal()">+ {{ 'region.create' | translate }}</a>
+	</div>
+</div>
+<div *ngIf="isLoading">{{ 'common.loading' | translate }}</div>
+<div *ngIf="error" style="color:var(--danger)">{{ error }}</div>
+<div class="grid cols-2" *ngIf="!isLoading && !error">
+	<a class="card" *ngFor="let r of filteredRegions" [routerLink]="['/regions', r.id]">
+		<div style="display:flex;align-items:center;justify-content:space-between">
+			<div style="font-weight:600">{{ r.name }}</div>
+			<button class="btn secondary" *ngIf="isGlobal()" (click)="$event.preventDefault(); viewAsRegion(r)" [attr.title]="'common.viewAsRegion' | translate">
+				👁
+			</button>
+		</div>
+		<div class="note">{{ r.address }}</div>
+	</a>
+	<div *ngIf="!filteredRegions.length" class="note">{{ 'region.none' | translate }}</div>
+</div>
+

@@ -1,0 +1,4 @@
+﻿venv/
+.env
+app/tmp_db.json
+*__pycache__*
