@@ -1,0 +1,118 @@
+services:
+  db:
+    image: postgres:15
+    container_name: eduscale-db
+    restart: unless-stopped
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U ${DB_USER:-swx_user} -d ${DB_NAME:-swx_db}" ]
+      interval: 10s
+      retries: 5
+    volumes:
+      - app-db-data:/var/lib/postgresql/data/pgdata
+    env_file:
+      - .env
+    environment:
+      - POSTGRES_USER=${DB_USER:-swx_user}
+      - POSTGRES_PASSWORD=${DB_PASSWORD:-changeme}
+      - POSTGRES_DB=${DB_NAME:-swx_db}
+      - PGDATA=/var/lib/postgresql/data/pgdata
+
+  adminer:
+    image: adminer
+    container_name: czfbdbdashboard
+    restart: unless-stopped
+    networks:
+      - traefik-public
+      - default
+    depends_on:
+      - db
+    labels:
+      - traefik.enable=true
+      - traefik.constraint-label=traefik-public
+      - traefik.docker.network=traefik-public
+      - traefik.http.routers.${STACK_NAME:-eduscale}-adminer-http.rule=Host(`adminer.${DOMAIN:-localhost}`)
+      - traefik.http.routers.${STACK_NAME:-eduscale}-adminer-http.entrypoints=http
+      - traefik.http.routers.${STACK_NAME:-eduscale}-adminer-http.middlewares=https-redirect
+      - traefik.http.routers.${STACK_NAME:-eduscale}-adminer-https.rule=Host(`adminer.${DOMAIN:-localhost}`)
+      - traefik.http.routers.${STACK_NAME:-eduscale}-adminer-https.entrypoints=https
+      - traefik.http.routers.${STACK_NAME:-eduscale}-adminer-https.tls=true
+      - traefik.http.routers.${STACK_NAME:-eduscale}-adminer-https.tls.certresolver=le
+      - traefik.http.services.${STACK_NAME:-eduscale}-adminer.loadbalancer.server.port=8080
+
+  backend:
+    container_name: eduscale-backend
+    build:
+      context: ./src/backend
+      dockerfile: Dockerfile
+    image: eduscale-backend
+    restart: unless-stopped
+    ports:
+      - "8000:8000"
+    depends_on:
+      db:
+        condition: service_healthy
+    env_file:
+      - .env
+    networks:
+      - traefik-public
+      - default
+    volumes:
+      - ./data:/app/data  # Mount data directory for persistence
+    labels:
+      - traefik.enable=true
+      - traefik.constraint-label=traefik-public
+      - traefik.docker.network=traefik-public
+
+      # Route for main API app
+      - traefik.http.routers.${STACK_NAME:-eduscale}-backend-http.rule=Host(`api.${DOMAIN:-localhost}`)
+      - traefik.http.routers.${STACK_NAME:-eduscale}-backend-http.entrypoints=http
+      - traefik.http.routers.${STACK_NAME:-eduscale}-backend-http.middlewares=https-redirect
+      - traefik.http.routers.${STACK_NAME:-eduscale}-backend-https.rule=Host(`api.${DOMAIN:-localhost}`)
+      - traefik.http.routers.${STACK_NAME:-eduscale}-backend-https.entrypoints=https
+      - traefik.http.routers.${STACK_NAME:-eduscale}-backend-https.tls=true
+      - traefik.http.routers.${STACK_NAME:-eduscale}-backend-https.tls.certresolver=le
+      - traefik.http.services.${STACK_NAME:-eduscale}-backend.loadbalancer.server.port=8000
+  
+  
+  
+  frontend:
+    container_name: eduscale-frontend
+    image: eduscale-frontend:latest
+    build:
+      context: ./src/frontend
+      args:
+        - VITE_API_URL=http://localhost:8000/api
+        - NODE_ENV=production
+    restart: always
+    ports:
+      - "3000:80"
+    networks:
+      - traefik-public
+      - default
+    depends_on:
+      - backend
+    labels:
+      - traefik.enable=true
+      - traefik.docker.network=traefik-public
+      - traefik.constraint-label=traefik-public
+
+      - traefik.http.routers.${STACK_NAME:-eduscale}-frontend-http.rule=Host(`${DOMAIN:-localhost}`)
+      - traefik.http.routers.${STACK_NAME:-eduscale}-frontend-http.entrypoints=http
+      - traefik.http.routers.${STACK_NAME:-eduscale}-frontend-http.middlewares=https-redirect
+
+      - traefik.http.routers.${STACK_NAME:-eduscale}-frontend-https.rule=Host(`${DOMAIN:-localhost}`)
+      - traefik.http.routers.${STACK_NAME:-eduscale}-frontend-https.entrypoints=https
+      - traefik.http.routers.${STACK_NAME:-eduscale}-frontend-https.tls=true
+      - traefik.http.routers.${STACK_NAME:-eduscale}-frontend-https.tls.certresolver=le
+
+      - traefik.http.services.${STACK_NAME:-eduscale}-frontend.loadbalancer.server.port=80
+
+
+volumes:
+  app-db-data:
+#  nominatim-data:
+
+networks:
+  traefik-public:
+    external: false
+

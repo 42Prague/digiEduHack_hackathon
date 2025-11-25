@@ -1,0 +1,140 @@
+[
+  {
+    "dataset_id": "dataset_high_quality",
+    "dq_score": 95,
+    "total_rows": 150,
+    "valid_rows": 148,
+    "invalid_rows": 2,
+    "missing_values": {
+      "email": 3,
+      "phone": 1
+    },
+    "pii_found_and_masked": {
+      "names": 0,
+      "emails": 0,
+      "phones": 0
+    },
+    "schema_issues": [],
+    "normalization_fixes": [
+      "Standardized date format",
+      "Normalized region names"
+    ],
+    "quarantined_rows_path": null
+  },
+  {
+    "dataset_id": "dataset_missing_values",
+    "dq_score": 72,
+    "total_rows": 200,
+    "valid_rows": 180,
+    "invalid_rows": 20,
+    "missing_values": {
+      "school_id": 15,
+      "region_id": 8,
+      "score": 25,
+      "date": 12
+    },
+    "pii_found_and_masked": {
+      "names": 2,
+      "emails": 5,
+      "phones": 1
+    },
+    "schema_issues": [
+      "Inconsistent date formats"
+    ],
+    "normalization_fixes": [
+      "Fixed date formats",
+      "Standardized region codes"
+    ],
+    "quarantined_rows_path": "/data/processed/clean/dataset_missing_values_quarantined.json"
+  },
+  {
+    "dataset_id": "dataset_schema_issues",
+    "dq_score": 68,
+    "total_rows": 100,
+    "valid_rows": 85,
+    "invalid_rows": 15,
+    "missing_values": {
+      "name": 10
+    },
+    "pii_found_and_masked": {
+      "names": 8,
+      "emails": 12,
+      "phones": 3
+    },
+    "schema_issues": [
+      {
+        "column": "score",
+        "issue": "Mixed data types (string and numeric)"
+      },
+      {
+        "column": "date",
+        "issue": "Multiple date formats"
+      },
+      {
+        "column": "region",
+        "issue": "Inconsistent naming"
+      }
+    ],
+    "normalization_fixes": [
+      "Converted score column to numeric",
+      "Standardized all dates to YYYY-MM-DD",
+      "Normalized region names"
+    ],
+    "quarantined_rows_path": "/data/processed/clean/dataset_schema_issues_quarantined.json"
+  },
+  {
+    "dataset_id": "dataset_pii_heavy",
+    "dq_score": 78,
+    "total_rows": 120,
+    "valid_rows": 115,
+    "invalid_rows": 5,
+    "missing_values": {
+      "email": 5
+    },
+    "pii_found_and_masked": {
+      "names": 45,
+      "emails": 38,
+      "phones": 22
+    },
+    "schema_issues": [],
+    "normalization_fixes": [
+      "Masked all PII",
+      "Standardized formats"
+    ],
+    "quarantined_rows_path": null
+  },
+  {
+    "dataset_id": "dataset_mixed_issues",
+    "dq_score": 65,
+    "total_rows": 180,
+    "valid_rows": 150,
+    "invalid_rows": 30,
+    "missing_values": {
+      "school_id": 20,
+      "score": 15,
+      "region": 8,
+      "date": 12
+    },
+    "pii_found_and_masked": {
+      "names": 15,
+      "emails": 20,
+      "phones": 8
+    },
+    "schema_issues": [
+      {
+        "column": "score",
+        "issue": "Out of range values"
+      },
+      {
+        "column": "date",
+        "issue": "Invalid dates"
+      }
+    ],
+    "normalization_fixes": [
+      "Removed out of range scores",
+      "Fixed invalid dates",
+      "Masked PII"
+    ],
+    "quarantined_rows_path": "/data/processed/clean/dataset_mixed_issues_quarantined.json"
+  }
+]
