@@ -1,0 +1,10 @@
+# Base requirements (no torch dependencies)
+-r requirements.txt
+
+# Whisper dependencies (ONLY the ones that don't pull torch)
+numba
+tiktoken
+more-itertools
+
+# Audio processing  
+ffmpeg-python==0.2.0

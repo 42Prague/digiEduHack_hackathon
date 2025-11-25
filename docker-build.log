@@ -1,0 +1,29 @@
+#0 building with "default" instance using docker driver
+
+#1 [internal] load build definition from Dockerfile
+#1 transferring dockerfile: 926B 0.0s done
+#1 DONE 0.0s
+
+#2 [internal] load metadata for docker.io/library/node:20-alpine
+#2 DONE 2.5s
+
+#3 [internal] load .dockerignore
+#3 transferring context: 2B done
+#3 DONE 0.0s
+
+#4 [runner 1/7] FROM docker.io/library/node:20-alpine@sha256:6178e78b972f79c335df281f4b7674a2d85071aae2af020ffa39f0a770265435
+#4 resolve docker.io/library/node:20-alpine@sha256:6178e78b972f79c335df281f4b7674a2d85071aae2af020ffa39f0a770265435 0.0s done
+#4 sha256:60e45a9660cfaebbbac9bba98180aa28b3966b7f2462d132c46f51a1f5b25a64 0B / 42.75MB 0.1s
+#4 sha256:e74e4ed823e9560b3fe51c0cab47dbfdfc4b12453604319408ec58708fb9e720 0B / 1.26MB 0.1s
+#4 sha256:6178e78b972f79c335df281f4b7674a2d85071aae2af020ffa39f0a770265435 7.67kB / 7.67kB done
+#4 sha256:be8d32d651b3e0c9c2b28fdc1d3888408125d703232013cff955344d052027e5 1.72kB / 1.72kB done
+#4 sha256:2b56f2779663b9e1a77bdb5235dc31f1a81e534ccab1c1b35c716a8db79eeab9 6.42kB / 6.42kB done
+#4 sha256:2d35ebdb57d9971fea0cac1582aa78935adf8058b2cc32db163c98822e5dfa1b 0B / 3.80MB 0.1s
+#4 CANCELED
+
+#5 [internal] load build context
+#5 transferring context: 2.14MB 0.1s done
+#5 CANCELED
+ERROR: failed to solve: Canceled: context canceled
+
+View build details: docker-desktop://dashboard/build/default/default/jnsjj364nq6144ald8j5p3jv5
