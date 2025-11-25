@@ -1,2 +1,9 @@
 *.env
 .DS_Store
+
+srcs/frontend/node_modules
+srcs/frontend/dist
+srcs/frontend/build
+srcs/frontend/dist-ssr
+srcs/frontend/public
+srcs/frontend/.angular

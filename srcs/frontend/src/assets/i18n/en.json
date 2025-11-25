@@ -1,0 +1,136 @@
+{
+  "app": {
+    "title": "DigiEdu Admin"
+  },
+  "lang": {
+    "english": "English",
+    "czech": "Czech"
+  },
+  "nav": {
+    "regions": "Regions",
+    "schools": "Schools",
+    "users": "Users",
+    "globalOverview": "Global Overview",
+    "regionalOverview": "Regional Overview",
+    "regionalUpload": "Regional Upload",
+    "schoolOverview": "School Overview",
+    "schoolUpload": "School Upload",
+    "login": "Login",
+    "exitViewAs": "Exit View As",
+    "logout": "Logout",
+    "viewingAs": "Viewing as"
+  },
+  "common": {
+    "send": "Send",
+    "errorTryAgain": "Sorry, something went wrong. Please try again.",
+    "searchByNameOrAddress": "Search by name or address",
+    "nameAZ": "Name A–Z",
+    "nameZA": "Name Z–A",
+    "loading": "Loading…",
+    "viewAs": "View as",
+    "viewAsRegion": "View as Region",
+    "viewAsSchool": "View as School",
+    "mode": "Mode",
+    "editing": "Editing",
+    "view": "View",
+    "basicInfo": "Basic Info",
+    "contacts": "Contacts",
+    "name": "Name",
+    "address": "Address",
+    "streetCity": "Street, City",
+    "email": "Email",
+    "phone": "Phone",
+    "saveChanges": "Save changes",
+    "saving": "Saving…",
+    "cancel": "Cancel",
+    "edit": "Edit",
+    "creating": "Creating…",
+    "reset": "Reset",
+    "success": "Success",
+    "tips": "Tips:",
+    "redirecting": "Redirecting…",
+    "expand": "Expand",
+    "close": "Close",
+    "exportPdf": "Export PDF"
+  },
+  "login": {
+    "title": "Login",
+    "subtitle": "Mock login. Choose a demo user or enter email/password.",
+    "demoUsers": "Demo users",
+    "email": "Email",
+    "emailPlaceholder": "email@example.com",
+    "password": "Password",
+    "passwordPlaceholder": "Password",
+    "continue": "Continue"
+  },
+  "region": {
+    "label": "Region",
+    "id": "Region ID",
+    "idExample": "e.g., r-1",
+    "details": "Region details",
+    "back": "Back to Regions",
+    "create": "Create Region",
+    "edit": "Edit Region",
+    "namePlaceholder": "Region name",
+    "none": "No regions",
+    "select": "Select a region",
+    "assignedFromContext": "Assigned automatically from your region context"
+  },
+  "school": {
+    "label": "School",
+    "id": "School ID",
+    "idExample": "e.g., s-1",
+    "details": "School details",
+    "back": "Back to Schools",
+    "create": "Create School",
+    "namePlaceholder": "School name",
+    "headmaster": "Headmaster",
+    "headmasterOptional": "Headmaster (optional)",
+    "headmasterPlaceholder": "Full name",
+    "none": "No schools"
+  },
+  "user": {
+    "details": "User details",
+    "back": "Back to Users",
+    "id": "User ID",
+    "accessLevel": "Access Level",
+    "role": "Role",
+    "firstName": "First name",
+    "lastName": "Last name",
+    "accessAndScope": "Access & Scope"
+  },
+  "access": {
+    "global": "Global",
+    "region": "Region",
+    "school": "School"
+  },
+  "ai": {
+    "title": "AI BI Agent",
+    "subtitle": "Conversational analysis",
+    "placeholder": "Ask about trends, KPIs, comparisons…",
+    "typing": "AI is typing",
+    "greeting": "Hi! I am your AI BI Agent. Ask me about trends, KPIs, or comparisons."
+  },
+  "charts": {
+    "enrollmentTrend": "Enrollment Trend",
+    "avgTestScores": "Average Test Scores",
+    "attendanceRate": "Attendance Rate",
+    "area": "Area",
+    "bars": "Bars",
+    "donut": "Donut",
+    "last7d": "Last 7 days",
+    "last30d": "Last 30 days",
+    "last12mo": "Last 12 months"
+  },
+  "upload": {
+    "file": "File",
+    "dragHere": "Drag & drop a file here, or click to browse",
+    "upload": "Upload",
+    "blocked": "Upload blocked",
+    "tips": "You can upload CSV, XLSX, PDF, audio, or other files.",
+    "provideIdAndFile": "Please provide an ID and choose a file.",
+    "fileTooLarge": "File size must be less than 500MB",
+    "successMessage": "Uploaded dataset {{id}} for {{scopeId}}"
+  }
+}
+

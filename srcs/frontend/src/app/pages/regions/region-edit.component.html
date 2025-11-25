@@ -1,0 +1,31 @@
+<a routerLink="/regions">← {{ 'region.back' | translate }}</a>
+<div *ngIf="isLoading">{{ 'common.loading' | translate }}</div>
+<div *ngIf="error" style="color:var(--danger)">{{ error }}</div>
+<div class="card" style="max-width:640px;margin:20px 0" *ngIf="!isLoading && !error">
+	<h2 style="margin-top:0">{{ 'region.edit' | translate }}</h2>
+	<div class="grid">
+		<label>
+			<div>{{ 'common.name' | translate }}</div>
+			<input class="input" [(ngModel)]="name" [placeholder]="'region.namePlaceholder' | translate" />
+		</label>
+		<label>
+			<div>{{ 'common.address' | translate }}</div>
+			<input class="input" [(ngModel)]="address" [placeholder]="'common.streetCity' | translate" />
+		</label>
+		<div class="grid cols-2">
+			<label>
+				<div>{{ 'common.contactEmailOptional' | translate }}</div>
+				<input class="input" [(ngModel)]="contactEmail" [placeholder]="'login.emailPlaceholder' | translate" />
+			</label>
+			<label>
+				<div>{{ 'common.contactPhoneOptional' | translate }}</div>
+				<input class="input" [(ngModel)]="contactPhone" placeholder="+1 555 0100" />
+			</label>
+		</div>
+		<button class="btn" [disabled]="isSaving || !name || !address" (click)="save()">
+			{{ isSaving ? ('common.saving' | translate) : ('common.saveChanges' | translate) }}
+		</button>
+	</div>
+</div>
+
+

@@ -1,0 +1,69 @@
+<div class="grid cols-3">
+	<div class="card">
+		<div class="card-header">
+			<div>
+				<div class="card-title">{{ 'charts.enrollmentTrend' | translate }}</div>
+				<div class="card-subtitle">{{ 'charts.area' | translate }}</div>
+			</div>
+			<select class="input" [(ngModel)]="range" (ngModelChange)="onRangeChange($event)">
+				<option value="7d">{{ 'charts.last7d' | translate }}</option>
+				<option value="30d">{{ 'charts.last30d' | translate }}</option>
+				<option value="12mo">{{ 'charts.last12mo' | translate }}</option>
+			</select>
+		</div>
+		<svg viewBox="0 0 300 140" width="100%" height="140" aria-hidden="true">
+			<defs>
+				<linearGradient id="grad" x1="0" x2="0" y1="0" y2="1">
+					<stop offset="0%" stop-color="var(--accent)" stop-opacity="0.4" />
+					<stop offset="100%" stop-color="var(--accent)" stop-opacity="0.05" />
+				</linearGradient>
+			</defs>
+			<path [attr.d]="areaPath()" fill="url(#grad)" stroke="var(--accent)" stroke-width="2" />
+		</svg>
+	</div>
+	<div class="card">
+		<div class="card-header">
+			<div>
+				<div class="card-title">{{ 'charts.avgTestScores' | translate }}</div>
+				<div class="card-subtitle">{{ 'charts.bars' | translate }}</div>
+			</div>
+			<select class="input" [(ngModel)]="range" (ngModelChange)="onRangeChange($event)">
+				<option value="7d">{{ 'charts.last7d' | translate }}</option>
+				<option value="30d">{{ 'charts.last30d' | translate }}</option>
+				<option value="12mo">{{ 'charts.last12mo' | translate }}</option>
+			</select>
+		</div>
+		<div class="bars">
+			<div class="bar" *ngFor="let v of bars()" [style.height.%]="v" title="{{ v }}"></div>
+		</div>
+	</div>
+	<div class="card">
+		<div class="card-header">
+			<div>
+				<div class="card-title">{{ 'charts.attendanceRate' | translate }}</div>
+				<div class="card-subtitle">{{ 'charts.donut' | translate }}</div>
+			</div>
+			<select class="input" [(ngModel)]="range" (ngModelChange)="onRangeChange($event)">
+				<option value="7d">{{ 'charts.last7d' | translate }}</option>
+				<option value="30d">{{ 'charts.last30d' | translate }}</option>
+				<option value="12mo">{{ 'charts.last12mo' | translate }}</option>
+			</select>
+		</div>
+		<div class="donut-wrap">
+			<svg viewBox="0 0 120 120" width="120" height="120" aria-hidden="true">
+				<circle cx="60" cy="60" r="48" stroke="#e5e7eb" stroke-width="16" fill="none"></circle>
+				<circle
+					cx="60" cy="60" r="48"
+					stroke="var(--accent)"
+					stroke-width="16"
+					fill="none"
+					stroke-linecap="round"
+					[style.strokeDasharray]="(donutValue()*3.02) + ', 999'"
+					transform="rotate(-90 60 60)"></circle>
+				<text x="60" y="64" text-anchor="middle" font-size="20" fill="var(--text)" font-weight="700">{{ donutValue() }}%</text>
+			</svg>
+		</div>
+	</div>
+</div>
+
+

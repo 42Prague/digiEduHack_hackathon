@@ -1,0 +1,39 @@
+<div class="card" [class.fullscreen]="isFullscreen">
+	<div class="card-header">
+		<div>
+			<div class="card-title">{{ 'ai.title' | translate }}</div>
+			<div class="card-subtitle">{{ 'ai.subtitle' | translate }}</div>
+		</div>
+		<div class="header-actions">
+			<button class="btn" (click)="toggleFullscreen()">
+				{{ isFullscreen ? ('common.close' | translate) : ('common.expand' | translate) }}
+			</button>
+		</div>
+	</div>
+	<div class="chat-window" #chatWindow>
+		<div *ngFor="let m of messages; let i = index" class="msg" [class.me]="m.role==='user'">
+			<div class="bubble" [attr.id]="'msg-' + i">
+				<ng-container *ngFor="let p of m.parts">
+					<div *ngIf="p.kind==='text'" class="text" [innerHTML]="p.text | markdown"></div>
+					<div *ngIf="p.kind==='graph'" class="plot-wrap">
+						<app-chart-view [spec]="p.graph" />
+					</div>
+				</ng-container>
+				<div class="bubble-footer">
+					<button class="export-btn" type="button" (click)="exportMessagePdf(i)">{{ 'common.exportPdf' | translate }}</button>
+				</div>
+			</div>
+		</div>
+		<div *ngIf="isThinking" class="msg">
+			<div class="bubble typing">
+				<img src="/assets/Talking-robot-chatbot.gif" [attr.alt]="'ai.typing' | translate" class="typing-gif" />
+			</div>
+		</div>
+	</div>
+	<div class="chat-input">
+		<input class="input" type="text" [placeholder]="'ai.placeholder' | translate" [(ngModel)]="draft" (keyup.enter)="send()" />
+		<button class="btn" (click)="send()">{{ 'common.send' | translate }}</button>
+	</div>
+</div>
+
+

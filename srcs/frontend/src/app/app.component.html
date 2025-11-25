@@ -1,0 +1,44 @@
+<nav class="nav">
+	<div class="nav-inner container">
+		<a class="brand" routerLink="/">
+			<img src="/assets/logo.svg" alt="DigiEdu" class="brand-logo">
+			<span class="sr-only">{{ 'app.title' | translate }}</span>
+		</a>
+		<div class="nav-links" *ngIf="auth.isLoggedIn(); else loggedOut">
+			<a routerLink="/regions" routerLinkActive="active" *ngIf="isGlobal() || isRegion()">{{ 'nav.regions' | translate }}</a>
+			<a routerLink="/schools" routerLinkActive="active" *ngIf="isGlobal() || isRegion()">{{ 'nav.schools' | translate }}</a>
+			<a routerLink="/users" routerLinkActive="active" *ngIf="isGlobal()">{{ 'nav.users' | translate }}</a>
+			<a routerLink="/overview/global" routerLinkActive="active" *ngIf="isGlobal()">{{ 'nav.globalOverview' | translate }}</a>
+			<a routerLink="/overview/region" routerLinkActive="active" *ngIf="isGlobal() || isRegion()">{{ 'nav.regionalOverview' | translate }}</a>
+			<a routerLink="/upload/region" routerLinkActive="active" *ngIf="isRegion()">{{ 'nav.regionalUpload' | translate }}</a>
+			<a routerLink="/overview/school" routerLinkActive="active" *ngIf="isSchool()">{{ 'nav.schoolOverview' | translate }}</a>
+			<a routerLink="/upload/school" routerLinkActive="active" *ngIf="isSchool()">{{ 'nav.schoolUpload' | translate }}</a>
+		</div>
+		<ng-template #loggedOut>
+			<div class="nav-links">
+				<a routerLink="/login">{{ 'nav.login' | translate }}</a>
+			</div>
+		</ng-template>
+		<div style="margin-left:auto" *ngIf="auth.isLoggedIn()">
+			<span style="color:var(--muted);margin-right:8px">
+				{{ auth.currentUser()?.name }} ({{ auth.currentUser()?.accessLevel }})
+				<span *ngIf="isViewAs()" style="margin-left:6px;color:var(--warning)">
+					[{{ 'nav.viewingAs' | translate }} {{ auth.viewAsInfo()?.level }} {{
+						auth.viewAsInfo()?.regionId || auth.viewAsInfo()?.schoolId
+					}}]
+				</span>
+			</span>
+			<button class="btn secondary" *ngIf="isViewAs()" (click)="exitViewAs()" style="margin-right:8px">{{ 'nav.exitViewAs' | translate }}</button>
+			<button class="btn secondary" (click)="logout()" style="margin-right:8px">{{ 'nav.logout' | translate }}</button>
+			<div class="lang-switch" aria-label="Language switcher">
+				<button class="chip" [class.active]="currentLang() === 'en'" (click)="setLanguage('en')" title="{{ 'lang.english' | translate }}">🇬🇧</button>
+				<button class="chip" [class.active]="currentLang() === 'cs'" (click)="setLanguage('cs')" title="{{ 'lang.czech' | translate }}">🇨🇿</button>
+			</div>
+		</div>
+	</div>
+</nav>
+
+<main class="container page-wrapper" style="padding-top:16px" [@routeAnimations]="getRouteAnimationState(o)">
+	<router-outlet #o="outlet"></router-outlet>
+</main>
+
