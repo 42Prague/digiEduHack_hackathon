@@ -1,0 +1,18 @@
+import { redirect } from "next/navigation";
+import { auth } from "~/server/better-auth";
+import { headers } from "next/headers";
+import { InstitutionsManager } from "./_components/InstitutionsManager";
+
+export default async function InstitutionsPage() {
+  // Get session on the server side (Node.js runtime - can access database)
+  const session = await auth.api.getSession({
+    headers: await headers(),
+  });
+
+  // Verify admin access
+  if (!session?.user || session.user.role !== "admin") {
+    redirect("/");
+  }
+
+  return <InstitutionsManager />;
+}

@@ -1,0 +1,16 @@
+FROM python:3.11-slim
+
+WORKDIR /app
+
+# Copy LLM service files
+COPY llm_api.py llm_index.html ./
+
+# Install dependencies
+RUN pip install --no-cache-dir flask requests
+
+# Expose port
+EXPOSE 8000
+
+# Run the Flask app
+CMD ["python", "llm_api.py"]
+

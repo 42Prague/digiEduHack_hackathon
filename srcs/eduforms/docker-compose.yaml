@@ -1,0 +1,33 @@
+version: "3.9"
+services:
+  app:
+    restart: unless-stopped
+    platform: "linux/amd64"
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        NEXT_PUBLIC_CLIENTVAR: "clientvar"
+    working_dir: /app
+    ports:
+      - "3000:3000"
+    image: webapp
+    environment:
+      - DATABASE_URL="${DATABASE_URL}"
+
+  db:
+    image: postgres:14.4
+    restart: unless-stopped
+    environment:
+      - POSTGRES_USER=${DB_USER}
+      - POSTGRES_PASSWORD=${DB_PASSWORD}
+      - POSTGRES_DB=webapp
+    logging:
+      options:
+        max-size: 10m
+        max-file: "3"
+    ports:
+      - '5432:5432'
+    volumes: 
+      # copy the sql script to create tables
+      - /var/lib/postgresql/data
