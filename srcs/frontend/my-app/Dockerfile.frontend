@@ -1,0 +1,22 @@
+# 1. Use a lightweight Node image
+FROM node:22-alpine
+
+# 2. Set the working directory
+WORKDIR /app/frontend
+
+# 3. Copy package files
+# Caching layer: Only re-runs if package.json or lock file changes
+COPY package.json package-lock.json* ./
+
+# 4. Install dependencies
+RUN npm install
+
+# 5. Copy the rest of your app's code
+# (This will be overridden by a volume mount in dev)
+COPY . .
+
+# 6. Expose Vite's default port
+EXPOSE 5173
+
+# 7. The command to run the dev server
+CMD ["npm", "run", "dev"]

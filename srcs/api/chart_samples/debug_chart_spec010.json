@@ -1,0 +1,34 @@
+{
+    "chart_type": "boxplot",
+    "title": "Satisfaction Variability by City",
+    "x": "city",
+    "y": "satisfaction",
+    "group_by": "city",
+    "data": [
+        {
+            "city": "Brno",
+            "q1": 3.54,
+            "q3": 4.48,
+            "median": 4.04,
+            "min": 3.07,
+            "max": 4.92
+        },
+        {
+            "city": "Ostrava",
+            "q1": 3.2575000000000003,
+            "q3": 4.5975,
+            "median": 4.05,
+            "min": 3.0,
+            "max": 4.92
+        },
+        {
+            "city": "Prague",
+            "q1": 3.69,
+            "q3": 4.58,
+            "median": 4.04,
+            "min": 3.0,
+            "max": 5.0
+        }
+    ],
+    "instruction": "4. Compare satisfaction variability by city."
+}

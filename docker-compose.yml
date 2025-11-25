@@ -1,0 +1,53 @@
+version: '3.8'
+
+services:
+  backend:
+    build:
+      context: .
+      dockerfile: Dockerfile.backend
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./srcs:/app/srcs
+      - ./data:/app/data
+      - ./resources:/app/resources
+      - ./qdrant_storage:/app/qdrant_storage
+    environment:
+      # Add any backend environment variables here
+      - POETRY_META_API_KEY=${POETRY_META_API_KEY}
+
+  mongo:
+    image: mongo
+    container_name: mongohackathon
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: mongoadmin
+      MONGO_INITDB_ROOT_PASSWORD: Hackathon2025
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongodata:/data/db
+
+  frontend:
+    build:
+      context: ./srcs/frontend/my-app
+      dockerfile: Dockerfile.frontend
+    ports:
+      - "5173:5173"
+    volumes:
+      - ./srcs/frontend/my-app:/app/frontend
+      - frontend-node-modules:/app/frontend/node_modules
+    depends_on:
+      - backend
+  
+  qdrant:
+    image: qdrant/qdrant
+    ports:
+      - "6333:6333"
+      - "6334:6334"
+    volumes:
+      - ./qdrant_storage:/qdrant/storage
+
+volumes:
+  frontend-node-modules:
+  mongodata:
+    driver: local

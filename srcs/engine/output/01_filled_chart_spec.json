@@ -1,0 +1,30 @@
+{
+    "chart_type": "bar",
+    "title": "Average Satisfaction by School and City",
+    "x": "school",
+    "y": "satisfaction",
+    "group_by": "city",
+    "data": [
+        {
+            "Brno": 3.9466666666666663,
+            "Ostrava": 3.9749999999999996,
+            "Prague": 4.1468421052631586
+        },
+        {
+            "Brno": 3.8408333333333338,
+            "Ostrava": 3.864705882352941,
+            "Prague": 4.049411764705883
+        },
+        {
+            "Brno": 4.0736,
+            "Ostrava": 4.1257142857142854,
+            "Prague": 4.102
+        },
+        {
+            "Brno": 4.096666666666667,
+            "Ostrava": 3.9817647058823527,
+            "Prague": 4.049090909090909
+        }
+    ],
+    "instruction": "2. Show the average satisfaction for each school, grouped by city."
+}

@@ -1,0 +1,41 @@
+# 1. Use an official Python slim image
+FROM python:3.12-slim
+
+RUN apt-get update && apt-get install -y libatomic1
+
+# 2. Set the working directory
+WORKDIR /app
+
+# 3. Install Poetry
+RUN pip install poetry
+
+# 4. Configure Poetry to install dependencies system-wide
+RUN poetry config virtualenvs.create false
+
+# 5. Copy *only* the dependency files
+# This leverages Docker's layer caching
+COPY pyproject.toml ./
+
+# 6. Install dependencies
+# --no-root: Skips installing 'srcs' as a package, we'll mount it
+RUN poetry install --no-root
+
+RUN poetry lock
+
+# 7. Copy all your source code, data, and resources
+# This is for the 'build' context, but will be
+# overridden by volumes in docker-compose for dev.
+COPY srcs/ /app/srcs/
+
+# 8. Expose your app's port
+EXPOSE 8000
+
+# 9. Define the command to run your app
+#
+# IMPORTANT:
+# - This assumes your FastAPI/Flask app object is named 'app'
+#   and is located in 'srcs/api/app.py'.
+# - If it's different, you MUST change 'srcs.api.app:app'.
+# - We use --reload-dir to watch your 'srcs' folder for changes.
+#
+CMD ["uvicorn", "srcs.api.app:app", "--host", "0.0.0.0", "--port", "8000", "--reload", "--reload-dir", "srcs"]

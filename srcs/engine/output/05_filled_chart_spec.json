@@ -1,0 +1,26 @@
+{
+    "chart_type": "bar",
+    "title": "Average avg_score_after for Trainers with at Least 10 Sessions",
+    "x": "trainer",
+    "y": "avg_score_after",
+    "group_by": "trainer",
+    "data": [
+        {
+            "trainer": "Anna",
+            "avg_score_after": 4.10673469387755
+        },
+        {
+            "trainer": "John",
+            "avg_score_after": 4.019791666666666
+        },
+        {
+            "trainer": "Lee",
+            "avg_score_after": 4.023863636363637
+        },
+        {
+            "trainer": "Maria",
+            "avg_score_after": 4.001525423728814
+        }
+    ],
+    "instruction": "6. Compare average avg_score_after for trainers who taught at least 10 sessions."
+}

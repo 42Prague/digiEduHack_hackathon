@@ -1,0 +1,102 @@
+[
+  {
+    "student_id": "Student_1",
+    "matika": 61,
+    "fyzika": 56
+  },
+  {
+    "student_id": "Student_2",
+    "matika": 62,
+    "fyzika": 57
+  },
+  {
+    "student_id": "Student_3",
+    "matika": 63,
+    "fyzika": 58
+  },
+  {
+    "student_id": "Student_4",
+    "matika": 64,
+    "fyzika": 59
+  },
+  {
+    "student_id": "Student_5",
+    "matika": 65,
+    "fyzika": 60
+  },
+  {
+    "student_id": "Student_6",
+    "matika": 66,
+    "fyzika": 61
+  },
+  {
+    "student_id": "Student_7",
+    "matika": 67,
+    "fyzika": 62
+  },
+  {
+    "student_id": "Student_8",
+    "matika": 68,
+    "fyzika": 63
+  },
+  {
+    "student_id": "Student_9",
+    "matika": 69,
+    "fyzika": 64
+  },
+  {
+    "student_id": "Student_10",
+    "matika": 70,
+    "fyzika": 65
+  },
+  {
+    "student_id": "Student_11",
+    "matika": 71,
+    "fyzika": 66
+  },
+  {
+    "student_id": "Student_12",
+    "matika": 72,
+    "fyzika": 67
+  },
+  {
+    "student_id": "Student_13",
+    "matika": 73,
+    "fyzika": 68
+  },
+  {
+    "student_id": "Student_14",
+    "matika": 74,
+    "fyzika": 69
+  },
+  {
+    "student_id": "Student_15",
+    "matika": 75,
+    "fyzika": 70
+  },
+  {
+    "student_id": "Student_16",
+    "matika": 76,
+    "fyzika": 71
+  },
+  {
+    "student_id": "Student_17",
+    "matika": 77,
+    "fyzika": 72
+  },
+  {
+    "student_id": "Student_18",
+    "matika": 78,
+    "fyzika": 73
+  },
+  {
+    "student_id": "Student_19",
+    "matika": 79,
+    "fyzika": 74
+  },
+  {
+    "student_id": "Student_20",
+    "matika": 80,
+    "fyzika": 75
+  }
+]
