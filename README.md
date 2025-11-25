@@ -105,6 +105,9 @@ See `.env.example` for all available configuration options.
 ### Transcripts
 - `GET /api/transcripts` - List transcripts (with filters)
 - `GET /api/transcripts/{id}` - Get transcript details
+1.  **Your Solution:** Add all your source code, folders, dependencies (e.g., `requirements.txt`, `package.json`), and any files needed to run your solution. You can use the `srcs/` folder or create your own structure.
+2.  **Solution Canvas:** Fill out the `Digi_Edu_Hack_Solution_Canvas_2025.pdf` template. Add the completed PDF to the root of your branch.
+3.  **Pitch Deck:** Add your final pitch **in PDF format** to the `pitch/` folder.
 
 ### Analytics
 - `GET /api/analytics/summary` - Get analytics summary
