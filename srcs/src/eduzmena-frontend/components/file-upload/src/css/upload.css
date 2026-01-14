@@ -1,0 +1,56 @@
+/* File Upload specific styles - extends global.css */
+
+@import url('../../../../css/global.css');
+
+/* Config Section */
+.config-section {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-lg);
+    margin-top: var(--spacing-xl);
+    padding: var(--spacing-lg);
+    border: var(--border-width) solid var(--color-border);
+}
+
+.config-section-item {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-sm);
+}
+
+.config-section-item label {
+    font-weight: 500;
+    color: var(--color-text);
+    font-size: var(--font-size-sm);
+}
+
+.config-section-item select {
+    padding: var(--spacing-md);
+    border: var(--border-width) solid var(--color-border);
+    font-size: var(--font-size-base);
+    background: var(--color-bg);
+    color: var(--color-text);
+    width: 100%;
+    font-family: var(--font-family);
+}
+
+.config-section-item select:focus {
+    outline: none;
+    background: var(--color-bg-light);
+}
+
+/* Uppy Dashboard Container */
+#files-drag-drop {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100%;
+    width: 100%;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .config-section {
+        padding: var(--spacing-md);
+    }
+}

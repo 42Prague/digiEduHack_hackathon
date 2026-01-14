@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>EduZměna - Administration</title>
+    <base href="../../../../" />
+    <link rel="icon" type="image/png" href="icon.png">
+    <link rel="stylesheet" href="components/file-upload/src/css/admin.css">
+</head>
+<body data-page="admin">
+    <nav class="nav">
+        <div class="nav-container">
+            <a href="index.html" class="nav-brand">
+                <img src="icon.png" alt="EduZměna logo" class="nav-brand-logo">
+                <span>EduZměna</span>
+            </a>
+            <ul class="nav-links">
+                <li><a href="index.html" class="nav-link" data-id="home">Homepage</a></li>
+                <li><a href="components/chatbot/chatbot.html" class="nav-link" data-id="chatbot">Chatbot</a></li>
+                <li><a href="components/file-upload/src/pages/upload.html" class="nav-link" data-id="upload">Upload files</a></li>
+                <li><a href="components/file-upload/src/pages/admin.html" class="nav-link" data-id="admin">Administration</a></li>
+                <li><a href="http://localhost:3000" class="nav-link" data-id="reporting" target="_blank">Reporting</a></li>
+            </ul>
+        </div>
+    </nav>
+    
+    <div class="admin-container">
+        <div class="admin-header">
+            <h1>Administration - Schools and regions</h1>
+        </div>
+
+        <div id="alert-container"></div>
+
+        <div class="admin-grid">
+            <!-- Regions Section -->
+            <div class="admin-section">
+                <h2>Regions</h2>
+                <form id="region-form">
+                    <div class="form-group">
+                        <label for="region-name">Region name</label>
+                        <input type="text" id="region-name" required placeholder="Enter region name">
+                    </div>
+                    <button type="submit" class="btn btn-primary">Add region</button>
+                </form>
+                <div class="admin-section-divider" aria-hidden="true"></div>
+                <div id="regions-list" style="margin-top: 1.5rem;"></div>
+            </div>
+
+            <!-- Schools Section -->
+            <div class="admin-section">
+                <h2>Schools</h2>
+                <form id="school-form">
+                    <div class="form-group">
+                        <label for="school-name">School name</label>
+                        <input type="text" id="school-name" required placeholder="Enter school name">
+                    </div>
+                    <div class="form-group">
+                        <label for="school-region">Regions</label>
+                        <select id="school-region" required>
+                            <option value="">Select region</option>
+                        </select>
+                    </div>
+                    <button type="submit" class="btn btn-primary">Add school</button>
+                </form>
+                <div class="admin-section-divider" aria-hidden="true"></div>
+                <div class="form-group" style="max-width: 260px;">
+                    <label for="schools-region-filter">Filter by region</label>
+                    <select id="schools-region-filter">
+                        <option value="">All regions</option>
+                    </select>
+                </div>
+                <div class="form-group" style="max-width: 200px;">
+                    <label for="schools-page-size">Number of items per page</label>
+                    <select id="schools-page-size">
+                        <option value="10">10</option>
+                        <option value="20">20</option>
+                        <option value="50">50</option>
+                        <option value="100">100</option>
+                    </select>
+                </div>
+                <div id="schools-list" style="margin-top: 1.5rem;"></div>
+                <div id="schools-pagination" class="schools-pagination"></div>
+            </div>
+
+            <!-- Files Section -->
+            <div class="admin-section" style="grid-column: 1 / -1;">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+                    <h2 style="margin: 0;">Uploaded files</h2>
+                    <button onclick="refreshFiles()" class="btn btn-secondary">Refresh</button>
+                </div>
+                <div class="form-group" style="display: flex; flex-wrap: wrap; gap: 1rem; margin-bottom: 1.5rem;">
+                    <div style="flex: 1; min-width: 220px;">
+                        <label for="files-region-filter">Filter by region</label>
+                        <select id="files-region-filter">
+                            <option value="">All regions</option>
+                        </select>
+                    </div>
+                    <div style="flex: 1; min-width: 220px;">
+                        <label for="files-school-filter">Filter by school</label>
+                        <select id="files-school-filter">
+                            <option value="">All schools</option>
+                        </select>
+                    </div>
+                    <div style="flex: 1; min-width: 220px;">
+                        <label for="files-doc-type-filter">Filter by document type</label>
+                        <select id="files-doc-type-filter">
+                            <option value="">All document types</option>
+                        </select>
+                    </div>
+                    <div style="flex: 1; min-width: 220px;">
+                        <label for="files-format-filter">Filter by document format</label>
+                        <select id="files-format-filter">
+                            <option value="">All formats</option>
+                        </select>
+                    </div>
+                    <div style="flex: 1; min-width: 220px;">
+                        <label for="files-status-filter">Filter by status</label>
+                        <select id="files-status-filter">
+                            <option value="">All statuses</option>
+                            <option value="pending">Pending</option>
+                            <option value="processing">Processing</option>
+                            <option value="done">Done</option>
+                            <option value="failed">Failed</option>
+                        </select>
+                    </div>
+                    <div style="width: 250px; min-width: 140px;">
+                        <label for="files-page-size">Number of files per page</label>
+                        <select id="files-page-size">
+                            <option value="10">10</option>
+                            <option value="20">20</option>
+                            <option value="50">50</option>
+                            <option value="100">100</option>
+                        </select>
+                    </div>
+                </div>
+                <div id="files-list"></div>
+                <div id="files-pagination" class="files-pagination"></div>
+            </div>
+        </div>
+    </div>
+    <script type="module" src="components/file-upload/src/js/admin.js"></script>
+</body>
+</html>

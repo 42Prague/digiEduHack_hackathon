@@ -1,0 +1,175 @@
+/* Admin Panel specific styles - extends global.css */
+
+@import url('../../../../css/global.css');
+
+/* Admin Container */
+.admin-container {
+    max-width: var(--container-max-width);
+    margin: 0 auto;
+    background: var(--color-bg);
+    border: var(--border-width) solid var(--color-border);
+    padding: var(--container-padding);
+}
+
+/* Admin Header */
+.admin-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: var(--spacing-xl);
+    padding-bottom: var(--spacing-md);
+    border-bottom: var(--border-width) solid var(--color-border);
+    flex-wrap: wrap;
+    gap: var(--spacing-md);
+}
+
+.admin-header h1 {
+    font-size: var(--font-size-2xl);
+    font-weight: 600;
+    color: var(--color-text);
+}
+
+/* Alert Container */
+#alert-container {
+    position: fixed;
+    top: var(--spacing-xl);
+    right: var(--spacing-xl);
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-sm);
+    width: min(320px, calc(100% - (var(--spacing-xl) * 2)));
+    pointer-events: none;
+    z-index: 10;
+}
+
+.alert-popover {
+    opacity: 0;
+    transform: translateY(-8px);
+    transition: opacity 180ms ease, transform 180ms ease;
+    box-shadow: 0 18px 35px rgba(0, 0, 0, 0.15);
+    pointer-events: auto;
+}
+
+.alert-popover.is-visible {
+    opacity: 1;
+    transform: translateY(0);
+}
+
+.alert-popover.is-leaving {
+    opacity: 0;
+    transform: translateY(-6px);
+}
+
+/* Grid Layout */
+.admin-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: var(--spacing-xl);
+}
+
+/* Section */
+.admin-section {
+    background: var(--color-bg);
+    padding: var(--spacing-lg);
+    border: var(--border-width) solid var(--color-border);
+}
+
+
+.admin-section h2 {
+    font-size: var(--font-size-xl);
+    color: var(--color-text);
+    margin-bottom: var(--spacing-lg);
+    font-weight: 600;
+    padding-bottom: var(--spacing-sm);
+    border-bottom: var(--border-width) solid var(--color-border);
+}
+
+.admin-section-divider {
+    width: 100%;
+    border-top: var(--border-width) solid var(--color-border);
+    margin: var(--spacing-lg) 0;
+}
+
+/* Files List */
+#files-list {
+    margin-top: var(--spacing-md);
+}
+
+.file-item {
+    background: var(--color-bg);
+    padding: var(--spacing-md);
+    border: var(--border-width) solid var(--color-border);
+    margin-bottom: calc(var(--spacing-md) * 0.75);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.file-item-info {
+    flex: 1;
+}
+
+.file-item-name {
+    font-weight: 500;
+    color: var(--color-text);
+    margin-bottom: var(--spacing-xs);
+}
+
+.file-item-meta {
+    font-size: calc(var(--font-size-sm) * 0.95);
+    color: var(--color-text);
+}
+
+/* Responsive */
+@media (max-width: 900px) {
+    .admin-container {
+        padding: var(--spacing-lg);
+    }
+
+    .admin-header {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .admin-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+.file-json-preview {
+    white-space: pre-wrap;   /* Wrap long lines */
+    word-break: break-word;  /* Break long words when needed */
+    overflow-x: auto;        /* (Optional) still allow scrolling if needed */
+    font-family: monospace;
+    font-size: 13px;
+    padding: 8px;
+}
+
+.files-pagination,
+.schools-pagination {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: var(--spacing-md);
+    flex-wrap: wrap;
+    gap: var(--spacing-md);
+}
+
+.files-pagination .pagination-info,
+.schools-pagination .pagination-info {
+    font-size: var(--font-size-sm);
+    color: var(--color-muted);
+}
+
+.files-pagination .pagination-controls,
+.schools-pagination .pagination-controls {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-sm);
+}
+
+.files-pagination .pagination-controls .pagination-page,
+.schools-pagination .pagination-controls .pagination-page {
+    font-size: var(--font-size-sm);
+    color: var(--color-text);
+}

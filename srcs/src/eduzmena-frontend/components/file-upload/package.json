@@ -1,0 +1,11 @@
+{
+  "name": "eduzmena-file-upload",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "start": "live-server --host=0.0.0.0 --port=${PORT:-4173} --no-browser --entry-file=index.html"
+  },
+  "dependencies": {
+    "live-server": "^1.2.2"
+  }
+}
